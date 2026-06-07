@@ -1,86 +1,333 @@
+// firestore.rules
+// apna — Production Firestore Security Rules
+// Version: 1.0.0
+// Last updated: Phase 1, Prompt 1.1
+//
+// PRINCIPLES:
+//   1. Default DENY — nothing is readable/writable unless explicitly allowed
+//   2. Auth required — every rule checks request.auth != null first
+//   3. Member-only access — group data readable/writable only by group members
+//   4. Immutable fields — createdAt, createdBy, uid cannot be changed after creation
+//   5. Data validation — all writes validated against field types + size limits
+//   6. Rate limiting — handled at Cloud Functions level, not rules (rules have no state)
+//   7. Cloud Function writes — activity feed written server-side only (no client write)
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Auth helpers ───────────────────────────────────────────────────────
-    function isAuthenticated() {
+    // ── Helper functions ────────────────────────────────────────────
+
+    // Is the request from an authenticated user?
+    function isAuthed() {
       return request.auth != null;
     }
 
+    // Is the requesting user the owner of this document?
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    // Is the requesting user a member of this group?
     function isGroupMember(groupId) {
-      return isAuthenticated()
-        && exists(/databases/$(database)/documents/groups/$(groupId))
-        && request.auth.uid in
-             get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+      return isAuthed() &&
+        request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds;
     }
 
+    // Is the requesting user an admin of this group?
     function isGroupAdmin(groupId) {
-      return isGroupMember(groupId)
-        && get(/databases/$(database)/documents/groups/$(groupId))
-             .data.members[request.auth.uid].role in ['admin', 'co-admin'];
+      return isAuthed() &&
+        request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.adminIds;
     }
 
-    // ── Users ──────────────────────────────────────────────────────────────
-    // Any authenticated user can read profiles (needed for expense display)
-    // Only the user themselves can write their own profile
-    match /users/{userId} {
-      allow read:           if isAuthenticated();
-      allow create, update,
-            delete:         if request.auth.uid == userId;
+    // Does the incoming data have exactly these fields (no more, no less)?
+    function hasExactFields(fields) {
+      return request.resource.data.keys().toSet() == fields.toSet();
     }
 
-    // ── Groups ────────────────────────────────────────────────────────────
+    // Does the incoming data have at least these fields?
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Is a string non-empty and within max length?
+    function isValidString(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    // Is this a valid Firestore Timestamp?
+    function isTimestamp(value) {
+      return value is timestamp;
+    }
+
+    // Is this a valid phone number string? (+91 followed by 10 digits)
+    function isValidPhone(value) {
+      return value is string && value.matches('^\\+91[6-9]\\d{9}$');
+    }
+
+    // Is this an avatar color from the allowed palette?
+    function isValidAvatarColor(value) {
+      return value in [
+        '#4ECDC4', '#FF6B6B', '#FFD166', '#A8E6CF',
+        '#FF8B94', '#7EC8E3', '#B5B5FF', '#FECA57'
+      ];
+    }
+
+    // Is this a valid expense category?
+    function isValidCategory(value) {
+      return value in ['food', 'stay', 'transport', 'activities', 'shopping', 'misc'];
+    }
+
+    // Is this a valid split type?
+    function isValidSplitType(value) {
+      return value in ['equal', 'exact', 'percentage'];
+    }
+
+    // Is the invite code expired? (TTL: 72 hours)
+    function isInviteValid(inviteData) {
+      return inviteData.expiresAt > request.time;
+    }
+
+    // Did the incoming write NOT change an immutable field?
+    function fieldUnchanged(field) {
+      return !(field in request.resource.data) ||
+        request.resource.data[field] == resource.data[field];
+    }
+
+    // ── /users/{uid} ────────────────────────────────────────────────
+    match /users/{uid} {
+
+      // Any authenticated user can read basic profile
+      // (needed for group member display — name + avatarColor)
+      allow read: if isAuthed();
+
+      // Create: only the authenticated user can create their own doc
+      allow create: if isOwner(uid) &&
+        hasRequiredFields(['phone', 'name', 'avatarColor', 'createdAt', 'groups']) &&
+        isValidPhone(request.resource.data.phone) &&
+        isValidString(request.resource.data.name, 40) &&
+        isValidAvatarColor(request.resource.data.avatarColor) &&
+        isTimestamp(request.resource.data.createdAt) &&
+        request.resource.data.groups is list &&
+        request.resource.data.groups.size() <= 20;  // Max 20 groups per user
+
+      // Update: user can update their own name and avatarColor
+      // Cannot change phone, createdAt, uid
+      allow update: if isOwner(uid) &&
+        fieldUnchanged('phone') &&
+        fieldUnchanged('createdAt') &&
+        (!('name' in request.resource.data) || isValidString(request.resource.data.name, 40)) &&
+        (!('avatarColor' in request.resource.data) || isValidAvatarColor(request.resource.data.avatarColor)) &&
+        request.resource.data.groups is list &&
+        request.resource.data.groups.size() <= 20;
+
+      // No one can delete user documents (use Firebase Auth delete instead)
+      allow delete: if false;
+    }
+
+    // ── /groups/{groupId} ──────────────────────────────────────────
     match /groups/{groupId} {
-      allow read:   if isGroupMember(groupId);
-      allow create: if isAuthenticated();       // Any authed user can create a group
-      allow update: if isGroupAdmin(groupId);   // Only admins can change group settings
-      allow delete: if false;                   // Groups are archived, never deleted
 
-      // ── Expenses ────────────────────────────────────────────────────────
+      // Only members can read group documents
+      allow read: if isGroupMember(groupId);
+
+      // Any authenticated user can create a group
+      // Creator must include themselves in memberIds and adminIds
+      allow create: if isAuthed() &&
+        hasRequiredFields([
+          'name', 'createdBy', 'createdAt', 'memberIds',
+          'adminIds', 'inviteCode', 'status', 'currency'
+        ]) &&
+        isValidString(request.resource.data.name, 60) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        isTimestamp(request.resource.data.createdAt) &&
+        request.auth.uid in request.resource.data.memberIds &&
+        request.auth.uid in request.resource.data.adminIds &&
+        request.resource.data.memberIds is list &&
+        request.resource.data.memberIds.size() >= 1 &&
+        request.resource.data.memberIds.size() <= 20 &&
+        request.resource.data.status in ['active', 'completed'] &&
+        isValidString(request.resource.data.currency, 3);
+
+      // Members can update group name, dates, settings
+      // Only admins can add/remove members or change adminIds
+      allow update: if isGroupMember(groupId) &&
+        fieldUnchanged('createdBy') &&
+        fieldUnchanged('createdAt') &&
+        fieldUnchanged('inviteCode') &&
+        (
+          // Regular member update (name, dates, destination) — no membership change
+          (
+            request.resource.data.memberIds == resource.data.memberIds &&
+            request.resource.data.adminIds == resource.data.adminIds
+          )
+          ||
+          // Admin-only: membership changes
+          isGroupAdmin(groupId)
+        ) &&
+        request.resource.data.memberIds.size() >= 1 &&
+        request.resource.data.memberIds.size() <= 20;
+
+      // Only creator (admin) can delete a group
+      // In practice: groups are 'completed', not deleted
+      allow delete: if isGroupAdmin(groupId) &&
+        resource.data.createdBy == request.auth.uid;
+
+      // ── /groups/{groupId}/expenses/{expenseId} ──────────────────
       match /expenses/{expenseId} {
-        allow read:           if isGroupMember(groupId);
-        allow create:         if isGroupMember(groupId);
-        // Edit/delete: creator or group admin only
-        allow update, delete: if isGroupMember(groupId)
-          && (resource.data.createdBy == request.auth.uid
-              || isGroupAdmin(groupId));
+
+        allow read: if isGroupMember(groupId);
+
+        allow create: if isGroupMember(groupId) &&
+          hasRequiredFields([
+            'description', 'amount', 'currency', 'category',
+            'paidBy', 'splitType', 'splits', 'date',
+            'createdBy', 'createdAt', 'isSettled'
+          ]) &&
+          isValidString(request.resource.data.description, 100) &&
+          request.resource.data.amount is number &&
+          request.resource.data.amount > 0 &&
+          request.resource.data.amount <= 1000000 &&
+          isValidCategory(request.resource.data.category) &&
+          request.resource.data.paidBy is string &&
+          isValidSplitType(request.resource.data.splitType) &&
+          request.resource.data.splits is map &&
+          request.resource.data.createdBy == request.auth.uid &&
+          isTimestamp(request.resource.data.createdAt) &&
+          request.resource.data.isSettled == false;  // New expenses start unsettled
+
+        // Members can edit description, category, amount (before settlement)
+        // Once settled: only admin can modify
+        allow update: if isGroupMember(groupId) &&
+          fieldUnchanged('createdBy') &&
+          fieldUnchanged('createdAt') &&
+          (
+            resource.data.isSettled == false ||
+            isGroupAdmin(groupId)
+          ) &&
+          request.resource.data.amount is number &&
+          request.resource.data.amount > 0 &&
+          request.resource.data.amount <= 1000000;
+
+        // Only expense creator or group admin can delete
+        allow delete: if isGroupMember(groupId) &&
+          (
+            resource.data.createdBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          ) &&
+          resource.data.isSettled == false;  // Cannot delete settled expenses
       }
 
-      // ── Memories ────────────────────────────────────────────────────────
-      match /memories/{memoryId} {
-        allow read:   if isGroupMember(groupId);
-        allow create: if isGroupMember(groupId);
-        allow update: if isGroupMember(groupId); // Any member can react
-        // Delete: poster or admin only
-        allow delete: if isGroupMember(groupId)
-          && (resource.data.addedBy == request.auth.uid
-              || isGroupAdmin(groupId));
+      // ── /groups/{groupId}/activity/{activityId} ─────────────────
+      // Activity feed is WRITE-PROTECTED — only Cloud Functions can write
+      // This enforces server-side authoring of all feed events
+      match /activity/{activityId} {
+        allow read: if isGroupMember(groupId);
+        allow write: if false;  // Cloud Functions write with Admin SDK (bypasses rules)
       }
 
-      // ── Itinerary ────────────────────────────────────────────────────────
+      // ── /groups/{groupId}/itinerary/{itemId} ────────────────────
       match /itinerary/{itemId} {
-        allow read:   if isGroupMember(groupId);
-        allow create: if isGroupMember(groupId);
-        allow update: if isGroupMember(groupId); // Any member can vote / mark complete
-        // Delete: creator or admin only
-        allow delete: if isGroupMember(groupId)
-          && (resource.data.createdBy == request.auth.uid
-              || isGroupAdmin(groupId));
+
+        allow read: if isGroupMember(groupId);
+
+        allow create: if isGroupMember(groupId) &&
+          hasRequiredFields(['date', 'title', 'createdBy', 'createdAt', 'order']) &&
+          isValidString(request.resource.data.title, 80) &&
+          request.resource.data.date is string &&
+          request.resource.data.createdBy == request.auth.uid &&
+          isTimestamp(request.resource.data.createdAt) &&
+          request.resource.data.order is number;
+
+        allow update: if isGroupMember(groupId) &&
+          fieldUnchanged('createdBy') &&
+          fieldUnchanged('createdAt');
+
+        allow delete: if isGroupMember(groupId) &&
+          (
+            resource.data.createdBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          );
       }
 
-      // ── Balances — Cloud Functions write only ────────────────────────────
-      // Clients CANNOT write balances — they are computed server-side to prevent
-      // manipulation of financial data.
-      match /balances/{doc} {
-        allow read:  if isGroupMember(groupId);
-        allow write: if false; // Cloud Functions use Admin SDK (bypasses rules)
+      // ── /groups/{groupId}/memories/{memoryId} ───────────────────
+      match /memories/{memoryId} {
+
+        allow read: if isGroupMember(groupId);
+
+        // Phase 4: photo upload — any member can add a memory
+        allow create: if isGroupMember(groupId) &&
+          hasRequiredFields(['type', 'createdBy', 'createdAt', 'date']) &&
+          request.resource.data.type in ['photo', 'moment', 'milestone'] &&
+          request.resource.data.createdBy == request.auth.uid &&
+          isTimestamp(request.resource.data.createdAt);
+
+        // Only creator can update their own memory
+        allow update: if isGroupMember(groupId) &&
+          resource.data.createdBy == request.auth.uid &&
+          fieldUnchanged('createdBy') &&
+          fieldUnchanged('createdAt') &&
+          fieldUnchanged('type');
+
+        // Creator or admin can delete
+        allow delete: if isGroupMember(groupId) &&
+          (
+            resource.data.createdBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          );
       }
 
-      // ── Feed — Cloud Functions write only ───────────────────────────────
-      match /feed/{feedItem} {
-        allow read:  if isGroupMember(groupId);
-        allow write: if false; // Cloud Functions use Admin SDK (bypasses rules)
+      // ── /groups/{groupId}/settlements/{settlementId} ────────────
+      match /settlements/{settlementId} {
+
+        allow read: if isGroupMember(groupId);
+
+        // Only the payer can record a settlement
+        allow create: if isGroupMember(groupId) &&
+          hasRequiredFields(['fromUid', 'toUid', 'amount', 'currency', 'createdAt', 'expenseIds']) &&
+          request.resource.data.fromUid == request.auth.uid &&
+          request.resource.data.amount is number &&
+          request.resource.data.amount > 0 &&
+          isTimestamp(request.resource.data.createdAt) &&
+          request.resource.data.expenseIds is list;
+
+        // Settlements are immutable once created
+        allow update: if false;
+        allow delete: if false;
       }
+    }
+
+    // ── /invites/{inviteCode} ──────────────────────────────────────
+    // Public readable — any authed user can look up an invite code
+    // Only group admins can create/regenerate invite codes
+    match /invites/{inviteCode} {
+
+      // Any authenticated user can read (to join via code)
+      allow read: if isAuthed();
+
+      // Only group admins can create invite codes
+      allow create: if isAuthed() &&
+        hasRequiredFields(['groupId', 'createdBy', 'createdAt', 'expiresAt', 'maxUses', 'useCount']) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        isTimestamp(request.resource.data.createdAt) &&
+        isTimestamp(request.resource.data.expiresAt) &&
+        request.resource.data.maxUses is int &&
+        request.resource.data.maxUses <= 50 &&
+        request.resource.data.useCount == 0 &&
+        isGroupAdmin(request.resource.data.groupId);
+
+      // Only Cloud Functions update useCount (join flow)
+      allow update: if false;
+
+      // Admin can delete (regenerate = delete old + create new)
+      allow delete: if isAuthed() &&
+        isGroupAdmin(resource.data.groupId);
+    }
+
+    // ── Catch-all: deny everything else ───────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

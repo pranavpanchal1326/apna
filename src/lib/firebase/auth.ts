@@ -18,14 +18,15 @@ import {
   type Unsubscribe,
 } from 'firebase/auth'
 import {
-  doc,
   setDoc,
   getDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import { auth, db } from './config'
+import { auth } from './config'
 import type { User } from '@lib/types'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
+import { userDoc } from './collections'
+import type { UserInput } from '@lib/schemas'
 
 export type RecaptchaRef = React.RefObject<FirebaseRecaptchaVerifierModal>
 
@@ -78,19 +79,20 @@ export async function createUserDoc(
   name: string,
   avatarColor: string
 ): Promise<User> {
-  const userRef = doc(db, 'users', firebaseUser.uid)
+  const userRef = userDoc(firebaseUser.uid)
 
-  const userData: Omit<User, 'uid'> = {
+  const userData: UserInput = {
+    uid: firebaseUser.uid,
     phone: firebaseUser.phoneNumber ?? '',
     name: name.trim(),
-    avatarColor,
-    createdAt: serverTimestamp() as unknown as import('firebase/firestore').Timestamp,
+    avatarColor: avatarColor as any,
+    createdAt: serverTimestamp(),
     groups: [],
   }
 
   await setDoc(userRef, userData)
 
-  return { uid: firebaseUser.uid, ...userData }
+  return { ...userData, createdAt: userData.createdAt as any } as User
 }
 
 /**
@@ -98,9 +100,9 @@ export async function createUserDoc(
  * Returns null if document doesn't exist (new user).
  */
 export async function getUserDoc(uid: string): Promise<User | null> {
-  const snap = await getDoc(doc(db, 'users', uid))
+  const snap = await getDoc(userDoc(uid))
   if (!snap.exists()) return null
-  return { uid: snap.id, ...snap.data() } as User
+  return snap.data() as unknown as User
 }
 
 /**

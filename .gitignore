@@ -45,3 +45,7 @@ Thumbs.db
 .vscode/settings.json
 *.swp
 *.swo
+
+# ── Emulator debug logs ───────────────────────────────────────────────────
+*-debug.log
+firebase-debug.log

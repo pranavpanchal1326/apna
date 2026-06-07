@@ -99,6 +99,9 @@ if (IS_DEV) {
     connectFirestoreEmulator,
   } = require('firebase/firestore') as typeof import('firebase/firestore')
   const {
+    connectAuthEmulator,
+  } = require('firebase/auth') as typeof import('firebase/auth')
+  const {
     connectStorageEmulator,
   } = require('firebase/storage') as typeof import('firebase/storage')
   const {
@@ -112,6 +115,7 @@ if (IS_DEV) {
 
   try {
     connectFirestoreEmulator(db,        EMULATOR_HOST, 8080)
+    connectAuthEmulator(auth,           `http://${EMULATOR_HOST}:9099`, { disableWarnings: true })
     connectStorageEmulator(storage,     EMULATOR_HOST, 9199)
     connectDatabaseEmulator(rtdb,       EMULATOR_HOST, 9000)
     connectFunctionsEmulator(functions, EMULATOR_HOST, 5001)
