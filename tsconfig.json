@@ -16,6 +16,7 @@
       "@navigation/*": ["./src/navigation/*"],
       "@stores/*": ["./src/stores/*"],
       "@hooks/*": ["./src/hooks/*"],
+      "@theme": ["./src/theme"],
       "@theme/*": ["./src/theme/*"],
       "@utils/*": ["./src/lib/utils/*"]
     }
