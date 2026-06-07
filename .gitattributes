@@ -1,0 +1,17 @@
+# Handle line endings automatically for all files
+* text=auto
+
+# Force LF for source files (consistent across Windows/Mac/Linux)
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.rules text eol=lf
+
+# Binary assets — never touch line endings
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary

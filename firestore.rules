@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Auth helpers ───────────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isGroupMember(groupId) {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/groups/$(groupId))
+        && request.auth.uid in
+             get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+    }
+
+    function isGroupAdmin(groupId) {
+      return isGroupMember(groupId)
+        && get(/databases/$(database)/documents/groups/$(groupId))
+             .data.members[request.auth.uid].role in ['admin', 'co-admin'];
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────
+    // Any authenticated user can read profiles (needed for expense display)
+    // Only the user themselves can write their own profile
+    match /users/{userId} {
+      allow read:           if isAuthenticated();
+      allow create, update,
+            delete:         if request.auth.uid == userId;
+    }
+
+    // ── Groups ────────────────────────────────────────────────────────────
+    match /groups/{groupId} {
+      allow read:   if isGroupMember(groupId);
+      allow create: if isAuthenticated();       // Any authed user can create a group
+      allow update: if isGroupAdmin(groupId);   // Only admins can change group settings
+      allow delete: if false;                   // Groups are archived, never deleted
+
+      // ── Expenses ────────────────────────────────────────────────────────
+      match /expenses/{expenseId} {
+        allow read:           if isGroupMember(groupId);
+        allow create:         if isGroupMember(groupId);
+        // Edit/delete: creator or group admin only
+        allow update, delete: if isGroupMember(groupId)
+          && (resource.data.createdBy == request.auth.uid
+              || isGroupAdmin(groupId));
+      }
+
+      // ── Memories ────────────────────────────────────────────────────────
+      match /memories/{memoryId} {
+        allow read:   if isGroupMember(groupId);
+        allow create: if isGroupMember(groupId);
+        allow update: if isGroupMember(groupId); // Any member can react
+        // Delete: poster or admin only
+        allow delete: if isGroupMember(groupId)
+          && (resource.data.addedBy == request.auth.uid
+              || isGroupAdmin(groupId));
+      }
+
+      // ── Itinerary ────────────────────────────────────────────────────────
+      match /itinerary/{itemId} {
+        allow read:   if isGroupMember(groupId);
+        allow create: if isGroupMember(groupId);
+        allow update: if isGroupMember(groupId); // Any member can vote / mark complete
+        // Delete: creator or admin only
+        allow delete: if isGroupMember(groupId)
+          && (resource.data.createdBy == request.auth.uid
+              || isGroupAdmin(groupId));
+      }
+
+      // ── Balances — Cloud Functions write only ────────────────────────────
+      // Clients CANNOT write balances — they are computed server-side to prevent
+      // manipulation of financial data.
+      match /balances/{doc} {
+        allow read:  if isGroupMember(groupId);
+        allow write: if false; // Cloud Functions use Admin SDK (bypasses rules)
+      }
+
+      // ── Feed — Cloud Functions write only ───────────────────────────────
+      match /feed/{feedItem} {
+        allow read:  if isGroupMember(groupId);
+        allow write: if false; // Cloud Functions use Admin SDK (bypasses rules)
+      }
+    }
+  }
+}

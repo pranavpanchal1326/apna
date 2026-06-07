@@ -1,0 +1,40 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Memory photos ────────────────────────────────────────────────────
+    // 2MB limit per image — enforced to keep Storage costs predictable
+    match /groups/{groupId}/memories/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Expense receipts ─────────────────────────────────────────────────
+    // 5MB limit — receipts are often higher quality photos
+    match /groups/{groupId}/receipts/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Group cover photo ─────────────────────────────────────────────────
+    // Public read (for invite link previews), 3MB write limit
+    match /groups/{groupId}/cover/{allPaths=**} {
+      allow read:  if true;
+      allow write: if request.auth != null
+        && request.resource.size < 3 * 1024 * 1024;
+    }
+
+    // ── User avatars ──────────────────────────────────────────────────────
+    // Public read (needed in group views), 1MB limit, own uid only
+    match /users/{userId}/avatar/{allPaths=**} {
+      allow read:  if true;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 1 * 1024 * 1024;
+    }
+  }
+}
