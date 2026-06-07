@@ -14,6 +14,7 @@
       "@components": ["./src/components"],
       "@components/*": ["./src/components/*"],
       "@screens/*": ["./src/screens/*"],
+      "@navigation": ["./src/navigation"],
       "@navigation/*": ["./src/navigation/*"],
       "@stores/*": ["./src/stores/*"],
       "@hooks/*": ["./src/hooks/*"],

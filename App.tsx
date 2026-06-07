@@ -1,88 +1,99 @@
-// App.tsx — updated for Prompt 0.4
-// Temporary navigation: local state machine drives auth flow.
-// React Navigation replaces this entirely in Prompt 0.5.
+// App.tsx — FINAL (replaces Prompt 0.4 version)
+// Boot sequence:
+//   1. Sentry init (first — catches everything after)
+//   2. Font loading (required before any text renders)
+//   3. Auth store initialization (Firebase Auth state listener)
+//   4. React Navigation mounts (driven by auth status)
+//   5. QueryClient + PostHog available to all screens
 
-import { useEffect, useState } from 'react'
+import 'react-native-gesture-handler'  // MUST be first import
+import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { ThemeProvider } from '@theme'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { StatusBar, Text } from 'react-native'
+import * as SplashScreen from 'expo-splash-screen'
+
+import { ThemeProvider, useTheme } from '@theme'
+import { RootNavigator } from '@navigation'
 import { useAuthStore } from '@stores/auth.store'
-import {
-  SplashScreen,
-  PhoneInputScreen,
-  OTPScreen,
-  ProfileSetupScreen,
-} from '@screens/auth'
+import { useDhagaFonts } from '@lib/fonts'
+import { initSentry, SentryErrorBoundary, captureError } from '@lib/sentry'
+import { initAnalytics } from '@lib/analytics'
+import { queryClient } from '@lib/query'
 
-type AppScreen =
-  | 'splash'
-  | 'phone'
-  | 'otp'
-  | 'profile_setup'
-  | 'home'  // Placeholder until Prompt 0.5
+// ── Keep native splash visible until fonts loaded ────────────────
+SplashScreen.preventAutoHideAsync()
 
-function AppContent() {
+// ── Boot: Sentry first, then analytics ───────────────────────────
+initSentry()
+initAnalytics()
+
+// ── Inner app — has access to ThemeProvider context ──────────────
+function AppShell() {
+  const { colors, isDark } = useTheme()
+  const [fontsLoaded, fontError] = useDhagaFonts()
   const initialize = useAuthStore((s) => s.initialize)
-  const status     = useAuthStore((s) => s.status)
-  const [screen, setScreen] = useState<AppScreen>('splash')
 
-  // Initialize auth listener once
+  // Start Firebase Auth listener
   useEffect(() => {
     const unsubscribe = initialize()
     return unsubscribe
   }, [initialize])
 
-  // React to auth status changes
+  // Hide native splash once fonts are ready
   useEffect(() => {
-    if (status === 'authenticated' && screen !== 'home') {
-      setScreen('home')
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync()
     }
-    if (status === 'needs_profile' && screen !== 'profile_setup') {
-      setScreen('profile_setup')
+    if (fontError) {
+      captureError(fontError, { source: 'font_loading' })
     }
-  }, [status, screen])
+  }, [fontsLoaded, fontError])
 
-  if (screen === 'splash') {
-    return (
-      <SplashScreen
-        onComplete={() => {
-          if (status === 'authenticated') setScreen('home')
-          else if (status === 'needs_profile') setScreen('profile_setup')
-          else setScreen('phone')
-        }}
+  // Hold render until fonts ready — prevents FOUT (flash of unstyled text)
+  if (!fontsLoaded && !fontError) {
+    return null
+  }
+
+  return (
+    <>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.statusBar}
       />
-    )
-  }
-
-  if (screen === 'phone') {
-    return <PhoneInputScreen onOTPSent={() => setScreen('otp')} />
-  }
-
-  if (screen === 'otp') {
-    return (
-      <OTPScreen
-        onVerified={() => {
-          // setFirebaseUser in store triggers status update,
-          // which useEffect above catches and sets correct screen
-        }}
-        onBack={() => setScreen('phone')}
-      />
-    )
-  }
-
-  if (screen === 'profile_setup') {
-    return <ProfileSetupScreen onComplete={() => setScreen('home')} />
-  }
-
-  // 'home' placeholder — replaced by React Navigation in Prompt 0.5
-  return <SplashScreen onComplete={() => {}} />
+      <RootNavigator />
+    </>
+  )
 }
 
+// ── Root component ────────────────────────────────────────────────
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <SentryErrorBoundary
+      fallback={() => (
+        // Minimal error screen — styled with inline styles only (theme unavailable)
+        // Full error boundary UI is a Phase 4 polish item
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#080C14',
+          alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          <Text style={{ color: '#F0F4FF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
+            Something went wrong
+          </Text>
+          <Text style={{ color: '#8A94B0', fontSize: 14, textAlign: 'center' }}>
+            The app encountered an unexpected error.{"\n"}Please restart.
+          </Text>
+        </GestureHandlerRootView>
+      )}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+              <AppShell />
+            </QueryClientProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </SentryErrorBoundary>
   )
 }
