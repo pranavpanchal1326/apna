@@ -9,6 +9,12 @@ import { onSchedule } from 'firebase-functions/v2/scheduler'
 
 admin.initializeApp()
 
+import {
+  recalculateGroupBalances,
+  writeExpenseCreatedActivity,
+  writeExpenseDeletedActivity,
+} from './triggers/onExpenseWrite'
+
 // =============================================================================
 // apna Cloud Functions — Skeleton (7 stubs)
 // ALL functions pinned to asia-south1 (Mumbai) for Indian user latency.
@@ -26,11 +32,16 @@ admin.initializeApp()
  */
 export const onExpenseCreate = onDocumentCreated(
   { document: 'groups/{groupId}/expenses/{expenseId}', region: 'asia-south1' },
-  (event) => {
+  async (event) => {
     const { groupId, expenseId } = event.params
     const expense = event.data?.data()
     console.info(`[apna] onExpenseCreate: group=${groupId} expense=${expenseId} amount=${expense?.amount}`)
-    // TODO: Prompt 1.3
+    try {
+      await writeExpenseCreatedActivity(event)
+      await recalculateGroupBalances(groupId)
+    } catch (err) {
+      console.error(`Error in onExpenseCreate for group=${groupId} expense=${expenseId}:`, err)
+    }
   },
 )
 
@@ -42,10 +53,15 @@ export const onExpenseCreate = onDocumentCreated(
  */
 export const onExpenseDelete = onDocumentDeleted(
   { document: 'groups/{groupId}/expenses/{expenseId}', region: 'asia-south1' },
-  (event) => {
+  async (event) => {
     const { groupId, expenseId } = event.params
     console.info(`[apna] onExpenseDelete: group=${groupId} expense=${expenseId}`)
-    // TODO: Prompt 1.3
+    try {
+      await writeExpenseDeletedActivity(event)
+      await recalculateGroupBalances(groupId)
+    } catch (err) {
+      console.error(`Error in onExpenseDelete for group=${groupId} expense=${expenseId}:`, err)
+    }
   },
 )
 
@@ -125,7 +141,7 @@ export const generateTripWrap = onCall(
 
 /**
  * Runs every 5 minutes.
- * Deletes /groups/*/locations/* nodes where timestamp < 4 hours ago.
+ * Deletes /groups/{groupId}/locations/{locationId} nodes where timestamp < 4 hours ago.
  * Keeps RTDB lean — location data has no long-term value.
  * TODO Prompt 1.6: Implement the actual RTDB cleanup query.
  */

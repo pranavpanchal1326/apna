@@ -4,6 +4,13 @@ import { z } from 'zod'
 export const GroupStatusSchema = z.enum(['active', 'completed'])
 export type GroupStatus = z.infer<typeof GroupStatusSchema>
 
+export const SettlementBalanceSchema = z.object({
+  fromUid: z.string(),
+  toUid:   z.string(),
+  amount:  z.number(),
+})
+export type SettlementBalance = z.infer<typeof SettlementBalanceSchema>
+
 export const GroupSchema = z.object({
   id:           z.string().min(1).max(128),
   name:         z.string().min(1).max(60),
@@ -20,6 +27,7 @@ export const GroupSchema = z.object({
   currency:     z.string().length(3).default('INR'),  // ISO 4217
   totalBudget:  z.number().positive().optional(),
   description:  z.string().max(200).optional(),
+  balances:     z.array(SettlementBalanceSchema).default([]),
 })
 
 export const GroupCreateSchema = GroupSchema.omit({ id: true })

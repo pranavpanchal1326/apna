@@ -10,7 +10,7 @@ import type {
   SnapshotOptions,
   FirestoreDataConverter,
 } from 'firebase/firestore'
-import type { UserInput, GroupInput, ExpenseInput, ItineraryItemInput, MemoryInput } from '@lib/schemas'
+import type { UserInput, GroupInput, ExpenseInput, ItineraryItemInput, MemoryInput, ActivityItem } from '@lib/schemas'
 
 export const userConverter: FirestoreDataConverter<UserInput> = {
   toFirestore(data: UserInput) {
@@ -40,3 +40,5 @@ export const groupConverter     = makeConverter<GroupInput>()
 export const expenseConverter   = makeConverter<ExpenseInput>()
 export const itineraryConverter = makeConverter<ItineraryItemInput>()
 export const memoryConverter    = makeConverter<MemoryInput>()
+export const activityConverter  = makeConverter<ActivityItem>()
+

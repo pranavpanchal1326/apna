@@ -114,6 +114,7 @@ export async function createGroup(
     createdAt:  serverTimestamp() as unknown as Timestamp,
     inviteCode,
     status:     'active',
+    balances:   [],
   }
 
   // Validate with Zod (catches bad data before it hits Firestore)

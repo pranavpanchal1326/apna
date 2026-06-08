@@ -17,6 +17,7 @@ import {
   expenseConverter,
   itineraryConverter,
   memoryConverter,
+  activityConverter,
 } from './converters'
 import type {
   UserInput,
@@ -24,6 +25,7 @@ import type {
   ExpenseInput,
   ItineraryItemInput,
   MemoryInput,
+  ActivityItem,
 } from '@lib/schemas'
 
 // ── Top-level collections ─────────────────────────────────────────
@@ -50,11 +52,12 @@ export const inviteDoc = (inviteCode: string) =>
 export const expensesCol = (groupId: string): CollectionReference<ExpenseInput> =>
   collection(db, 'groups', groupId, 'expenses').withConverter(expenseConverter)
 
-export const activityCol = (groupId: string) =>
-  collection(db, 'groups', groupId, 'activity')
+export const activitiesCol = (groupId: string): CollectionReference<ActivityItem> =>
+  collection(db, 'groups', groupId, 'activity').withConverter(activityConverter)
 
 export const itineraryCol = (groupId: string): CollectionReference<ItineraryItemInput> =>
   collection(db, 'groups', groupId, 'itinerary').withConverter(itineraryConverter)
+
 
 export const memoriesCol = (groupId: string): CollectionReference<MemoryInput> =>
   collection(db, 'groups', groupId, 'memories').withConverter(memoryConverter)

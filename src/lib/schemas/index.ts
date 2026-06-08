@@ -4,3 +4,5 @@ export * from './group.schema'
 export * from './expense.schema'
 export * from './itinerary.schema'
 export * from './memory.schema'
+export * from './activity.schema'
+
