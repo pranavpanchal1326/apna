@@ -13,7 +13,15 @@ export const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Main: {
         screens: {
-          Home:     'home',
+          HomeTab: {
+            path: 'home',
+            screens: {
+              HomeList: '',
+              CreateGroup: 'create',
+              JoinGroup: 'join',
+              GroupHome: 'group/:groupId',
+            },
+          },
           Budget:   'budget/:groupId?',
           Trip:     'trip/:groupId?',
           Memories: 'memories/:groupId?',

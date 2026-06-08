@@ -4,8 +4,8 @@
 // Never use untyped navigation — all screen props extend typed navigator props.
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
-import type { CompositeScreenProps } from '@react-navigation/native'
+import type { BottomTabScreenProps }   from '@react-navigation/bottom-tabs'
+import type { CompositeScreenProps }   from '@react-navigation/native'
 
 // ── Root Navigator ───────────────────────────────────────────────
 // Switches between Auth stack and Main tab navigator
@@ -22,9 +22,17 @@ export type AuthStackParamList = {
   ProfileSetup: undefined
 }
 
+// ── Home Stack (inside Home tab) ──────────────────────────────────
+export type HomeStackParamList = {
+  HomeList:       undefined                        // Groups list + FAB
+  CreateGroup:    undefined                        // Multi-step create
+  JoinGroup:      undefined                        // Invite code entry
+  GroupHome:      { groupId: string; groupName: string }  // Group detail shell
+}
+
 // ── Main Tab Navigator ───────────────────────────────────────────
 export type MainTabParamList = {
-  Home:     undefined
+  HomeTab:  undefined
   Budget:   { groupId?: string }
   Trip:     { groupId?: string }
   Memories: { groupId?: string }
@@ -39,6 +47,9 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
 
 export type AuthStackScreenProps<T extends keyof AuthStackParamList> =
   NativeStackScreenProps<AuthStackParamList, T>
+
+export type HomeStackScreenProps<T extends keyof HomeStackParamList> =
+  NativeStackScreenProps<HomeStackParamList, T>
 
 export type MainTabScreenProps<T extends keyof MainTabParamList> =
   CompositeScreenProps<

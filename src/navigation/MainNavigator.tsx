@@ -8,7 +8,7 @@ import { useTheme } from '@theme'
 import * as Haptics from 'expo-haptics'
 
 // Placeholder screens — content built in Phases 1–4
-import { HomeScreen }     from '@screens/home/HomeScreen'
+import { HomeNavigator }  from './HomeNavigator'
 import { BudgetScreen }   from '@screens/budget/BudgetScreen'
 import { TripScreen }     from '@screens/trip/TripScreen'
 import { MemoriesScreen } from '@screens/memories/MemoriesScreen'
@@ -18,7 +18,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>()
 
 // ── Tab icons — SVG inline, no external icon library dependency ──
 const TAB_ICONS: Record<keyof MainTabParamList, (active: boolean, color: string) => React.ReactNode> = {
-  Home: (_active, color) => (
+  HomeTab: (_active, color) => (
     <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
       {/* Home — simple house silhouette */}
       <Text style={{ fontSize: 20, color }}>⌂</Text>
@@ -129,7 +129,7 @@ export function MainNavigator() {
         lazy: true,  // Don't render tab screen until first visited
       }}
     >
-      <Tab.Screen name="Home"     component={HomeScreen} />
+      <Tab.Screen name="HomeTab"  component={HomeNavigator} />
       <Tab.Screen name="Budget"   component={BudgetScreen} />
       <Tab.Screen name="Trip"     component={TripScreen} />
       <Tab.Screen name="Memories" component={MemoriesScreen} />

@@ -111,7 +111,7 @@ if (IS_DEV) {
     connectFunctionsEmulator,
   } = require('firebase/functions') as typeof import('firebase/functions')
 
-  const EMULATOR_HOST = '10.0.2.2' // ← Change to WiFi IP for physical device
+  const EMULATOR_HOST = process.env.EMULATOR_HOST || '10.0.2.2' // ← Change to WiFi IP for physical device
 
   try {
     connectFirestoreEmulator(db,        EMULATOR_HOST, 8080)

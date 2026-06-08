@@ -15,7 +15,7 @@ export const SplitsMapSchema = z.record(
   z.number().nonnegative().max(1000000)
 )
 
-export const ExpenseSchema = z.object({
+export const BaseExpenseSchema = z.object({
   id:          z.string().min(1).max(128),
   groupId:     z.string().min(1).max(128),
   description: z.string().min(1).max(100),
@@ -31,20 +31,36 @@ export const ExpenseSchema = z.object({
   isSettled:   z.boolean().default(false),
   notes:       z.string().max(200).optional(),
   receiptUrl:  z.string().url().optional(),   // Phase 4 — receipt photo
-}).refine(
-  (data) => {
-    // Splits must sum to total amount (within ₹1 rounding tolerance)
-    const splitTotal = Object.values(data.splits).reduce((sum, v) => sum + v, 0)
-    return Math.abs(splitTotal - data.amount) <= 1
-  },
-  { message: 'Split amounts must sum to total expense amount (±₹1 tolerance)' }
+})
+
+const refineSplitsSum = (data: { splits?: Record<string, number>; amount?: number }) => {
+  if (data.amount === undefined || data.splits === undefined) return true
+  const splitTotal = Object.values(data.splits).reduce((sum, v) => sum + v, 0)
+  return Math.abs(splitTotal - data.amount) <= 1
+}
+
+const splitsSumRefinementOptions = {
+  message: 'Split amounts must sum to total expense amount (±₹1 tolerance)'
+}
+
+export const ExpenseSchema = BaseExpenseSchema.refine(
+  refineSplitsSum,
+  splitsSumRefinementOptions
 )
 
-export const ExpenseCreateSchema = ExpenseSchema.omit({ id: true })
-export const ExpenseUpdateSchema = ExpenseSchema
+export const ExpenseCreateSchema = BaseExpenseSchema.omit({ id: true }).refine(
+  refineSplitsSum,
+  splitsSumRefinementOptions
+)
+
+export const ExpenseUpdateSchema = BaseExpenseSchema
   .partial()
   .required({ id: true, groupId: true })
   .omit({ createdBy: true, createdAt: true })
+  .refine(
+    refineSplitsSum,
+    splitsSumRefinementOptions
+  )
 
 export type ExpenseInput = z.infer<typeof ExpenseSchema>
 export type ExpenseCreate = z.infer<typeof ExpenseCreateSchema>
