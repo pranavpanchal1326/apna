@@ -30,6 +30,7 @@ export type HomeStackParamList = {
   GroupHome:      { groupId: string; groupName: string }  // Group detail shell
   AddExpense:     { groupId: string }
   ExpenseDetail:  { groupId: string; expenseId: string }
+  BalanceSummary: { groupId: string; withUid?: string }
 }
 
 // ── Main Tab Navigator ───────────────────────────────────────────

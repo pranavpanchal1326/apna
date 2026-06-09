@@ -9,6 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Screen, FAB } from '@components'
 import { GroupHeaderHero } from '@components/group'
@@ -26,9 +27,9 @@ export function GroupHomeScreen({ route, navigation }: Props) {
   const group     = useActiveGroup(groupId)
 
   const handleSettle = useCallback((_withUid: string) => {
-    // Navigate to SettleUpScreen in Prompt 1.5
-    // navigation.navigate('SettleUp', { groupId, withUid: _withUid })
-  }, [])
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    navigation.navigate('BalanceSummary', { groupId, withUid: _withUid })
+  }, [navigation, groupId])
 
   if (!group) {
     return (
