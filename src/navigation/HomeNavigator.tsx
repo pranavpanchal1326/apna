@@ -12,7 +12,8 @@ import { JoinGroupScreen }   from '@screens/group/JoinGroupScreen'
 import { GroupHomeScreen }   from '@screens/group/GroupHomeScreen'
 import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 import { BalanceSummaryScreen } from '../screens/settlement'
-import { GroupSettingsScreen } from '../screens/settings'
+import { GroupSettingsScreen }  from '../screens/settings'
+import { SettleUpScreen }       from '../screens/settle/SettleUpScreen'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -41,6 +42,7 @@ export function HomeNavigator() {
       <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} />
       <Stack.Screen name="BalanceSummary" component={BalanceSummaryScreen} />
       <Stack.Screen name="GroupSettings" component={GroupSettingsScreen} />
+      <Stack.Screen name="SettleUp"      component={SettleUpScreen} />
     </Stack.Navigator>
   )
 }

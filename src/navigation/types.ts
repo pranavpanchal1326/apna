@@ -32,6 +32,11 @@ export type HomeStackParamList = {
   ExpenseDetail:  { groupId: string; expenseId: string }
   BalanceSummary: { groupId: string; withUid?: string }
   GroupSettings:  { groupId: string }
+  SettleUp:       {
+    groupId:   string
+    withUid?:  string   // Pre-select one person
+    balances:  Array<{ fromUid: string; toUid: string; amount: number }>
+  }
 }
 
 // ── Itinerary Stack (inside Trip tab) ─────────────────────────────

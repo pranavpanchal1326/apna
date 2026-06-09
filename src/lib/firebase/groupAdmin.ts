@@ -348,3 +348,65 @@ export async function archiveGroup(
     throw err
   }
 }
+
+// ── Dissolve group (admin-only, all balances = 0) ──────────────────
+// Soft delete: sets status = 'completed', clears memberIds & adminIds,
+// removes groupId from every member's user.groups array.
+// GUARD: caller must be admin.
+// GUARD: group.balances (set by Cloud Function) must all be ~0.
+// Hard deletion of subcollections handled by a scheduled Cloud Function (Phase 5).
+
+export async function dissolveGroup(
+  groupId:  string,
+  adminUid: string,
+): Promise<void> {
+  try {
+    const ref = doc(groupsCol(), groupId)
+
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref)
+      if (!snap.exists()) throw new Error('Group not found.')
+      const group = snap.data() as any
+
+      // Verify caller is admin
+      if (!group.adminIds?.includes(adminUid)) {
+        throw new Error('Only group admins can dissolve the group.')
+      }
+
+      // Verify all simplified debts are zero
+      const balances: Array<{ fromUid: string; toUid: string; amount: number }> =
+        group.balances ?? []
+      const hasUnresolved = balances.some((b) => Math.abs(b.amount) >= 1)
+      if (hasUnresolved) {
+        throw new Error(
+          'All dues must be settled before dissolving. Settle up first.'
+        )
+      }
+
+      const memberIds: string[] = group.memberIds ?? []
+
+      // Soft-delete group: status = 'completed', clear memberIds & adminIds
+      tx.update(ref, {
+        status:      'completed',
+        memberIds:   [],
+        adminIds:    [],
+        dissolvedAt: serverTimestamp(),
+        dissolvedBy: adminUid,
+        updatedAt:   serverTimestamp(),
+      })
+
+      // Remove groupId from every member's user.groups
+      for (const uid of memberIds) {
+        tx.update(userDoc(uid), {
+          groups: arrayRemove(groupId),
+        })
+      }
+    })
+
+    track('group_dissolved', { groupId })
+  } catch (err) {
+    captureError(err, { source: 'dissolveGroup', groupId })
+    throw err
+  }
+}
+

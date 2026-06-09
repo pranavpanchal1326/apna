@@ -22,6 +22,8 @@ import { initSentry, SentryErrorBoundary, captureError } from '@lib/sentry'
 import { initAnalytics } from '@lib/analytics'
 import { queryClient } from '@lib/query'
 
+import { useFCM } from '@hooks/useFCM'
+
 // ── Keep native splash visible until fonts loaded ────────────────
 SplashScreen.preventAutoHideAsync()
 
@@ -34,6 +36,10 @@ function AppShell() {
   const { colors, isDark } = useTheme()
   const [fontsLoaded, fontError] = useDhagaFonts()
   const initialize = useAuthStore((s) => s.initialize)
+  const user = useAuthStore((s) => s.user)
+
+  // Register for FCM push notifications
+  useFCM(user?.uid ?? null)
 
   // Start Firebase Auth listener
   useEffect(() => {
