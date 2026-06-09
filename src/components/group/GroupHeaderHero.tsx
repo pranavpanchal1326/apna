@@ -32,6 +32,11 @@ export const GroupHeaderHero = memo(function GroupHeaderHero({ group }: Props) {
     }
   }, [group])
 
+  const handleOpenSettings = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    navigation.navigate('GroupSettings' as any, { groupId: group.id })
+  }, [navigation, group.id])
+
   return (
     <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
       {/* Nav row */}
@@ -54,34 +59,56 @@ export const GroupHeaderHero = memo(function GroupHeaderHero({ group }: Props) {
           <Text style={{ color: colors.textPrimary, fontSize: 18 }}>←</Text>
         </Pressable>
 
-        {/* Invite code chip */}
-        {group.inviteCode && (
+        <View style={styles.rightActions}>
+          {/* Invite code chip */}
+          {group.inviteCode && (
+            <Pressable
+              onPress={handleShare}
+              style={[
+                styles.inviteChip,
+                {
+                  backgroundColor: colors.bgTertiary,
+                  borderRadius:    radius.full,
+                  borderColor:     colors.borderAccent,
+                  borderWidth:     1,
+                  paddingHorizontal: spacing.md,
+                  paddingVertical:   spacing.xs,
+                  minHeight:         36,
+                  justifyContent:    'center',
+                  marginRight:       spacing.sm,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Share invite code ${group.inviteCode}`}
+            >
+              <Text style={[text.mono.sm, { color: colors.accentPrimary, letterSpacing: 3 }]}>
+                {group.inviteCode}
+              </Text>
+              <Text style={[text.label.sm, { color: colors.textMuted, marginLeft: spacing.xs }]}>
+                · share
+              </Text>
+            </Pressable>
+          )}
+
           <Pressable
-            onPress={handleShare}
-            style={[
-              styles.inviteChip,
-              {
-                backgroundColor: colors.bgTertiary,
-                borderRadius:    radius.full,
-                borderColor:     colors.borderAccent,
-                borderWidth:     1,
-                paddingHorizontal: spacing.md,
-                paddingVertical:   spacing.xs,
-                minHeight:         36,
-                justifyContent:    'center',
-              },
-            ]}
+            onPress={handleOpenSettings}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{
+              width: 36,
+              height: 36,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.bgTertiary,
+              borderRadius: radius.full,
+              borderColor: colors.border,
+              borderWidth: 1,
+            }}
             accessibilityRole="button"
-            accessibilityLabel={`Share invite code ${group.inviteCode}`}
+            accessibilityLabel="Group settings"
           >
-            <Text style={[text.mono.sm, { color: colors.accentPrimary, letterSpacing: 3 }]}>
-              {group.inviteCode}
-            </Text>
-            <Text style={[text.label.sm, { color: colors.textMuted, marginLeft: spacing.xs }]}>
-              · share
-            </Text>
+            <Text style={{ fontSize: 18 }}>⚙️</Text>
           </Pressable>
-        )}
+        </View>
       </View>
 
       {/* Hero content */}
@@ -109,7 +136,8 @@ export const GroupHeaderHero = memo(function GroupHeaderHero({ group }: Props) {
 })
 
 const styles = StyleSheet.create({
-  navRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  backBtn:    { alignItems: 'center', justifyContent: 'center' },
-  inviteChip: { flexDirection: 'row', alignItems: 'center' },
+  navRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backBtn:      { alignItems: 'center', justifyContent: 'center' },
+  inviteChip:   { flexDirection: 'row', alignItems: 'center' },
+  rightActions: { flexDirection: 'row', alignItems: 'center' },
 })

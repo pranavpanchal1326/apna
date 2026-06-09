@@ -31,6 +31,7 @@ export type HomeStackParamList = {
   AddExpense:     { groupId: string }
   ExpenseDetail:  { groupId: string; expenseId: string }
   BalanceSummary: { groupId: string; withUid?: string }
+  GroupSettings:  { groupId: string }
 }
 
 // ── Main Tab Navigator ───────────────────────────────────────────

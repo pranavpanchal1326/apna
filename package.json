@@ -13,6 +13,7 @@
     "expo": "~56.0.9",
     "expo-blur": "~56.0.3",
     "expo-camera": "~56.0.7",
+    "expo-clipboard": "^56.0.4",
     "expo-constants": "~56.0.17",
     "expo-firebase-recaptcha": "^2.3.1",
     "expo-font": "~56.0.5",
