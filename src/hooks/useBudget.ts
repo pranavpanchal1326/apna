@@ -1,65 +1,107 @@
 // src/hooks/useBudget.ts
-// Budget data hook — derived selectors over budget.store
-// No component should access useBudgetStore directly — use this hook.
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import {
+  fetchBudgetGroup,
+  subscribeToBudgetExpenses,
+  fetchBudgetExpenses,
+  type BudgetGroupInput,
+  type BudgetExpenseInput,
+} from '@lib/firebase/budget'
+import {
+  buildBudgetSummary,
+  getBudgetHealth,
+  type BudgetSummary,
+  type BudgetHealthMeta,
+} from '@lib/budget'
+import { captureError } from '@lib/sentry'
 
-import { useEffect } from 'react'
-import { useBudgetStore } from '@stores/budget.store'
-import { recordPayment } from '@lib/firebase/settlements'
-import { useAuthStore } from '@stores/auth.store'
-import type { SettlementItem, BalanceItem, CategoryItem, BudgetItem } from '@lib/firebase/settlements'
-
-export interface UseBudgetReturn {
-  isLoading:      boolean
-  error:          string | null
-  balances:       BalanceItem[]
-  pendingSettlements: SettlementItem[]
-  recordedSettlements: SettlementItem[]
-  categories:     CategoryItem[]
-  budget:         BudgetItem | null
-  expenseCount:   number
-  totalSpentRupees: number
-  totalBudgetRupees: number | null
-  handleRecordPayment: (fromUid: string, toUid: string) => Promise<void>
+export interface UseBudgetResult {
+  group: BudgetGroupInput | null
+  summary: BudgetSummary | null
+  health: BudgetHealthMeta | null
+  isLoading: boolean
+  error: string | null
+  refresh: () => Promise<void>
 }
 
-export function useBudget(groupId: string): UseBudgetReturn {
-  const subscribeGroup    = useBudgetStore((s) => s.subscribeGroup)
-  const unsubscribeGroup  = useBudgetStore((s) => s.unsubscribeGroup)
-  const settlementDoc     = useBudgetStore((s) => s.settlementDoc)
-  const isLoading         = useBudgetStore((s) => s.isLoading)
-  const error             = useBudgetStore((s) => s.error)
-  const currentUser       = useAuthStore((s) => s.user)
+export function useBudget(groupId: string | null): UseBudgetResult {
+  const [group, setGroup] = useState<BudgetGroupInput | null>(null)
+  const [expenses, setExpenses] = useState<BudgetExpenseInput[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadAll = useCallback(async (gId: string) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const [gData, eData] = await Promise.all([
+        fetchBudgetGroup(gId),
+        fetchBudgetExpenses(gId),
+      ])
+      setGroup(gData)
+      setExpenses(eData)
+    } catch (err) {
+      captureError(err, { source: 'useBudget_loadAll', groupId: gId })
+      setError('Failed to load budget data.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    subscribeGroup(groupId)
-    return () => unsubscribeGroup()
-  }, [groupId])
+    if (!groupId) {
+      setGroup(null)
+      setExpenses([])
+      setError(null)
+      return
+    }
 
-  const handleRecordPayment = async (fromUid: string, toUid: string) => {
-    if (!currentUser) return
-    await recordPayment({
+    loadAll(groupId)
+
+    const unsubscribe = subscribeToBudgetExpenses(
       groupId,
-      fromUid,
-      toUid,
-      recordedBy: currentUser.uid,
+      (eData) => {
+        setExpenses(eData)
+      },
+      (err) => {
+        captureError(err, { source: 'useBudget_subscription', groupId })
+        setError('Failed to sync expenses in real time.')
+      }
+    )
+
+    return () => {
+      unsubscribe()
+    }
+  }, [groupId, loadAll])
+
+  const refresh = useCallback(async () => {
+    if (!groupId) return
+    await loadAll(groupId)
+  }, [groupId, loadAll])
+
+  const summary = useMemo(() => {
+    if (!groupId) return null
+    return buildBudgetSummary({
+      totalBudget: group?.totalBudget,
+      expenses,
     })
-  }
+  }, [group, expenses, groupId])
+
+  const health = useMemo(() => {
+    if (!summary) return null
+    return getBudgetHealth({
+      totalBudget: summary.totalBudget,
+      totalSpent: summary.totalSpent,
+      percentUsed: summary.percentUsed,
+    })
+  }, [summary])
 
   return {
+    group,
+    summary,
+    health,
     isLoading,
     error,
-    balances:            settlementDoc?.balances ?? [],
-    pendingSettlements:  settlementDoc?.settlements.filter((s) => s.status === 'pending') ?? [],
-    recordedSettlements: settlementDoc?.settlements.filter((s) => s.status === 'recorded') ?? [],
-    categories:          settlementDoc?.categories ?? [],
-    budget:              settlementDoc?.budget ?? null,
-    expenseCount:        settlementDoc?.expenseCount ?? 0,
-    totalSpentRupees:    settlementDoc?.budget?.totalSpentPaise
-                           ? settlementDoc.budget.totalSpentPaise / 100
-                           : (settlementDoc?.balances.reduce((s, b) => s + b.totalPaid, 0) ?? 0) / 100,
-    totalBudgetRupees:   settlementDoc?.budget?.totalBudgetPaise != null
-                           ? settlementDoc.budget.totalBudgetPaise / 100
-                           : null,
-    handleRecordPayment,
+    refresh,
   }
 }
