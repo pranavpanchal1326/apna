@@ -250,3 +250,173 @@ export function formatBalanceHero(netPaise: number): string {
   })
   return netPaise >= 0 ? `+₹${formatted}` : `-₹${formatted}`
 }
+
+// ── Prompt 1.5 compatible API ──────────────────────────────────────────
+// These exports satisfy the balanceEngine contract from Prompt 1.5.
+// They adapt the existing engine API to the paise-based splitBetween format.
+
+export interface ExpenseForBalance {
+  paidByUid:    string
+  splitBetween: Array<{ uid: string; amountPaise: number }>
+  status:       string   // Only 'active' expenses counted
+}
+
+export interface SimplifiedDebt {
+  fromUid:      string
+  toUid:        string
+  amountPaise:  number
+  amountRupees: number
+}
+
+export interface GroupBalances {
+  netBalances:      Record<string, number>   // paise, integer
+  simplifiedDebts:  SimplifiedDebt[]
+  totalCirculation: number                   // paise
+  isSettled:        boolean
+}
+
+export interface MemberBalanceSummary {
+  uid:        string
+  netPaise:   number
+  netRupees:  number
+  isCreditor: boolean
+  isDebtor:   boolean
+  isSettled:  boolean
+  bilateral:  Array<{
+    counterpartUid: string
+    amountPaise:    number
+    amountRupees:   number
+  }>
+}
+
+// Main paise-based group balance calculator (Prompt 1.5 spec)
+export function calculateGroupBalances(
+  expenses: ExpenseForBalance[],
+  memberIds: string[]
+): GroupBalances {
+  const netPaise: Record<string, number> = {}
+  memberIds.forEach(uid => { netPaise[uid] = 0 })
+
+  for (const expense of expenses) {
+    if (expense.status !== 'active') continue
+
+    const paidBy = expense.paidByUid
+    for (const split of expense.splitBetween) {
+      const { uid, amountPaise } = split
+
+      if (uid === paidBy) continue   // Payer's own share — no net transfer
+
+      if (netPaise[uid] === undefined)    netPaise[uid]    = 0
+      if (netPaise[paidBy] === undefined) netPaise[paidBy] = 0
+
+      netPaise[uid]    -= amountPaise   // Debtor owes more
+      netPaise[paidBy] += amountPaise   // Creditor is owed more
+    }
+  }
+
+  // Greedy simplification
+  const simplifiedDebts = _simplifyPaiseDebts(netPaise)
+
+  const totalCirculation = Object.values(netPaise)
+    .filter(v => v > 0)
+    .reduce((a, b) => a + b, 0)
+
+  return {
+    netBalances: netPaise,
+    simplifiedDebts,
+    totalCirculation,
+    isSettled: simplifiedDebts.length === 0,
+  }
+}
+
+function _simplifyPaiseDebts(netPaise: Record<string, number>): SimplifiedDebt[] {
+  const result: SimplifiedDebt[] = []
+  const balances = { ...netPaise }
+
+  const creditors = Object.entries(balances)
+    .filter(([, v]) => v > 1)
+    .sort(([, a], [, b]) => b - a)
+    .map(([uid, v]) => ({ uid, amount: v }))
+
+  const debtors = Object.entries(balances)
+    .filter(([, v]) => v < -1)
+    .sort(([, a], [, b]) => a - b)
+    .map(([uid, v]) => ({ uid, amount: -v }))
+
+  let ci = 0
+  let di = 0
+
+  while (ci < creditors.length && di < debtors.length) {
+    const creditor = creditors[ci]!
+    const debtor   = debtors[di]!
+
+    const settle = Math.min(creditor.amount, debtor.amount)
+
+    if (settle > 0) {
+      result.push({
+        fromUid:     debtor.uid,
+        toUid:       creditor.uid,
+        amountPaise: settle,
+        amountRupees: settle / 100,
+      })
+    }
+
+    creditor.amount -= settle
+    debtor.amount   -= settle
+
+    if (creditor.amount <= 1) ci++
+    if (debtor.amount   <= 1) di++
+  }
+
+  return result
+}
+
+// Per-member balance summary (Prompt 1.5 spec)
+export function getMemberBalanceSummary(
+  uid: string,
+  groupBalances: GroupBalances
+): MemberBalanceSummary {
+  const net = groupBalances.netBalances[uid] ?? 0
+
+  const bilateral = groupBalances.simplifiedDebts
+    .filter(d => d.fromUid === uid || d.toUid === uid)
+    .map(d => {
+      if (d.fromUid === uid) {
+        return {
+          counterpartUid: d.toUid,
+          amountPaise:    -d.amountPaise,
+          amountRupees:   -(d.amountPaise / 100),
+        }
+      } else {
+        return {
+          counterpartUid: d.fromUid,
+          amountPaise:    d.amountPaise,
+          amountRupees:   d.amountPaise / 100,
+        }
+      }
+    })
+
+  return {
+    uid,
+    netPaise:   net,
+    netRupees:  net / 100,
+    isCreditor: net > 1,
+    isDebtor:   net < -1,
+    isSettled:  Math.abs(net) <= 1,
+    bilateral,
+  }
+}
+
+// Balance conservation check (Prompt 1.5 spec)
+export function validateBalanceConservationStrict(
+  netBalances: Record<string, number>,
+  memberCount: number
+): { isValid: boolean; sumPaise: number } {
+  const sum = Object.values(netBalances).reduce((a, b) => a + b, 0)
+  const tolerance = Math.ceil(memberCount * 0.5)
+  return {
+    isValid: Math.abs(sum) <= tolerance,
+    sumPaise: sum,
+  }
+}
+
