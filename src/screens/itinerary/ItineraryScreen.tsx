@@ -1,7 +1,7 @@
 // src/screens/itinerary/ItineraryScreen.tsx
 // Root Screen for Itinerary — integrates DayTabBar, DayPlannerView, AddItemSheet.
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -13,22 +13,35 @@ import { Screen, FAB } from '../../components'
 import { useTheme } from '../../theme'
 import { useGroupStore } from '../../stores/group.store'
 import { useItinerary } from '../../hooks/useItinerary'
+import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { DayTabBar } from './DayTabBar'
 import { DayPlannerView } from './DayPlannerView'
 import { AddItemSheet, AddItemSheetRef } from './AddItemSheet'
+import { ItemDetailSheet, ItemDetailSheetRef } from './ItemDetailSheet'
 import type { ItineraryItem, SmartSuggestion } from '../../lib/schemas'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ItineraryStackParamList } from '../../navigation/types'
 
 type Props = NativeStackScreenProps<ItineraryStackParamList, 'ItineraryHome'>
 
-export function ItineraryScreen({ route, navigation }: Props) {
+export function ItineraryScreen({ route }: Props) {
   const { colors, text, spacing } = useTheme()
   const activeGroup = useGroupStore(s => s.activeGroup)
   const groupId = route.params?.groupId || activeGroup?.id || null
 
+  const { members } = useGroupMembers(activeGroup?.memberIds ?? [])
+
+  const memberNames = useMemo(() => {
+    const map: Record<string, string> = {}
+    members.forEach((user, uid) => {
+      map[uid] = user.name || 'Someone'
+    })
+    return map
+  }, [members])
+
   const {
     dayPlans,
+    itemsByDay,
     activeDayId,
     activeDayItems,
     tripDateRange,
@@ -36,12 +49,15 @@ export function ItineraryScreen({ route, navigation }: Props) {
     myUid,
     setActiveDay,
     addItem,
+    updateItem,
     deleteItem,
     reorderDay,
+    moveItem,
     vote,
   } = useItinerary(groupId)
 
   const addSheetRef = useRef<AddItemSheetRef>(null)
+  const detailSheetRef = useRef<ItemDetailSheetRef>(null)
 
   // Auto-select first day on mount if none selected
   useEffect(() => {
@@ -119,24 +135,7 @@ export function ItineraryScreen({ route, navigation }: Props) {
   }
 
   const handlePressItem = (item: ItineraryItem) => {
-    if (item.linkedExpenseIds && item.linkedExpenseIds.length > 0) {
-      // Navigate to expense detail page in parent home stack if possible
-      try {
-        const parentNav = navigation.getParent() as any
-        const targetNav = parentNav || (navigation as any)
-        targetNav.navigate('HomeTab', {
-          screen: 'ExpenseDetail',
-          params: { groupId, expenseId: item.linkedExpenseIds[0] },
-        })
-      } catch (err) {
-        Alert.alert('Stop Pressed', `This stop is linked to expense ID: ${item.linkedExpenseIds[0]}`)
-      }
-    } else {
-      Alert.alert(
-        item.title,
-        `${item.notes || 'No notes yet.'}\n\nEditing stop details will be available in Prompt 2.3.`
-      )
-    }
+    detailSheetRef.current?.open(item)
   }
 
   const handleSelectSuggestion = (suggestion: SmartSuggestion) => {
@@ -194,6 +193,30 @@ export function ItineraryScreen({ route, navigation }: Props) {
         <AddItemSheet
           ref={addSheetRef}
           onAdd={handleAddStop}
+        />
+      )}
+
+      {/* Bottom Sheet for stop details */}
+      {activeDayId && (
+        <ItemDetailSheet
+          ref={detailSheetRef}
+          groupId={groupId}
+          myUid={myUid || ''}
+          memberNames={memberNames}
+          tripDates={tripDateRange}
+          onUpdate={(itemId, updates) => updateItem(groupId, activeDayId, itemId, updates)}
+          onDelete={async (itemId) => {
+            try {
+              await deleteItem(groupId, activeDayId, itemId)
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete stop.')
+            }
+          }}
+          onMove={(item, targetDayId) => {
+            const targetItems = itemsByDay[targetDayId] ?? []
+            return moveItem(groupId, item.dayId, targetDayId, item, targetItems.length)
+          }}
+          onVote={(itemId, v) => vote(groupId, activeDayId, itemId, myUid || '', v)}
         />
       )}
     </Screen>
