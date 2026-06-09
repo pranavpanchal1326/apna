@@ -22,6 +22,7 @@ import { db } from './config'
 import { groupsCol, inviteDoc, userDoc } from './collections'
 import { captureError } from '../sentry'
 import { track } from '../analytics'
+import { generateDayPlans } from '../utils/generateDayPlans'
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -80,6 +81,19 @@ export async function editGroupDetails(
 
     await updateDoc(ref, updates)
     track('group_edited', { groupId, fields: Object.keys(params).join(',') })
+
+    // Generate day plans scaffolding if dates changed
+    const newStartDate = params.startDate !== undefined ? params.startDate : group.startDate
+    const newEndDate = params.endDate !== undefined ? params.endDate : group.endDate
+    const currentEmoji = params.coverEmoji !== undefined ? params.coverEmoji : group.coverEmoji
+
+    if (
+      (params.startDate !== undefined || params.endDate !== undefined) &&
+      newStartDate &&
+      newEndDate
+    ) {
+      await generateDayPlans(groupId, newStartDate, newEndDate, currentEmoji || '📅')
+    }
   } catch (err) {
     captureError(err, { source: 'editGroupDetails', groupId })
     throw err

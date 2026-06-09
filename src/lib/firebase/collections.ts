@@ -23,7 +23,7 @@ import type {
   UserInput,
   GroupInput,
   ExpenseInput,
-  ItineraryItemInput,
+  ItineraryItem,
   MemoryInput,
   ActivityItem,
 } from '@lib/schemas'
@@ -55,7 +55,7 @@ export const expensesCol = (groupId: string): CollectionReference<ExpenseInput> 
 export const activitiesCol = (groupId: string): CollectionReference<ActivityItem> =>
   collection(db, 'groups', groupId, 'activity').withConverter(activityConverter)
 
-export const itineraryCol = (groupId: string): CollectionReference<ItineraryItemInput> =>
+export const itineraryCol = (groupId: string): CollectionReference<ItineraryItem> =>
   collection(db, 'groups', groupId, 'itinerary').withConverter(itineraryConverter)
 
 
@@ -69,8 +69,16 @@ export const settlementsCol = (groupId: string) =>
 export const expenseDoc = (groupId: string, expenseId: string): DocumentReference<ExpenseInput> =>
   doc(db, 'groups', groupId, 'expenses', expenseId).withConverter(expenseConverter)
 
-export const itineraryItemDoc = (groupId: string, itemId: string): DocumentReference<ItineraryItemInput> =>
+export const itineraryItemDoc = (groupId: string, itemId: string): DocumentReference<ItineraryItem> =>
   doc(db, 'groups', groupId, 'itinerary', itemId).withConverter(itineraryConverter)
 
 export const memoryDoc = (groupId: string, memoryId: string): DocumentReference<MemoryInput> =>
   doc(db, 'groups', groupId, 'memories', memoryId).withConverter(memoryConverter)
+
+// Itinerary: days collection under a group
+export const daysCol = (groupId: string) =>
+  collection(db, 'groups', groupId, 'days')
+
+// Itinerary: items collection under a day
+export const itineraryItemsCol = (groupId: string, dayId: string) =>
+  collection(db, 'groups', groupId, 'days', dayId, 'items')

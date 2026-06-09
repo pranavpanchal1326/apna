@@ -168,3 +168,12 @@ export const sendItineraryReminders = onSchedule(
     // TODO: Prompt 3.1
   },
 )
+
+// ── Itinerary Triggers & Callables ───────────────────────────────────────────
+export {
+  onItineraryItemCreated,
+  onItineraryItemDeleted,
+} from './triggers/onItineraryWrite'
+
+export { getSuggestions } from './callable/getSuggestions'
+
