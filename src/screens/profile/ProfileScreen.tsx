@@ -8,6 +8,8 @@ import { useAuth } from '@hooks/useAuth'
 import { track, resetAnalyticsUser } from '@lib/analytics'
 import { clearSentryUser } from '@lib/sentry'
 
+import { removePushToken } from '@lib/notifications'
+
 export function ProfileScreen() {
   const { colors, text, spacing, radius } = useTheme()
   const { user, logout, isLoading } = useAuth()
@@ -26,12 +28,15 @@ export function ProfileScreen() {
             track('user_signed_out')
             clearSentryUser()
             resetAnalyticsUser()
+            if (user?.uid) {
+              await removePushToken(user.uid)
+            }
             await logout()
           },
         },
       ]
     )
-  }, [logout])
+  }, [logout, user])
 
   if (!user) return null
 

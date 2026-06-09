@@ -95,50 +95,7 @@ export async function writeExpenseCreatedActivity(
     },
   })
 
-  // Get group info for notification
-  const groupSnap = await db.collection('groups').doc(groupId).get()
-  const groupName = groupSnap.data()?.name ?? 'apna trip'
-  const memberIds = (groupSnap.data()?.memberIds ?? []) as string[]
 
-  // Fetch payer name
-  const payerSnap = await db.collection('users').doc(expense.paidBy).get()
-  const payerName = payerSnap.data()?.name?.split(' ')[0] ?? 'Someone'
-
-  // Fetch fcmTokens for group members (except payer/creator)
-  const notificationTargets = memberIds.filter(uid => uid !== expense.paidBy)
-  if (notificationTargets.length === 0) return
-
-  const tokens: string[] = []
-  const userSnaps = await db.getAll(
-    ...notificationTargets.map(uid => db.collection('users').doc(uid))
-  )
-  userSnaps.forEach((snap) => {
-    if (snap.exists) {
-      const data = snap.data()
-      if (data?.fcmToken) {
-        tokens.push(data.fcmToken)
-      }
-    }
-  })
-
-  if (tokens.length > 0) {
-    try {
-      await admin.messaging().sendEachForMulticast({
-        tokens,
-        notification: {
-          title: groupName,
-          body: `${payerName} added "${expense.description}": ₹${expense.amount}`,
-        },
-        data: {
-          groupId,
-          expenseId,
-          type: 'expense_added',
-        },
-      })
-    } catch (err) {
-      console.error('Error sending multicast FCM notification:', err)
-    }
-  }
 }
 
 // Writes a deleted activity feed item using trip_event type to comply with Zod schemas.

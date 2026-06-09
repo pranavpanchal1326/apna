@@ -34,6 +34,7 @@ export type HomeStackParamList = {
   GroupSettings:      { groupId: string }
   GroupMembersManage: { groupId: string }
   SettleUp:           { groupId: string; withUid?: string }
+  NotificationDebug:  undefined
 }
 
 // ── Itinerary Stack (inside Trip tab) ─────────────────────────────

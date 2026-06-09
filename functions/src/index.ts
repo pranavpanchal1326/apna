@@ -174,13 +174,13 @@ export const sendItineraryReminders = onSchedule(
   },
 )
 
-// ── Itinerary Triggers & Callables ───────────────────────────────────────────
-export {
-  onItineraryItemCreated,
-  onItineraryItemDeleted,
-} from './triggers/onItineraryWrite'
-
+export { onItineraryItemCreated, onItineraryItemDeleted } from './triggers/onItineraryWrite'
 export { getSuggestions } from './callable/getSuggestions'
-
 export { computeSettlements } from './computeSettlements'
+
+// ── Notification Triggers ──────────────────────────────────────────────────
+export { onExpenseWriteNotify } from './triggers/onExpenseWriteNotify'
+export { onSettlementNotify } from './triggers/onSettlementNotify'
+export { onGroupWriteNotify } from './triggers/onGroupWriteNotify'
+
 

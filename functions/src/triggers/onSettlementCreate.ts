@@ -41,48 +41,7 @@ export const onSettlementCreate = onDocumentCreated(
         lastActivityAt: FieldValue.serverTimestamp(),
       })
 
-      // 4. Send FCM Push notification to other group members
-      const groupSnap = await db.collection('groups').doc(groupId).get()
-      const groupName = groupSnap.data()?.name ?? 'apna trip'
-      const memberIds = (groupSnap.data()?.memberIds ?? []) as string[]
 
-      const [payerSnap, receiverSnap] = await Promise.all([
-        db.collection('users').doc(settlement.fromUid).get(),
-        db.collection('users').doc(settlement.toUid).get(),
-      ])
-      const payerName = payerSnap.data()?.name?.split(' ')[0] ?? 'Someone'
-      const receiverName = receiverSnap.data()?.name?.split(' ')[0] ?? 'someone'
-
-      const notificationTargets = memberIds.filter(uid => uid !== settlement.fromUid)
-      if (notificationTargets.length > 0) {
-        const tokens: string[] = []
-        const userSnaps = await db.getAll(
-          ...notificationTargets.map(uid => db.collection('users').doc(uid))
-        )
-        userSnaps.forEach((snap) => {
-          if (snap.exists) {
-            const data = snap.data()
-            if (data?.fcmToken) {
-              tokens.push(data.fcmToken)
-            }
-          }
-        })
-
-        if (tokens.length > 0) {
-          await admin.messaging().sendEachForMulticast({
-            tokens,
-            notification: {
-              title: groupName,
-              body: `${payerName} paid ${receiverName} ₹${settlement.amountRupees}`,
-            },
-            data: {
-              groupId,
-              settlementId,
-              type: 'settled',
-            },
-          })
-        }
-      }
     } catch (err) {
       console.error(`Error in onSettlementCreate for group=${groupId} settlement=${settlementId}:`, err)
       throw err
