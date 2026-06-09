@@ -28,7 +28,7 @@ export function GroupHomeScreen({ route, navigation }: Props) {
 
   const handleSettle = useCallback((_withUid: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    navigation.navigate('BalanceSummary', { groupId, withUid: _withUid })
+    navigation.navigate('SettleUp', { groupId, withUid: _withUid })
   }, [navigation, groupId])
 
   if (!group) {

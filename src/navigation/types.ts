@@ -24,19 +24,16 @@ export type AuthStackParamList = {
 
 // ── Home Stack (inside Home tab) ──────────────────────────────────
 export type HomeStackParamList = {
-  HomeList:       undefined                        // Groups list + FAB
-  CreateGroup:    undefined                        // Multi-step create
-  JoinGroup:      undefined                        // Invite code entry
-  GroupHome:      { groupId: string; groupName: string }  // Group detail shell
-  AddExpense:     { groupId: string }
-  ExpenseDetail:  { groupId: string; expenseId: string }
-  BalanceSummary: { groupId: string; withUid?: string }
-  GroupSettings:  { groupId: string }
-  SettleUp:       {
-    groupId:   string
-    withUid?:  string   // Pre-select one person
-    balances:  Array<{ fromUid: string; toUid: string; amount: number }>
-  }
+  HomeList:           undefined                        // Groups list + FAB
+  CreateGroup:        undefined                        // Multi-step create
+  JoinGroup:          undefined                        // Invite code entry
+  GroupHome:          { groupId: string; groupName: string }  // Group detail shell
+  AddExpense:         { groupId: string }
+  ExpenseDetail:      { groupId: string; expenseId: string }
+  BalanceSummary:     { groupId: string; withUid?: string }
+  GroupSettings:      { groupId: string }
+  GroupMembersManage: { groupId: string }
+  SettleUp:           { groupId: string; withUid?: string }
 }
 
 // ── Itinerary Stack (inside Trip tab) ─────────────────────────────

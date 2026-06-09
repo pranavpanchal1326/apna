@@ -14,10 +14,7 @@ import {
   writeExpenseCreatedActivity,
   writeExpenseDeletedActivity,
 } from './triggers/onExpenseWrite'
-import {
-  writeSettlementCreatedActivity,
-  writeSettlementDeletedActivity,
-} from './triggers/onSettlementWrite'
+
 
 // =============================================================================
 // apna Cloud Functions — Skeleton (7 stubs)
@@ -71,39 +68,7 @@ export const onExpenseDelete = onDocumentDeleted(
 
 // ── Settlement Triggers ──────────────────────────────────────────────────────
 
-/**
- * Triggered when a new settlement is added to any group.
- */
-export const onSettlementCreate = onDocumentCreated(
-  { document: 'groups/{groupId}/settlements/{settlementId}', region: 'asia-south1' },
-  async (event) => {
-    const { groupId, settlementId } = event.params
-    console.info(`[apna] onSettlementCreate: group=${groupId} settlement=${settlementId}`)
-    try {
-      await writeSettlementCreatedActivity(event)
-      await recalculateGroupBalances(groupId)
-    } catch (err) {
-      console.error(`Error in onSettlementCreate for group=${groupId} settlement=${settlementId}:`, err)
-    }
-  },
-)
-
-/**
- * Triggered when a settlement is deleted.
- */
-export const onSettlementDelete = onDocumentDeleted(
-  { document: 'groups/{groupId}/settlements/{settlementId}', region: 'asia-south1' },
-  async (event) => {
-    const { groupId, settlementId } = event.params
-    console.info(`[apna] onSettlementDelete: group=${groupId} settlement=${settlementId}`)
-    try {
-      await writeSettlementDeletedActivity(event)
-      await recalculateGroupBalances(groupId)
-    } catch (err) {
-      console.error(`Error in onSettlementDelete for group=${groupId} settlement=${settlementId}:`, err)
-    }
-  },
-)
+export { onSettlementCreate } from './triggers/onSettlementCreate'
 
 // ── Member Join Trigger ───────────────────────────────────────────────────────
 

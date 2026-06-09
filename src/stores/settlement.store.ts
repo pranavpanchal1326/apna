@@ -1,10 +1,5 @@
-// src/stores/settlement.store.ts
-// Zustand settlement state.
-// Caches settlements per group.
-// Triggers balance recalculation whenever expenses or settlements change.
-
 import { create } from 'zustand'
-import type { SettlementRecord, RecordSettlementParams } from '@lib/firebase/settlements'
+import type { SettlementRecord, RecordSettlementParams, CreateSettlementParams } from '@lib/firebase/settlements'
 import {
   recordSettlement,
   fetchGroupSettlements,
@@ -17,11 +12,13 @@ interface SettlementStore {
   settlementsByGroup: Record<string, SettlementRecord[]>
   isLoading: boolean
   isSettling: boolean
+  isCreating: boolean
   error: string | null
 
   // Actions
   loadSettlements: (groupId: string) => Promise<void>
   settleUp: (params: RecordSettlementParams) => Promise<string>
+  createSettlement: (params: CreateSettlementParams) => Promise<{ settlementId: string }>
   setError: (error: string | null) => void
   reset: () => void
 }
@@ -30,6 +27,7 @@ const initialState = {
   settlementsByGroup: {} as Record<string, SettlementRecord[]>,
   isLoading: false,
   isSettling: false,
+  isCreating: false,
   error: null,
 }
 
@@ -94,6 +92,28 @@ export const useSettlementStore = create<SettlementStore>((set, get) => ({
       const msg = err instanceof Error ? err.message : 'Failed to record settlement.'
       captureError(err, { source: 'settlement.store.settleUp' })
       set({ isSettling: false, error: msg })
+      throw err
+    }
+  },
+
+  createSettlement: async (params) => {
+    set({ isCreating: true, error: null })
+    try {
+      const id = await get().settleUp({
+        groupId: params.groupId,
+        fromUid: params.fromUid,
+        toUid: params.toUid,
+        amountRupees: params.amount,
+        currency: params.currency,
+        expenseIds: params.expenseIds,
+      })
+      set({ isCreating: false })
+      track('settlement_created', { groupId: params.groupId })
+      return { settlementId: id }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create settlement.'
+      captureError(err, { source: 'settlement.store.createSettlement' })
+      set({ isCreating: false, error: msg })
       throw err
     }
   },

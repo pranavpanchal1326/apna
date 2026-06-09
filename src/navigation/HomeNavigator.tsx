@@ -7,13 +7,9 @@ import { useTheme } from '@theme'
 import type { HomeStackParamList } from './types'
 
 import { HomeScreen }        from '@screens/home/HomeScreen'
-import { CreateGroupScreen } from '@screens/group/CreateGroupScreen'
-import { JoinGroupScreen }   from '@screens/group/JoinGroupScreen'
-import { GroupHomeScreen }   from '@screens/group/GroupHomeScreen'
+import { CreateGroupScreen, JoinGroupScreen, GroupHomeScreen, GroupSettingsScreen, GroupMembersManageScreen, SettleUpScreen } from '@screens/group'
 import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 import { BalanceSummaryScreen } from '../screens/settlement'
-import { GroupSettingsScreen }  from '../screens/settings'
-import { SettleUpScreen }       from '../screens/settle/SettleUpScreen'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -38,11 +34,12 @@ export function HomeNavigator() {
         component={GroupHomeScreen}
         options={{ gestureEnabled: true }}
       />
-      <Stack.Screen name="AddExpense"    component={AddExpenseScreen} />
-      <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} />
-      <Stack.Screen name="BalanceSummary" component={BalanceSummaryScreen} />
-      <Stack.Screen name="GroupSettings" component={GroupSettingsScreen} />
-      <Stack.Screen name="SettleUp"      component={SettleUpScreen} />
+      <Stack.Screen name="AddExpense"         component={AddExpenseScreen} />
+      <Stack.Screen name="ExpenseDetail"      component={ExpenseDetailScreen} />
+      <Stack.Screen name="BalanceSummary"     component={BalanceSummaryScreen} />
+      <Stack.Screen name="GroupSettings"      component={GroupSettingsScreen} />
+      <Stack.Screen name="GroupMembersManage" component={GroupMembersManageScreen} />
+      <Stack.Screen name="SettleUp"           component={SettleUpScreen} />
     </Stack.Navigator>
   )
 }

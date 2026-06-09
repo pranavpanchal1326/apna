@@ -22,6 +22,7 @@ import { Avatar } from '@components/ui/Avatar'
 import { useExpenses } from '@hooks/useExpenses'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useGroupStore } from '@stores/group.store'
+import { useAuth } from '@hooks/useAuth'
 import { formatINR } from '@lib/utils/currency'
 import type { HomeStackScreenProps } from '@navigation/types'
 
@@ -33,6 +34,7 @@ export function ExpenseDetailScreen({ route }: Props) {
   const { groupId, expenseId } = route.params
   const { colors, text, spacing, radius, fonts } = useTheme()
   const navigation = useNavigation()
+  const { user } = useAuth()
 
   const activeGroup = useGroupStore((s) => s.activeGroup)
   const { expenses, removeExpense } = useExpenses(groupId)
@@ -148,11 +150,19 @@ export function ExpenseDetailScreen({ route }: Props) {
                 size="md"
               />
             )}
-            <View style={{ marginLeft: spacing.md }}>
+            <View style={{ marginLeft: spacing.md, flex: 1 }}>
               <Text style={[text.body.lg, { color: colors.textPrimary }]}>{payerName}</Text>
               <Text style={[text.label.sm, { color: colors.textSecondary }]}>Paid the full amount</Text>
             </View>
           </View>
+          {expense.paidBy !== user?.uid && (
+            <Button
+              label={`Settle with ${payerName.split(' ')[0]}`}
+              variant="secondary"
+              onPress={() => navigation.navigate('SettleUp' as any, { groupId, withUid: expense.paidBy })}
+              style={{ marginTop: spacing.md }}
+            />
+          )}
         </View>
 
         {/* Split Breakdown */}

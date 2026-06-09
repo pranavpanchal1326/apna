@@ -130,6 +130,56 @@ export async function fetchSettlementsBetween(
   )
 }
 
+// ── Prompt 1.5 Contract Compatibility ──────────────────────────────
+
+export interface CreateSettlementParams {
+  groupId:    string
+  fromUid:    string
+  toUid:      string
+  amount:     number
+  currency:   string
+  expenseIds?: string[]
+}
+
+export interface SettlementInput {
+  id:         string
+  fromUid:    string
+  toUid:      string
+  amount:     number
+  currency:   string
+  createdAt:  unknown
+  expenseIds: string[]
+}
+
+export async function createSettlement(
+  params: CreateSettlementParams,
+): Promise<{ settlementId: string }> {
+  const settlementId = await recordSettlement({
+    groupId:      params.groupId,
+    fromUid:      params.fromUid,
+    toUid:        params.toUid,
+    amountRupees: params.amount,
+    currency:     params.currency,
+    expenseIds:   params.expenseIds,
+  })
+  return { settlementId }
+}
+
+export async function fetchSettlements(
+  groupId: string,
+): Promise<SettlementInput[]> {
+  const records = await fetchGroupSettlements(groupId)
+  return records.map((r) => ({
+    id:         r.id,
+    fromUid:    r.fromUid,
+    toUid:      r.toUid,
+    amount:     r.amountRupees,
+    currency:   r.currency,
+    createdAt:  r.createdAt,
+    expenseIds: r.expenseIds,
+  }))
+}
+
 export interface SettlementDoc {
   groupId:      string
   computedAt:   any
