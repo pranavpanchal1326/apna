@@ -37,6 +37,7 @@ export type HomeStackParamList = {
 // ── Itinerary Stack (inside Trip tab) ─────────────────────────────
 export type ItineraryStackParamList = {
   ItineraryHome:  { groupId?: string }
+  ItineraryMap:   undefined
 }
 
 // ── Main Tab Navigator ───────────────────────────────────────────

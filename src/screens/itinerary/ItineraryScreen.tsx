@@ -18,13 +18,14 @@ import { DayTabBar } from './DayTabBar'
 import { DayPlannerView } from './DayPlannerView'
 import { AddItemSheet, AddItemSheetRef } from './AddItemSheet'
 import { ItemDetailSheet, ItemDetailSheetRef } from './ItemDetailSheet'
+import { MapFAB } from './MapFAB'
 import type { ItineraryItem, SmartSuggestion } from '../../lib/schemas'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ItineraryStackParamList } from '../../navigation/types'
 
 type Props = NativeStackScreenProps<ItineraryStackParamList, 'ItineraryHome'>
 
-export function ItineraryScreen({ route }: Props) {
+export function ItineraryScreen({ route, navigation }: Props) {
   const { colors, text, spacing } = useTheme()
   const activeGroup = useGroupStore(s => s.activeGroup)
   const groupId = route.params?.groupId || activeGroup?.id || null
@@ -138,6 +139,10 @@ export function ItineraryScreen({ route }: Props) {
     detailSheetRef.current?.open(item)
   }
 
+  const handleMapView = () => {
+    navigation.navigate('ItineraryMap')
+  }
+
   const handleSelectSuggestion = (suggestion: SmartSuggestion) => {
     addSheetRef.current?.open(suggestion)
   }
@@ -219,6 +224,9 @@ export function ItineraryScreen({ route }: Props) {
           onVote={(itemId, v) => vote(groupId, activeDayId, itemId, myUid || '', v)}
         />
       )}
+
+      {/* Map Overview FAB */}
+      <MapFAB variant="map" onPress={handleMapView} />
     </Screen>
   )
 }
