@@ -2,46 +2,49 @@
 
 export type BudgetThreshold = 70 | 90 | 100
 
-export interface ThresholdCrossingResult {
+export interface BudgetThresholdCrossing {
   crossed: boolean
   threshold: BudgetThreshold | null
+  direction: 'up' | 'down' | null
 }
 
 /**
- * Detects if spending has crossed 70%, 90%, or 100% of the total budget in an upward direction.
+ * Detects whether the group has crossed a major budget threshold (70, 90, 100).
+ * Upward crossing takes precedence. If multiple thresholds are crossed, return the highest.
  */
 export function detectBudgetThresholdCrossing(params: {
-  totalBudget: number | null
-  previousSpent: number
-  currentSpent: number
-}): ThresholdCrossingResult {
-  const { totalBudget, previousSpent, currentSpent } = params
-  if (!totalBudget || totalBudget <= 0) {
-    return { crossed: false, threshold: null }
-  }
+  previousPercentUsed: number
+  nextPercentUsed: number
+}): BudgetThresholdCrossing {
+  const { previousPercentUsed, nextPercentUsed } = params
 
-  const prevPercent = (previousSpent / totalBudget) * 100
-  const currPercent = (currentSpent / totalBudget) * 100
-
-  // Check from highest to lowest threshold to find the most significant crossing
   const thresholds: BudgetThreshold[] = [100, 90, 70]
+
+  // Detect upward crossings
   for (const t of thresholds) {
-    if (currPercent >= t && prevPercent < t) {
-      return { crossed: true, threshold: t }
+    if (nextPercentUsed >= t && previousPercentUsed < t) {
+      return { crossed: true, threshold: t, direction: 'up' }
     }
   }
 
-  return { crossed: false, threshold: null }
+  // Detect downward crossings
+  for (const t of thresholds) {
+    if (nextPercentUsed < t && previousPercentUsed >= t) {
+      return { crossed: true, threshold: t, direction: 'down' }
+    }
+  }
+
+  return { crossed: false, threshold: null, direction: null }
 }
 
 export function getThresholdLabel(threshold: BudgetThreshold): string {
   switch (threshold) {
     case 70:
-      return '70%'
+      return '70% used'
     case 90:
-      return '90%'
+      return '90% used'
     case 100:
-      return '100%'
+      return 'Budget exceeded'
     default:
       return ''
   }

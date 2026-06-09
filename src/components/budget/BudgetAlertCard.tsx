@@ -3,12 +3,12 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useTheme } from '@theme'
 
 interface BudgetAlertCardProps {
+  tone: 'neutral' | 'warning' | 'danger'
   title: string
-  description: string
-  tone: 'neutral' | 'positive' | 'warning' | 'danger'
+  message: string
 }
 
-export function BudgetAlertCard({ title, description, tone }: BudgetAlertCardProps) {
+export function BudgetAlertCard({ tone, title, message }: BudgetAlertCardProps) {
   const { colors, spacing, radius, text } = useTheme()
 
   let bg: string = colors.bgSecondary
@@ -26,11 +26,6 @@ export function BudgetAlertCard({ title, description, tone }: BudgetAlertCardPro
     border = `${colors.accentDanger}4D`
     textColor = colors.accentDanger
     emoji = '🚨'
-  } else if (tone === 'positive') {
-    bg = `${colors.accentPrimary}0C`
-    border = `${colors.accentPrimary}4D`
-    textColor = colors.accentPrimary
-    emoji = '✅'
   }
 
   return (
@@ -52,7 +47,7 @@ export function BudgetAlertCard({ title, description, tone }: BudgetAlertCardPro
             {title}
           </Text>
           <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.xs }]}>
-            {description}
+            {message}
           </Text>
         </View>
       </View>

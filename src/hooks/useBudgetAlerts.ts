@@ -1,64 +1,83 @@
 // src/hooks/useBudgetAlerts.ts
 import { useMemo } from 'react'
-import { BudgetHealth, getBudgetHealth } from '@lib/budget/status'
+import type { BudgetSummary } from '@lib/budget/selectors'
+import type { BudgetHealthMeta } from '@lib/budget/status'
 import { formatBudgetAmount } from '@lib/budget/format'
 
-export interface UseBudgetAlertsParams {
-  totalBudget: number | null
-  totalSpent: number
-  percentUsed: number
-  currency?: string
-}
-
-export interface BudgetAlert {
+export interface BudgetAlertState {
   visible: boolean
-  health: BudgetHealth
-  tone: 'neutral' | 'positive' | 'warning' | 'danger'
+  tone: 'neutral' | 'warning' | 'danger'
   title: string
-  description: string
+  message: string
 }
 
-export function useBudgetAlerts(params: UseBudgetAlertsParams): BudgetAlert {
-  const { totalBudget, totalSpent, percentUsed, currency = 'INR' } = params
+export function useBudgetAlerts(params: {
+  summary: BudgetSummary | null
+  health: BudgetHealthMeta | null
+}): BudgetAlertState {
+  const { summary, health } = params
 
   return useMemo(() => {
-    if (totalBudget === null || totalBudget <= 0) {
+    if (!summary || !health) {
       return {
         visible: false,
-        health: 'no_budget',
         tone: 'neutral',
         title: '',
-        description: '',
+        message: '',
       }
     }
 
-    const healthMeta = getBudgetHealth({
-      totalBudget,
-      totalSpent,
-      percentUsed,
-    })
+    if (health.health === 'no_budget') {
+      return {
+        visible: true,
+        tone: 'neutral',
+        title: 'No trip budget set',
+        message: 'Add one to track spend properly.',
+      }
+    }
 
-    const visible =
-      healthMeta.health === 'warning' ||
-      healthMeta.health === 'critical' ||
-      healthMeta.health === 'over'
+    if (health.health === 'healthy') {
+      return {
+        visible: false,
+        tone: 'neutral',
+        title: '',
+        message: '',
+      }
+    }
 
-    let description = ''
-    if (healthMeta.health === 'warning') {
-      description = `You have spent ${percentUsed.toFixed(0)}% of your budget. Keep an eye on upcoming expenses.`
-    } else if (healthMeta.health === 'critical') {
-      description = `Critical warning: Spent ${percentUsed.toFixed(0)}% of your budget. Limit non-essential trip activities.`
-    } else if (healthMeta.health === 'over') {
-      const overAmount = totalSpent - totalBudget
-      description = `Trip budget has been exceeded by ${formatBudgetAmount(overAmount, currency)}.`
+    if (health.health === 'warning') {
+      return {
+        visible: true,
+        tone: 'warning',
+        title: 'Budget is tightening',
+        message: `You have spent ${summary.percentUsed.toFixed(0)}% of your budget. Keep an eye on upcoming expenses.`,
+      }
+    }
+
+    if (health.health === 'critical') {
+      return {
+        visible: true,
+        tone: 'danger',
+        title: 'Almost at the limit',
+        message: `Spent ${summary.percentUsed.toFixed(0)}% of your budget. One or two more expenses may push you over.`,
+      }
+    }
+
+    if (health.health === 'over') {
+      const overAmount = summary.overspend
+      return {
+        visible: true,
+        tone: 'danger',
+        title: 'Budget exceeded',
+        message: `Trip spend is above the planned amount by ${formatBudgetAmount(overAmount, 'INR')}.`,
+      }
     }
 
     return {
-      visible,
-      health: healthMeta.health,
-      tone: healthMeta.tone,
-      title: healthMeta.title,
-      description,
+      visible: false,
+      tone: 'neutral',
+      title: '',
+      message: '',
     }
-  }, [totalBudget, totalSpent, percentUsed, currency])
+  }, [summary, health])
 }

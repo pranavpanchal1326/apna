@@ -2,8 +2,14 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { useTheme } from '@theme'
 
-export function BudgetPermissionHint() {
+interface BudgetPermissionHintProps {
+  visible: boolean
+}
+
+export function BudgetPermissionHint({ visible }: BudgetPermissionHintProps) {
   const { colors, spacing, radius, text } = useTheme()
+
+  if (!visible) return null
 
   return (
     <View
@@ -18,7 +24,7 @@ export function BudgetPermissionHint() {
       ]}
     >
       <Text style={[text.body.sm, { color: colors.textSecondary, textAlign: 'center' }]}>
-        ℹ️ Only group admins can edit the budget amount.
+        ℹ️ Only group admins can change the trip budget.
       </Text>
     </View>
   )

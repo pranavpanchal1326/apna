@@ -1,104 +1,68 @@
 // src/components/budget/EditBudgetSheet.tsx
 import { useState, useCallback, useEffect } from 'react'
 import { View } from 'react-native'
-import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
-import { updateGroupBudget } from '@lib/firebase/budget'
-import { captureError } from '@lib/sentry'
 
 interface EditBudgetSheetProps {
   visible: boolean
+  initialValue: string
+  currency?: string
+  canRemove?: boolean
+  isSaving?: boolean
   onClose: () => void
-  groupId: string
-  currentBudget: number | null
-  myUid: string
-  onSuccess?: () => void
+  onSubmit: (value: string | null) => void
 }
 
 export function EditBudgetSheet({
   visible,
+  initialValue,
+  currency: _currency = 'INR',
+  canRemove = false,
+  isSaving = false,
   onClose,
-  groupId,
-  currentBudget,
-  myUid,
-  onSuccess,
+  onSubmit,
 }: EditBudgetSheetProps) {
   const { spacing } = useTheme()
   const [amountStr, setAmountStr] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [isRemoving, setIsRemoving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Pre-fill input
   useEffect(() => {
     if (visible) {
-      setAmountStr(currentBudget !== null && currentBudget > 0 ? String(currentBudget) : '')
+      setAmountStr(initialValue)
       setError(null)
-      setIsSaving(false)
-      setIsRemoving(false)
     }
-  }, [visible, currentBudget])
+  }, [visible, initialValue])
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     setError(null)
-    const parsedAmount = parseFloat(amountStr)
+    const cleaned = amountStr.trim()
+    if (!cleaned) {
+      setError('Please enter a budget amount.')
+      return
+    }
+    const parsedAmount = parseFloat(cleaned)
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setError('Please enter a valid positive budget amount.')
       return
     }
+    onSubmit(String(parsedAmount))
+  }, [amountStr, onSubmit])
 
-    setIsSaving(true)
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-      await updateGroupBudget({
-        groupId,
-        totalBudget: parsedAmount,
-        updatedByUid: myUid,
-      })
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      onSuccess?.()
-      onClose()
-    } catch (err) {
-      captureError(err, { source: 'EditBudgetSheet_save', groupId })
-      setError(err instanceof Error ? err.message : 'Failed to update budget.')
-    } finally {
-      setIsSaving(false)
-    }
-  }, [amountStr, groupId, myUid, onClose, onSuccess])
+  const handleRemove = useCallback(() => {
+    onSubmit(null)
+  }, [onSubmit])
 
-  const handleRemove = useCallback(async () => {
-    setError(null)
-    setIsRemoving(true)
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-      await updateGroupBudget({
-        groupId,
-        totalBudget: null,
-        updatedByUid: myUid,
-      })
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      onSuccess?.()
-      onClose()
-    } catch (err) {
-      captureError(err, { source: 'EditBudgetSheet_remove', groupId })
-      setError(err instanceof Error ? err.message : 'Failed to remove budget.')
-    } finally {
-      setIsRemoving(false)
-    }
-  }, [groupId, myUid, onClose, onSuccess])
-
-  const hasCurrentBudget = currentBudget !== null && currentBudget > 0
-  const isLoading = isSaving || isRemoving
+  const title = initialValue ? 'Edit trip budget' : 'Set trip budget'
 
   return (
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title={hasCurrentBudget ? 'Edit budget' : 'Set trip budget'}
-      snapHeight={380}
+      title={title}
+      snapHeight={390}
     >
       <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.lg }}>
         <Input
@@ -108,24 +72,25 @@ export function EditBudgetSheet({
           value={amountStr}
           onChangeText={setAmountStr}
           error={error ?? undefined}
-          disabled={isLoading}
+          disabled={isSaving}
+          hint="This is the total group budget for the trip."
         />
 
         <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
           <Button
-            label={isSaving ? 'Saving...' : 'Save Budget'}
+            label={isSaving ? 'Saving...' : 'Save budget'}
             variant="primary"
             onPress={handleSave}
             loading={isSaving}
-            disabled={isLoading || !amountStr.trim()}
+            disabled={isSaving}
           />
-          {hasCurrentBudget && (
+          {canRemove && (
             <Button
-              label={isRemoving ? 'Removing...' : 'Remove Budget'}
+              label={isSaving ? 'Removing...' : 'Remove budget'}
               variant="danger"
               onPress={handleRemove}
-              loading={isRemoving}
-              disabled={isLoading}
+              loading={isSaving}
+              disabled={isSaving}
             />
           )}
         </View>

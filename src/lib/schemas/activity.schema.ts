@@ -7,9 +7,9 @@ export const ActivityTypeSchema = z.enum([
   'settled',
   'note',
   'trip_event',
-  'budgetset',
-  'budgetupdated',
-  'budgetremoved',
+  'budget-set',
+  'budget-updated',
+  'budget-removed',
 ])
 export type ActivityType = z.infer<typeof ActivityTypeSchema>
 
