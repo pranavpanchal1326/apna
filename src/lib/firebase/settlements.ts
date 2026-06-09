@@ -129,3 +129,105 @@ export async function fetchSettlementsBetween(
     (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
   )
 }
+
+export interface SettlementDoc {
+  groupId:      string
+  computedAt:   any
+  balances:     BalanceItem[]
+  settlements:  SettlementItem[]
+  categories:   CategoryItem[]
+  budget:       BudgetItem | null
+  expenseCount: number
+  memberCount:  number
+}
+
+export interface BalanceItem {
+  uid:         string
+  displayName: string
+  avatarColor: string
+  netPaise:    number
+  totalPaid:   number
+  totalOwed:   number
+}
+
+export interface SettlementItem {
+  fromUid:     string
+  toUid:       string
+  fromName:    string
+  toName:      string
+  amountPaise: number
+  status:      'pending' | 'recorded'
+  recordedAt?: any
+  recordedBy?: string
+}
+
+export interface CategoryItem {
+  category:   string
+  totalPaise: number
+  percentage: number
+  count:      number
+}
+
+export interface BudgetItem {
+  totalBudgetPaise:  number
+  totalSpentPaise:   number
+  remainingPaise:    number
+  percentageUsed:    number
+  isOverBudget:      boolean
+}
+
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import { db } from './config'
+import { captureError } from '@lib/sentry'
+
+export function subscribeToSettlements(
+  groupId:  string,
+  onChange: (data: SettlementDoc | null) => void,
+  onError:  (err: Error) => void
+) {
+  const ref = doc(db, `groups/${groupId}/settlements/latest`)
+  return onSnapshot(
+    ref,
+    (snap) => {
+      if (!snap.exists()) {
+        onChange(null)
+        return
+      }
+      onChange(snap.data() as SettlementDoc)
+    },
+    (err) => {
+      captureError(err, { context: 'subscribeToSettlements', groupId })
+      onError(err)
+    }
+  )
+}
+
+export interface RecordPaymentParams {
+  groupId:    string
+  fromUid:    string
+  toUid:      string
+  recordedBy: string
+}
+
+export async function recordPayment(params: RecordPaymentParams): Promise<void> {
+  const { groupId, fromUid, toUid, recordedBy } = params
+  const ref = doc(db, `groups/${groupId}/settlements/latest`)
+
+  const snap = await (await import('firebase/firestore')).getDoc(ref)
+  if (!snap.exists()) throw new Error('No settlement data found.')
+
+  const data = snap.data() as SettlementDoc
+  const updatedSettlements = data.settlements.map((s) => {
+    if (s.fromUid === fromUid && s.toUid === toUid && s.status === 'pending') {
+      return {
+        ...s,
+        status:     'recorded' as const,
+        recordedAt: serverTimestamp(),
+        recordedBy,
+      }
+    }
+    return s
+  })
+
+  await updateDoc(ref, { settlements: updatedSettlements })
+}

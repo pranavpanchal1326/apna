@@ -82,3 +82,14 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
+export type GroupStackParamList = {
+  BudgetTab: { groupId: string; groupName: string; totalBudget?: number }
+  SettleUp: {
+    groupId: string
+    fromUid: string
+    toUid: string
+    fromName: string
+    toName: string
+    amountPaise: number
+  }
+}
