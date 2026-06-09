@@ -22,6 +22,7 @@ export interface UseBudgetResult {
   isLoading: boolean
   error: string | null
   refresh: () => Promise<void>
+  expenses: BudgetExpenseInput[]
 }
 
 export function useBudget(groupId: string | null): UseBudgetResult {
@@ -103,5 +104,6 @@ export function useBudget(groupId: string | null): UseBudgetResult {
     isLoading,
     error,
     refresh,
+    expenses,
   }
 }

@@ -1,5 +1,5 @@
 // src/screens/budget/BudgetScreen.tsx
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
@@ -9,6 +9,7 @@ import { useGroupStore } from '@stores/group.store'
 import { useBudget } from '@hooks/useBudget'
 import { useAuth } from '@hooks/useAuth'
 import { useBudgetAlerts } from '@hooks/useBudgetAlerts'
+import { useBudgetForecast } from '@hooks/useBudgetForecast'
 import { track } from '@lib/analytics'
 import { updateGroupBudget } from '@lib/firebase/budget'
 import {
@@ -19,6 +20,7 @@ import {
   BudgetAlertCard,
   BudgetPermissionHint,
   EditBudgetSheet,
+  BudgetForecastCard,
 } from '@components/budget'
 import { getAverageExpense, getTopSpendingCategory } from '@lib/budget/selectors'
 import { formatBudgetAmount } from '@lib/budget/format'
@@ -45,6 +47,47 @@ export function BudgetScreen() {
     error,
     refresh,
   } = useBudget(groupId)
+
+  const {
+    forecast,
+    burnRate,
+    points,
+  } = useBudgetForecast(groupId)
+
+  // Analytics tracking for forecasting & burn rate
+  useEffect(() => {
+    if (groupId && forecast) {
+      const properties: Record<string, string | number | boolean> = {
+        groupId,
+        confidence: forecast.confidence,
+      }
+      if (forecast.projectedOverrun !== null) {
+        properties.projectedOverrun = forecast.projectedOverrun
+      }
+      if (forecast.daysOfRunway !== null) {
+        properties.runwayDays = forecast.daysOfRunway
+      }
+      track('budget-forecast-viewed', properties)
+    }
+  }, [groupId, forecast])
+
+  useEffect(() => {
+    if (groupId && burnRate) {
+      track('budget-burn-chip-viewed', {
+        groupId,
+        pace: burnRate.paceLabel,
+      })
+    }
+  }, [groupId, burnRate])
+
+  useEffect(() => {
+    if (groupId && points && points.length > 0) {
+      track('budget-trend-inspected', {
+        groupId,
+        dataPointsCount: points.length,
+      })
+    }
+  }, [groupId, points])
 
   const [refreshing, setRefreshing] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
@@ -219,6 +262,16 @@ export function BudgetScreen() {
                 title={alerts.title}
                 message={alerts.message}
                 tone={alerts.tone}
+              />
+            )}
+
+            {/* 3. Forecast Card (with inline sparkline and burn chip) */}
+            {hasExpenses && (
+              <BudgetForecastCard
+                forecast={forecast}
+                burnRate={burnRate}
+                points={points}
+                currency={currency}
               />
             )}
 

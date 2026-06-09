@@ -9,6 +9,7 @@ export interface BudgetExpenseInput {
   title?: string
   createdAt?: unknown
   status?: string
+  date?: string
 }
 
 export interface BudgetGroupInput {
@@ -61,6 +62,7 @@ export async function fetchBudgetExpenses(groupId: string): Promise<BudgetExpens
         title: data.description, // Mapped from description
         createdAt: data.createdAt,
         status: (data as any).status || 'active',
+        date: data.date,
       }
     })
   } catch (err) {
@@ -86,6 +88,7 @@ export function subscribeToBudgetExpenses(
           title: data.description,
           createdAt: data.createdAt,
           status: (data as any).status || 'active',
+          date: data.date,
         }
       })
       callback(expenses)
