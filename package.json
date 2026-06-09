@@ -17,6 +17,7 @@
     "expo-firebase-recaptcha": "^2.3.1",
     "expo-font": "~56.0.5",
     "expo-haptics": "~56.0.3",
+    "expo-image-manipulator": "~56.0.17",
     "expo-image-picker": "~56.0.16",
     "expo-linking": "~56.0.13",
     "expo-location": "~56.0.16",

@@ -28,6 +28,8 @@ export type HomeStackParamList = {
   CreateGroup:    undefined                        // Multi-step create
   JoinGroup:      undefined                        // Invite code entry
   GroupHome:      { groupId: string; groupName: string }  // Group detail shell
+  AddExpense:     { groupId: string }
+  ExpenseDetail:  { groupId: string; expenseId: string }
 }
 
 // ── Main Tab Navigator ───────────────────────────────────────────

@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import { useTheme } from '@theme'
 import { ActivityFeedItem } from '@components/group'
 import { BalanceSummaryCard } from '@components/group'
@@ -28,13 +29,18 @@ interface Props {
 
 export function FeedTab({ group, myUid, balances, onSettle, onViewMembers }: Props) {
   const { colors, text, spacing } = useTheme()
+  const navigation = useNavigation<any>()
   const { items, isLoading, isLoadingMore, hasMore, loadMore } = useActivityFeed(group.id)
   const { members } = useGroupMembers(group.memberIds)
 
   const handlePress = useCallback((_item: ActivityItem) => {
-    // Navigate to expense detail in Prompt 1.4
-    // navigation.navigate('ExpenseDetail', { expenseId: _item.metadata?.expenseId })
-  }, [])
+    if (_item.metadata?.expenseId) {
+      navigation.navigate('ExpenseDetail', {
+        groupId:   group.id,
+        expenseId: _item.metadata.expenseId,
+      })
+    }
+  }, [navigation, group.id])
 
   const renderItem = useCallback(
     ({ item, index }: { item: ActivityItem; index: number }) => (

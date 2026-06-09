@@ -10,6 +10,7 @@ import { HomeScreen }        from '@screens/home/HomeScreen'
 import { CreateGroupScreen } from '@screens/group/CreateGroupScreen'
 import { JoinGroupScreen }   from '@screens/group/JoinGroupScreen'
 import { GroupHomeScreen }   from '@screens/group/GroupHomeScreen'
+import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -34,6 +35,8 @@ export function HomeNavigator() {
         component={GroupHomeScreen}
         options={{ gestureEnabled: true }}
       />
+      <Stack.Screen name="AddExpense"    component={AddExpenseScreen} />
+      <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} />
     </Stack.Navigator>
   )
 }

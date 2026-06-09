@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useTheme } from '@theme'
-import { Screen } from '@components'
+import { Screen, FAB } from '@components'
 import { GroupHeaderHero } from '@components/group'
 import { GroupNavigator } from '@navigation/GroupNavigator'
 import { useActiveGroup } from '@hooks/useGroups'
@@ -19,7 +19,7 @@ import type { HomeStackScreenProps } from '@navigation/types'
 
 type Props = HomeStackScreenProps<'GroupHome'>
 
-export function GroupHomeScreen({ route }: Props) {
+export function GroupHomeScreen({ route, navigation }: Props) {
   const { groupId } = route.params
   const { colors, text, spacing } = useTheme()
   const { user }  = useAuth()
@@ -44,7 +44,7 @@ export function GroupHomeScreen({ route }: Props) {
   }
 
   return (
-    <Screen>
+    <Screen style={{ position: 'relative' }}>
       {/* Header hero */}
       <GroupHeaderHero group={group} />
 
@@ -55,6 +55,14 @@ export function GroupHomeScreen({ route }: Props) {
         balances={group.balances ?? []}
         onSettle={handleSettle}
       />
+
+      {/* FAB to add expense */}
+      <FAB
+        icon={<Text style={{ fontSize: 24, color: colors.bgPrimary, fontWeight: '600', lineHeight: 28 }}>+</Text>}
+        onPress={() => navigation.navigate('AddExpense', { groupId: group.id })}
+        accessibilityLabel="Add expense"
+        style={{ position: 'absolute', bottom: 80, right: spacing.lg }}
+      />
     </Screen>
   )
 }
@@ -64,5 +72,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fab: {
+    position: 'absolute',
   },
 })
