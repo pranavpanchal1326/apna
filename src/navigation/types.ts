@@ -34,6 +34,11 @@ export type HomeStackParamList = {
   GroupSettings:  { groupId: string }
 }
 
+// ── Itinerary Stack (inside Trip tab) ─────────────────────────────
+export type ItineraryStackParamList = {
+  ItineraryHome:  { groupId?: string }
+}
+
 // ── Main Tab Navigator ───────────────────────────────────────────
 export type MainTabParamList = {
   HomeTab:  undefined
@@ -54,6 +59,9 @@ export type AuthStackScreenProps<T extends keyof AuthStackParamList> =
 
 export type HomeStackScreenProps<T extends keyof HomeStackParamList> =
   NativeStackScreenProps<HomeStackParamList, T>
+
+export type ItineraryStackScreenProps<T extends keyof ItineraryStackParamList> =
+  NativeStackScreenProps<ItineraryStackParamList, T>
 
 export type MainTabScreenProps<T extends keyof MainTabParamList> =
   CompositeScreenProps<

@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics'
 // Placeholder screens — content built in Phases 1–4
 import { HomeNavigator }  from './HomeNavigator'
 import { BudgetScreen }   from '@screens/budget/BudgetScreen'
-import { TripScreen }     from '@screens/trip/TripScreen'
+import { ItineraryStack }  from './ItineraryStack'
 import { MemoriesScreen } from '@screens/memories/MemoriesScreen'
 import { ProfileScreen }  from '@screens/profile/ProfileScreen'
 
@@ -131,7 +131,7 @@ export function MainNavigator() {
     >
       <Tab.Screen name="HomeTab"  component={HomeNavigator} />
       <Tab.Screen name="Budget"   component={BudgetScreen} />
-      <Tab.Screen name="Trip"     component={TripScreen} />
+      <Tab.Screen name="Trip"     component={ItineraryStack} />
       <Tab.Screen name="Memories" component={MemoriesScreen} />
       <Tab.Screen name="Profile"  component={ProfileScreen} />
     </Tab.Navigator>
