@@ -1,19 +1,26 @@
 // src/screens/budget/BudgetScreen.tsx
 import { useState, useCallback } from 'react'
-import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
+import * as Haptics from 'expo-haptics'
 import { Screen, Header, Button } from '@components'
 import { useTheme } from '@theme'
 import { useGroupStore } from '@stores/group.store'
 import { useBudget } from '@hooks/useBudget'
+import { useAuth } from '@hooks/useAuth'
+import { useBudgetAlerts } from '@hooks/useBudgetAlerts'
 import {
   BudgetHeroCard,
   BudgetCategoryList,
   BudgetStatPill,
-  BudgetEmptyState
+  BudgetEmptyState,
+  BudgetAlertCard,
+  BudgetPermissionHint,
+  EditBudgetSheet,
 } from '@components/budget'
 import { getAverageExpense, getTopSpendingCategory } from '@lib/budget/selectors'
 import { formatBudgetAmount } from '@lib/budget/format'
+import { canEditBudget } from '@lib/budget/permissions'
 import { MainTabParamList } from '@navigation/types'
 
 type BudgetScreenRouteProp = RouteProp<MainTabParamList, 'Budget'>
@@ -22,6 +29,8 @@ export function BudgetScreen() {
   const { colors, text, spacing } = useTheme()
   const route = useRoute<BudgetScreenRouteProp>()
   const activeGroupId = useGroupStore((s) => s.activeGroup?.id)
+  const { user } = useAuth()
+  const myUid = user?.uid || null
   
   // Use route param groupId or fallback to activeGroup from store
   const groupId = route.params?.groupId || activeGroupId || null
@@ -36,12 +45,26 @@ export function BudgetScreen() {
   } = useBudget(groupId)
 
   const [refreshing, setRefreshing] = useState(false)
+  const [sheetVisible, setSheetVisible] = useState(false)
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
     await refresh()
     setRefreshing(false)
   }, [refresh])
+
+  const isGroupAdmin = group
+    ? canEditBudget({ group: { createdBy: group.createdBy, adminIds: group.adminIds }, uid: myUid })
+    : false
+
+  const currency = group?.currency || 'INR'
+
+  const alerts = useBudgetAlerts({
+    totalBudget: summary?.totalBudget ?? null,
+    totalSpent: summary?.totalSpent ?? 0,
+    percentUsed: summary?.percentUsed ?? 0,
+    currency,
+  })
 
   if (!groupId) {
     return (
@@ -85,12 +108,31 @@ export function BudgetScreen() {
     )
   }
 
-  const currency = group?.currency || 'INR'
   const hasExpenses = summary && summary.expenseCount > 0
 
   return (
     <Screen>
-      <Header title={group?.name ? `${group.name} Budget` : 'Trip Budget'} />
+      <Header
+        title={group?.name ? `${group.name} Budget` : 'Trip Budget'}
+        rightAction={
+          isGroupAdmin ? (
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                setSheetVisible(true)
+              }}
+              style={styles.headerButton}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={summary?.totalBudget ? 'Edit budget' : 'Set budget'}
+            >
+              <Text style={[text.label.lg, { color: colors.accentPrimary }]}>
+                {summary?.totalBudget ? 'Edit' : 'Set'}
+              </Text>
+            </Pressable>
+          ) : undefined
+        }
+      />
       <ScrollView
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing['4xl'] }}
         showsVerticalScrollIndicator={false}
@@ -115,6 +157,20 @@ export function BudgetScreen() {
               health={health}
               currency={currency}
             />
+
+            {/* Warning banner alert */}
+            {alerts.visible && (
+              <BudgetAlertCard
+                title={alerts.title}
+                description={alerts.description}
+                tone={alerts.tone}
+              />
+            )}
+
+            {/* Permission hint for standard members */}
+            {!isGroupAdmin && (
+              <BudgetPermissionHint />
+            )}
 
             {hasExpenses ? (
               <>
@@ -159,6 +215,17 @@ export function BudgetScreen() {
           </View>
         )}
       </ScrollView>
+
+      {isGroupAdmin && group && myUid && (
+        <EditBudgetSheet
+          visible={sheetVisible}
+          onClose={() => setSheetVisible(false)}
+          groupId={groupId}
+          currentBudget={summary?.totalBudget ?? null}
+          myUid={myUid}
+          onSuccess={refresh}
+        />
+      )}
     </Screen>
   )
 }
@@ -175,5 +242,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     gap: 8,
+  },
+  headerButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
 })

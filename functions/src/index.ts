@@ -182,5 +182,7 @@ export { computeSettlements } from './computeSettlements'
 export { onExpenseWriteNotify } from './triggers/onExpenseWriteNotify'
 export { onSettlementNotify } from './triggers/onSettlementNotify'
 export { onGroupWriteNotify } from './triggers/onGroupWriteNotify'
+export { onGroupBudgetUpdated } from './triggers/onGroupBudgetUpdated'
+
 
 

@@ -30,6 +30,9 @@ const TYPE_CONFIG: Record<
   settled:       { icon: '✅', color: (c) => c.positive        },
   note:          { icon: '📝', color: (c) => c.textSecondary   },
   trip_event:    { icon: '📍', color: (c) => c.accentPrimary   },
+  budgetset:     { icon: '🎯', color: (c) => c.accentPrimary   },
+  budgetupdated: { icon: '🔄', color: (c) => c.accentGold      },
+  budgetremoved: { icon: '🗑️', color: (c) => c.accentDanger    },
 }
 
 export const ActivityFeedItem = memo(function ActivityFeedItem({
@@ -184,6 +187,12 @@ function buildPrimaryText(
       return `${actorName} left a note`
     case 'trip_event':
       return item.metadata?.title ?? `${actorName} added an event`
+    case 'budgetset':
+      return `${actorName} set the trip budget to ${formatINR(item.metadata?.amount ?? 0)}`
+    case 'budgetupdated':
+      return `${actorName} updated the trip budget to ${formatINR(item.metadata?.amount ?? 0)}`
+    case 'budgetremoved':
+      return `${actorName} removed the trip budget (was ${formatINR(item.metadata?.amount ?? 0)})`
     default:
       return item.metadata?.title ?? 'Activity'
   }
@@ -197,6 +206,12 @@ function buildA11yLabel(item: ActivityItem, actorName: string): string {
       return `${actorName} joined the group`
     case 'settled':
       return `${actorName} settled up: ₹${item.metadata?.amount ?? ''}`
+    case 'budgetset':
+      return `${actorName} set the trip budget to ₹${item.metadata?.amount ?? ''}`
+    case 'budgetupdated':
+      return `${actorName} updated the trip budget to ₹${item.metadata?.amount ?? ''}`
+    case 'budgetremoved':
+      return `${actorName} removed the trip budget`
     default:
       return item.metadata?.title ?? 'Activity item'
   }

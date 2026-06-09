@@ -7,6 +7,9 @@ export const ActivityTypeSchema = z.enum([
   'settled',
   'note',
   'trip_event',
+  'budgetset',
+  'budgetupdated',
+  'budgetremoved',
 ])
 export type ActivityType = z.infer<typeof ActivityTypeSchema>
 
@@ -16,7 +19,9 @@ export const ActivityMetadataSchema = z.object({
   note:         z.string().max(300).optional(),
   expenseId:    z.string().optional(),
   settlementId: z.string().optional(),
+  previousAmount: z.number().nonnegative().optional(),
 }).optional()
+
 
 export const ActivityItemSchema = z.object({
   id:        z.string().min(1).max(128),

@@ -1,5 +1,5 @@
 // src/lib/firebase/budget.ts
-import { getDoc, getDocs, onSnapshot } from 'firebase/firestore'
+import { getDoc, getDocs, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { groupDoc, expensesCol } from './collections'
 
 export interface BudgetExpenseInput {
@@ -18,6 +18,14 @@ export interface BudgetGroupInput {
   currency?: string
   startDate?: string
   endDate?: string
+  createdBy?: string
+  adminIds?: string[]
+}
+
+export interface UpdateGroupBudgetParams {
+  groupId: string
+  totalBudget: number | null
+  updatedByUid: string
 }
 
 export async function fetchBudgetGroup(groupId: string): Promise<BudgetGroupInput | null> {
@@ -32,6 +40,8 @@ export async function fetchBudgetGroup(groupId: string): Promise<BudgetGroupInpu
       currency: data.currency ?? 'INR',
       startDate: data.startDate,
       endDate: data.endDate,
+      createdBy: data.createdBy,
+      adminIds: data.adminIds,
     }
   } catch (err) {
     console.error(`[Firebase] Error fetching group in budget: ${groupId}`, err)
@@ -82,4 +92,25 @@ export function subscribeToBudgetExpenses(
     },
     onError
   )
+}
+
+export async function updateGroupBudget(
+  params: UpdateGroupBudgetParams
+): Promise<void> {
+  const { groupId, totalBudget, updatedByUid } = params
+  
+  if (totalBudget !== null && totalBudget <= 0) {
+    throw new Error('Budget amount must be positive')
+  }
+
+  try {
+    await updateDoc(groupDoc(groupId), {
+      totalBudget: totalBudget,
+      updatedByUid: updatedByUid,
+      updatedAt: serverTimestamp(),
+    } as any)
+  } catch (err) {
+    console.error(`[Firebase] Error updating budget: ${groupId}`, err)
+    throw err
+  }
 }
