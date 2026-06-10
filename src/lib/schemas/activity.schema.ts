@@ -10,6 +10,11 @@ export const ActivityTypeSchema = z.enum([
   'budget-set',
   'budget-updated',
   'budget-removed',
+  // ── List events ─────────────────────────────────
+  'list_created',
+  'list_item_claimed',
+  'list_item_completed',
+  'list_items_added',
 ])
 export type ActivityType = z.infer<typeof ActivityTypeSchema>
 
@@ -20,6 +25,11 @@ export const ActivityMetadataSchema = z.object({
   expenseId:    z.string().optional(),
   settlementId: z.string().optional(),
   previousAmount: z.number().nonnegative().optional(),
+  // ── List metadata ──────────────────────────────
+  listId:       z.string().optional(),
+  listTitle:    z.string().optional(),
+  itemText:     z.string().optional(),
+  itemCount:    z.number().int().nonnegative().optional(),
 }).optional()
 
 

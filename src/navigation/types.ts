@@ -44,11 +44,18 @@ export type ItineraryStackParamList = {
   ItineraryMap:   undefined
 }
 
+// ── Lists Stack ───────────────────────────────────────────────────
+export type ListsStackParamList = {
+  ListsHome:   undefined
+  ListDetail:  { listId: string; listTitle: string }
+}
+
 // ── Main Tab Navigator ───────────────────────────────────────────
 export type MainTabParamList = {
   HomeTab:  undefined
   Budget:   { groupId?: string }
   Trip:     { groupId?: string }
+  Lists:    undefined
   Memories: { groupId?: string }
   Profile:  undefined
 }
@@ -67,6 +74,9 @@ export type HomeStackScreenProps<T extends keyof HomeStackParamList> =
 
 export type ItineraryStackScreenProps<T extends keyof ItineraryStackParamList> =
   NativeStackScreenProps<ItineraryStackParamList, T>
+
+export type ListsStackScreenProps<T extends keyof ListsStackParamList> =
+  NativeStackScreenProps<ListsStackParamList, T>
 
 export type MainTabScreenProps<T extends keyof MainTabParamList> =
   CompositeScreenProps<

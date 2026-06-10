@@ -33,9 +33,14 @@ const TYPE_CONFIG: Record<
   settled:       { icon: '✅', color: (c) => c.positive        },
   note:          { icon: '📝', color: (c) => c.textSecondary   },
   trip_event:    { icon: '📍', color: (c) => c.accentPrimary   },
-  'budget-set':     { icon: '🎯', color: (c) => c.accentPrimary   },
-  'budget-updated': { icon: '🔄', color: (c) => c.accentGold      },
-  'budget-removed': { icon: '🗑️', color: (c) => c.accentDanger    },
+  'budget-set':          { icon: '🎯', color: (c) => c.accentPrimary   },
+  'budget-updated':      { icon: '🔄', color: (c) => c.accentGold      },
+  'budget-removed':      { icon: '🗑️', color: (c) => c.accentDanger    },
+  // ── List events ─────────────────────────────────────────────────
+  list_created:          { icon: '📋', color: (c) => c.accentPrimary   },
+  list_item_claimed:     { icon: '🤝', color: (c) => c.accentGold      },
+  list_item_completed:   { icon: '✓',  color: (c) => c.positive        },
+  list_items_added:      { icon: '➕', color: (c) => c.accentPrimary   },
 }
 
 export const ActivityFeedItem = memo(function ActivityFeedItem({
