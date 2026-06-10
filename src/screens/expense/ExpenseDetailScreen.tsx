@@ -11,7 +11,6 @@ import {
   StyleSheet,
   Image,
   Alert,
-  Modal,
   Dimensions,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -24,6 +23,8 @@ import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useGroupStore } from '@stores/group.store'
 import { useAuth } from '@hooks/useAuth'
 import { formatINR } from '@lib/utils/currency'
+import { ReceiptViewer } from './components/ReceiptViewer'
+import { ReceiptChip } from './components/ReceiptChip'
 import type { HomeStackScreenProps } from '@navigation/types'
 
 type Props = HomeStackScreenProps<'ExpenseDetail'>
@@ -37,8 +38,11 @@ export function ExpenseDetailScreen({ route }: Props) {
   const { user } = useAuth()
 
   const activeGroup = useGroupStore((s) => s.activeGroup)
-  const { expenses, removeExpense } = useExpenses(groupId)
+  const { expenses, removeExpense, receiptUploads } = useExpenses(groupId)
   const { members } = useGroupMembers(activeGroup?.memberIds ?? [])
+
+  const uploadState = receiptUploads.find((u) => u.expenseId === expenseId)
+  const isUploading = uploadState?.status === 'uploading'
 
   const [receiptModalVisible, setReceiptModalVisible] = useState(false)
 
@@ -215,47 +219,42 @@ export function ExpenseDetailScreen({ route }: Props) {
         )}
 
         {/* Receipt Image */}
-        {expense.receiptUrl && (
+        {(expense.receiptUrl || isUploading) && (
           <View style={[styles.section, { padding: spacing.lg }]}>
             <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
               RECEIPT PHOTO
             </Text>
-            <Pressable onPress={() => setReceiptModalVisible(true)}>
-              <View style={[styles.receiptImageContainer, { borderColor: colors.border, borderRadius: radius.lg }]}>
-                <Image source={{ uri: expense.receiptUrl }} style={styles.receiptImage} resizeMode="cover" />
-                <View style={styles.receiptOverlay}>
-                  <Text style={[text.label.md, { color: colors.textPrimary }]}>🔍 Tap to expand</Text>
-                </View>
-              </View>
-            </Pressable>
+            <View style={{ gap: spacing.sm }}>
+              <ReceiptChip
+                expenseId={expenseId}
+                receiptUrl={expense.receiptUrl}
+                onPress={() => setReceiptModalVisible(true)}
+              />
+              {expense.receiptUrl && (
+                <Pressable onPress={() => setReceiptModalVisible(true)}>
+                  <View style={[styles.receiptImageContainer, { borderColor: colors.border, borderRadius: radius.lg }]}>
+                    <Image source={{ uri: expense.receiptUrl }} style={styles.receiptImage} resizeMode="cover" />
+                    <View style={styles.receiptOverlay}>
+                      <Text style={[text.label.md, { color: colors.textPrimary }]}>🔍 Tap to expand</Text>
+                    </View>
+                  </View>
+                </Pressable>
+              )}
+            </View>
           </View>
         )}
       </ScrollView>
 
       {/* Expanded Receipt Modal */}
       {expense.receiptUrl && (
-        <Modal
+        <ReceiptViewer
           visible={receiptModalVisible}
-          transparent={false}
-          animationType="fade"
-          onRequestClose={() => setReceiptModalVisible(false)}
-        >
-          <View style={[styles.modalContainer, { backgroundColor: colors.bgPrimary }]}>
-            {/* Close button */}
-            <Pressable
-              onPress={() => setReceiptModalVisible(false)}
-              style={[styles.closeModalBtn, { backgroundColor: colors.bgTertiary, borderRadius: radius.full }]}
-            >
-              <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '700' }}>×</Text>
-            </Pressable>
-
-            <Image
-              source={{ uri: expense.receiptUrl }}
-              style={styles.modalImage}
-              resizeMode="contain"
-            />
-          </View>
-        </Modal>
+          onClose={() => setReceiptModalVisible(false)}
+          receiptUrl={expense.receiptUrl}
+          groupId={groupId}
+          expenseId={expenseId}
+          createdBy={expense.createdBy}
+        />
       )}
     </Screen>
   )

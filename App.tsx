@@ -23,6 +23,7 @@ import { initAnalytics } from '@lib/analytics'
 import { queryClient } from '@lib/query'
 
 import { useNotifications } from '@hooks/useNotifications'
+import { initializeUploadQueue } from '@lib/utils/receiptUploadQueue'
 
 // ── Keep native splash visible until fonts loaded ────────────────
 SplashScreen.preventAutoHideAsync()
@@ -43,6 +44,7 @@ function AppShell() {
   // Start Firebase Auth listener
   useEffect(() => {
     const unsubscribe = initialize()
+    initializeUploadQueue()
     return unsubscribe
   }, [initialize])
 

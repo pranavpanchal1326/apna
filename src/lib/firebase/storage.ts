@@ -1,11 +1,7 @@
 // src/lib/firebase/storage.ts
-// Firebase Storage operations — receipt photo upload.
-// Upload is non-blocking: expense is saved first, then photo uploads
-// in background. On completion, receiptUrl is patched onto the expense doc.
-//
-// Storage path: receipts/{groupId}/{expenseId}/{timestamp}.jpg
-// Max file size: 5MB (enforced client-side before upload)
-// Image is compressed to max 1200px wide before upload (expo-image-manipulator)
+// Firebase Storage operations for receipt photo upload.
+// Storage path: groups/{groupId}/receipts/{expenseId}_{timestamp}.jpg
+// Enforces 5MB limit client-side.
 
 import {
   ref,
@@ -14,82 +10,76 @@ import {
   deleteObject,
 } from 'firebase/storage'
 import { storage } from './config'
-import { attachReceiptURL } from './expenses'
 import { captureError } from '@lib/sentry'
 
 export const MAX_RECEIPT_SIZE_BYTES = 5 * 1024 * 1024   // 5MB
-export const MAX_RECEIPT_DIMENSION  = 1200               // px
 
-export interface UploadProgress {
-  bytesTransferred: number
-  totalBytes:       number
-  percent:          number
-}
-
-// ── Upload receipt photo ───────────────────────────────────────────
-// Non-blocking: returns immediately after starting upload.
-// Calls onProgress during upload, then patches expenseDoc with URL on complete.
-// Errors are logged to Sentry but NOT thrown — receipt upload failure is
-// non-critical (expense is already saved).
-export function uploadReceipt(params: {
-  groupId:    string
-  expenseId:  string
-  localUri:   string       // expo-image-picker result URI
-  blob:       Blob
-  onProgress?: (progress: UploadProgress) => void
-  onComplete?: (downloadURL: string) => void
-  onError?:    (err: Error) => void
-}): () => void {   // Returns cancel function
-  const { groupId, expenseId, blob, onProgress, onComplete, onError } = params
-
-  const path      = `receipts/${groupId}/${expenseId}/${Date.now()}.jpg`
+/**
+ * Uploads a compressed receipt photo to Firebase Storage.
+ * Generates a filename according to groups/{groupId}/receipts/{expenseId}_{timestamp}.jpg.
+ * Returns a Promise that resolves to the download URL, or throws on failure.
+ */
+export async function uploadReceiptPhoto(
+  groupId: string,
+  expenseId: string,
+  compressedUri: string,
+  onProgress: (percent: number) => void
+): Promise<string> {
+  const timestamp = Date.now()
+  const filename = `${expenseId}_${timestamp}.jpg`
+  const path = `groups/${groupId}/receipts/${filename}`
   const storageRef = ref(storage, path)
 
-  const uploadTask = uploadBytesResumable(storageRef, blob, {
-    contentType: 'image/jpeg',
-    customMetadata: { groupId, expenseId },
-  })
+  // Convert local URI to Blob
+  const response = await fetch(compressedUri)
+  const blob = await response.blob()
 
-  uploadTask.on(
-    'state_changed',
-    (snapshot) => {
-      const percent = Math.round(
-        (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-      )
-      onProgress?.({
-        bytesTransferred: snapshot.bytesTransferred,
-        totalBytes:       snapshot.totalBytes,
-        percent,
-      })
-    },
-    (err) => {
-      captureError(err, { source: 'uploadReceipt', groupId, expenseId })
-      onError?.(err)
-    },
-    async () => {
-      try {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-        // Patch expense document with receipt URL (matching the receiptUrl schema property)
-        await attachReceiptURL(groupId, expenseId, downloadURL)
-        onComplete?.(downloadURL)
-      } catch (err) {
-        captureError(err, { source: 'uploadReceipt.complete', groupId, expenseId })
-        onError?.(err as Error)
+  return new Promise<string>((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, blob, {
+      contentType: 'image/jpeg',
+      customMetadata: { groupId, expenseId },
+    })
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const total = snapshot.totalBytes || 1
+        const percent = Math.round(
+          (snapshot.bytesTransferred / total) * 100
+        )
+        onProgress(percent)
+      },
+      (err) => {
+        captureError(err, { source: 'uploadReceiptPhoto', groupId, expenseId })
+        reject(err)
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+          resolve(downloadURL)
+        } catch (err) {
+          captureError(err, { source: 'uploadReceiptPhoto.complete', groupId, expenseId })
+          reject(err)
+        }
       }
-    }
-  )
-
-  // Return cancel function
-  return () => uploadTask.cancel()
+    )
+  })
 }
 
-// ── Delete receipt photo ───────────────────────────────────────────
-export async function deleteReceipt(receiptURL: string): Promise<void> {
+/**
+ * Deletes a receipt photo from Firebase Storage.
+ */
+export async function deleteReceiptPhoto(receiptUrl: string): Promise<void> {
   try {
-    const storageRef = ref(storage, receiptURL)
+    const storageRef = ref(storage, receiptUrl)
     await deleteObject(storageRef)
   } catch (err) {
     // Ignore not-found errors (photo may have been deleted already)
-    captureError(err, { source: 'deleteReceipt' })
+    captureError(err, { source: 'deleteReceiptPhoto', receiptUrl })
   }
+}
+
+// Keep legacy compatibility wrapper if needed
+export async function deleteReceipt(receiptURL: string): Promise<void> {
+  return deleteReceiptPhoto(receiptURL)
 }

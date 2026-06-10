@@ -34,7 +34,6 @@ import {
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import * as ImagePicker from 'expo-image-picker'
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
@@ -56,7 +55,8 @@ import { useExpenseStore } from '@stores/expense.store'
 import { useGroupStore } from '@stores/group.store'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useAuth } from '@hooks/useAuth'
-import { MAX_RECEIPT_SIZE_BYTES } from '@lib/firebase/storage'
+import { compressReceiptImage } from '@lib/utils/imageCompression'
+import { ReceiptCamera } from './components/ReceiptCamera'
 import type { HomeStackScreenProps } from '@navigation/types'
 import type { ExpenseCategory } from '@lib/schemas'
 
@@ -86,8 +86,9 @@ export function AddExpenseScreen({ route }: Props) {
   const [splitMethod, setSplitMethod]   = useState<SplitMethod>('equal')
   const [notes, setNotes]               = useState('')
   const [receiptUri, setReceiptUri]     = useState<string | null>(null)
-  const [receiptBlob, setReceiptBlob]   = useState<Blob | null>(null)
   const [error, setError]               = useState<string | null>(null)
+  const [receiptOptionsVisible, setReceiptOptionsVisible] = useState(false)
+  const [cameraActive, setCameraActive] = useState(false)
   
   // Paid by BottomSheet visibility
   const [payerSheetVisible, setPayerSheetVisible] = useState(false)
@@ -245,60 +246,43 @@ export function AddExpenseScreen({ route }: Props) {
   }, [selected])
 
   // ── Image Snapping / Picking ─────────────────────────────────────
-  const pickImage = async (useCamera: boolean) => {
+  const processImageUri = async (uri: string) => {
     try {
-      let permissionResult
-      if (useCamera) {
-        permissionResult = await ImagePicker.requestCameraPermissionsAsync()
-      } else {
-        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
-      }
+      const compressed = await compressReceiptImage(uri)
+      setReceiptUri(compressed.uri)
+    } catch (err) {
+      console.error('[AddExpenseScreen] Image compression failed:', err)
+      Alert.alert('Error', 'Failed to compress receipt photo.')
+    }
+  }
 
+  const pickGalleryImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (!permissionResult.granted) {
-        Alert.alert('Permission Denied', `We need ${useCamera ? 'camera' : 'gallery'} permissions to add receipts.`)
+        Alert.alert('Permission Denied', 'We need library permissions to select receipts.')
         return
       }
 
-      const pickerOptions: ImagePicker.ImagePickerOptions = {
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
         allowsEditing: true,
-        quality: 0.8,
-      }
-
-      const result = useCamera
-        ? await ImagePicker.launchCameraAsync(pickerOptions)
-        : await ImagePicker.launchImageLibraryAsync(pickerOptions)
+        quality: 0.9,
+      })
 
       if (result.canceled || !result.assets?.[0]?.uri) return
 
-      // Haptic confirmation
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-
-      // Compress and resize using expo-image-manipulator (PRD constraint: max 1200px wide)
-      const manipResult = await manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 1200 } }],
-        { compress: 0.8, format: SaveFormat.JPEG }
-      )
-
-      setReceiptUri(manipResult.uri)
-
-      // Convert local URI to Blob for Firebase Storage
-      const response = await fetch(manipResult.uri)
-      const blob = await response.blob()
-      
-      if (blob.size > MAX_RECEIPT_SIZE_BYTES) {
-        Alert.alert('File Too Large', 'Receipt photos must be under 5MB.')
-        setReceiptUri(null)
-        setReceiptBlob(null)
-        return
-      }
-
-      setReceiptBlob(blob)
+      await processImageUri(result.assets[0].uri)
     } catch (err) {
-      console.error('Error selecting receipt image:', err)
-      Alert.alert('Error', 'Failed to capture or select photo.')
+      console.error('Error selecting gallery image:', err)
+      Alert.alert('Error', 'Failed to pick image.')
     }
+  }
+
+  const handleCameraCapture = async (uri: string) => {
+    setCameraActive(false)
+    await processImageUri(uri)
   }
 
   // ── Save Operation ────────────────────────────────────────────────
@@ -331,7 +315,7 @@ export function AddExpenseScreen({ route }: Props) {
         date,
         notes:        notes.trim() || undefined,
         createdBy:    user?.uid ?? '',
-      }, receiptBlob ?? undefined)
+      }, receiptUri ?? undefined)
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       navigation.goBack()
@@ -345,6 +329,15 @@ export function AddExpenseScreen({ route }: Props) {
   // ── Paid By Display Name ──────────────────────────────────────────
   const paidByUser = members.get(paidByUid)
   const paidByLabel = paidByUid === user?.uid ? 'You' : paidByUser?.name ?? 'Select Member'
+
+  if (cameraActive) {
+    return (
+      <ReceiptCamera
+        onCapture={handleCameraCapture}
+        onClose={() => setCameraActive(false)}
+      />
+    )
+  }
 
   return (
     <Screen>
@@ -540,41 +533,60 @@ export function AddExpenseScreen({ route }: Props) {
             </View>
           </View>
 
-          {/* Receipt snap picker */}
+          {/* Receipt attachment control */}
           <View style={{ marginTop: spacing.xl }}>
             <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
               RECEIPT
             </Text>
             {receiptUri ? (
-              <View style={[styles.receiptPreviewPanel, { borderColor: colors.border, borderRadius: radius.lg }]}>
-                <Image source={{ uri: receiptUri }} style={[styles.receiptImage, { borderRadius: radius.md }]} />
+              <View style={styles.receiptChipContainer}>
+                <Pressable
+                  onPress={() => setReceiptOptionsVisible(true)}
+                  style={[
+                    styles.stagedReceiptChip,
+                    {
+                      backgroundColor: colors.bgSecondary,
+                      borderColor:     colors.border,
+                      borderRadius:    radius.md,
+                      padding:         spacing.sm,
+                    }
+                  ]}
+                >
+                  <Image source={{ uri: receiptUri }} style={[styles.miniThumbnail, { borderRadius: radius.sm }]} resizeMode="cover" />
+                  <Text style={[text.body.sm, { color: colors.textPrimary, marginLeft: spacing.sm }]}>
+                    Receipt attached
+                  </Text>
+                </Pressable>
+                
                 <Pressable
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                     setReceiptUri(null)
-                    setReceiptBlob(null)
                   }}
-                  style={[styles.removeReceiptBtn, { backgroundColor: colors.accentDanger }]}
+                  style={[styles.miniRemoveBtn, { backgroundColor: colors.accentDanger, borderRadius: radius.full }]}
                 >
-                  <Text style={[text.label.sm, { color: colors.textPrimary }]}>Remove</Text>
+                  <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>×</Text>
                 </Pressable>
               </View>
             ) : (
-              <View style={styles.receiptButtonsRow}>
-                <Pressable
-                  onPress={() => pickImage(true)}
-                  style={[styles.receiptBtn, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg }]}
-                >
-                  <Text style={{ fontSize: 20 }}>📸</Text>
-                  <Text style={[text.label.md, { color: colors.textSecondary, marginTop: 4 }]}>Camera</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => pickImage(false)}
-                  style={[styles.receiptBtn, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg }]}
-                >
-                  <Text style={{ fontSize: 20 }}>🖼️</Text>
-                  <Text style={[text.label.md, { color: colors.textSecondary, marginTop: 4 }]}>Gallery</Text>
-                </Pressable>
-              </View>
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                  setReceiptOptionsVisible(true)
+                }}
+                style={({ pressed }) => [
+                  styles.addReceiptRow,
+                  {
+                    backgroundColor: colors.bgSecondary,
+                    borderColor:     colors.border,
+                    borderRadius:    radius.lg,
+                    padding:         spacing.md,
+                    opacity:         pressed ? 0.8 : 1,
+                  }
+                ]}
+              >
+                <Text style={[text.body.lg, { color: colors.textSecondary }]}>📷 Add receipt</Text>
+              </Pressable>
             )}
           </View>
 
@@ -639,6 +651,43 @@ export function AddExpenseScreen({ route }: Props) {
           })}
         </ScrollView>
       </BottomSheet>
+
+      {/* Receipt Options Selection BottomSheet */}
+      <BottomSheet
+        visible={receiptOptionsVisible}
+        onClose={() => setReceiptOptionsVisible(false)}
+        title="Add Receipt"
+      >
+        <View style={{ padding: spacing.md, gap: spacing.sm }}>
+          <Pressable
+            onPress={() => {
+              setReceiptOptionsVisible(false)
+              setCameraActive(true)
+            }}
+            style={[styles.sheetOptionRow, { borderBottomColor: colors.border }]}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Take photo with camera"
+          >
+            <Text style={{ fontSize: 20, marginRight: spacing.md }}>📸</Text>
+            <Text style={[text.body.lg, { color: colors.textPrimary }]}>Take photo</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              setReceiptOptionsVisible(false)
+              pickGalleryImage()
+            }}
+            style={styles.sheetOptionRow}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Choose photo from gallery"
+          >
+            <Text style={{ fontSize: 20, marginRight: spacing.md }}>🖼️</Text>
+            <Text style={[text.body.lg, { color: colors.textPrimary }]}>Choose from gallery</Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
     </Screen>
   )
 }
@@ -697,39 +746,43 @@ const styles = StyleSheet.create({
     alignItems:    'center',
     borderWidth:   1,
   },
-  receiptButtonsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  receiptBtn: {
-    flex:           1,
-    height:         72,
-    alignItems:     'center',
-    justifyContent: 'center',
-    borderWidth:    1,
-  },
-  receiptPreviewPanel: {
-    position:    'relative',
-    height:      160,
-    borderWidth: 1,
-    padding:     8,
-  },
-  receiptImage: {
-    width:  '100%',
-    height: '100%',
-  },
-  removeReceiptBtn: {
-    position:          'absolute',
-    bottom:            16,
-    right:             16,
-    paddingHorizontal: 12,
-    paddingVertical:   6,
-    borderRadius:      4,
-  },
   payerSheetRow: {
     flexDirection:     'row',
     alignItems:        'center',
     borderBottomWidth: 1,
     paddingHorizontal: 8,
+  },
+  addReceiptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+  },
+  receiptChipContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stagedReceiptChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    paddingRight: 12,
+  },
+  miniThumbnail: {
+    width: 24,
+    height: 24,
+  },
+  miniRemoveBtn: {
+    marginLeft: 8,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
   },
 })

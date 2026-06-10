@@ -26,6 +26,7 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
 import { useTheme }        from '../../theme'
 import { Button }          from '../../components'
 import { useExpenseStore } from '../../stores/expense.store'
+import { ReceiptChip } from '../expense/components/ReceiptChip'
 
 export interface LinkExpenseSheetRef {
   open:  (currentLinkedIds: string[], onSave: (ids: string[]) => Promise<void>) => void
@@ -172,9 +173,19 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
                     >
                       {expense.description}
                     </Text>
-                    <Text style={[text.label.sm, { color: colors.textSecondary }]}>
-                      {expense.category} · {new Date((expense.date as any)?.toDate?.() ?? expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <Text style={[text.label.sm, { color: colors.textSecondary }]}>
+                        {expense.category} · {new Date((expense.date as any)?.toDate?.() ?? expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </Text>
+                      {expense.receiptUrl && (
+                        <ReceiptChip
+                          expenseId={expense.id}
+                          receiptUrl={expense.receiptUrl}
+                          onPress={() => {}}
+                          style={{ borderWidth: 0, paddingVertical: 0, paddingHorizontal: 0, transform: [{ scale: 0.85 }] }}
+                        />
+                      )}
+                    </View>
                   </View>
 
                   {/* Amount */}

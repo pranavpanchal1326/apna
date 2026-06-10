@@ -12,7 +12,7 @@ import {
   updateExpense,
   type CreateExpenseParams,
 } from '@lib/firebase/expenses'
-import { uploadReceipt } from '@lib/firebase/storage'
+import { enqueueReceiptUpload } from '@lib/utils/receiptUploadQueue'
 import { captureError } from '@lib/sentry'
 import { track } from '@lib/analytics'
 
@@ -33,7 +33,7 @@ interface ExpenseStore {
 
   // ── Actions ───────────────────────────────────────────────────
   loadExpenses:      (groupId: string) => Promise<void>
-  addExpense:        (params: CreateExpenseParams, receiptBlob?: Blob) => Promise<string>
+  addExpense:        (params: CreateExpenseParams, receiptUri?: string) => Promise<string>
   removeExpense:     (groupId: string, expenseId: string) => Promise<void>
   updateExpenseItem: (groupId: string, expenseId: string, updates: Partial<ExpenseInput>) => Promise<void>
   setError:          (error: string | null) => void
@@ -70,7 +70,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   },
 
   // ── Add expense ───────────────────────────────────────────────
-  addExpense: async (params, receiptBlob) => {
+  addExpense: async (params, receiptUri) => {
     set({ isAdding: true, error: null })
 
     try {
@@ -107,54 +107,15 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
       }))
 
       // Start non-blocking receipt upload if photo provided
-      if (receiptBlob) {
-        set((state) => ({
-          receiptUploads: [
-            ...state.receiptUploads,
-            { expenseId, percent: 0, status: 'uploading' },
-          ],
-        }))
-
-        uploadReceipt({
-          groupId:   params.groupId,
-          expenseId,
-          localUri:  '',
-          blob:      receiptBlob,
-          onProgress: ({ percent }) => {
-            set((state) => ({
-              receiptUploads: state.receiptUploads.map((u) =>
-                u.expenseId === expenseId ? { ...u, percent } : u
-              ),
-            }))
-          },
-          onComplete: (url) => {
-            set((state) => ({
-              receiptUploads: state.receiptUploads.map((u) =>
-                u.expenseId === expenseId ? { ...u, status: 'done', percent: 100 } : u
-              ),
-              expensesByGroup: {
-                ...state.expensesByGroup,
-                [params.groupId]: (state.expensesByGroup[params.groupId] ?? []).map(
-                  (e) => e.id === expenseId ? { ...e, receiptUrl: url } : e
-                ),
-              },
-            }))
-          },
-          onError: () => {
-            set((state) => ({
-              receiptUploads: state.receiptUploads.map((u) =>
-                u.expenseId === expenseId ? { ...u, status: 'error' } : u
-              ),
-            }))
-          },
-        })
+      if (receiptUri) {
+        enqueueReceiptUpload(params.groupId, expenseId, receiptUri)
       }
 
       track('expense_added', {
         category:    params.category,
         split_method: params.splitType,
         participant_count: Object.keys(params.splits).length,
-        has_receipt: Boolean(receiptBlob),
+        has_receipt: Boolean(receiptUri),
       })
 
       return expenseId

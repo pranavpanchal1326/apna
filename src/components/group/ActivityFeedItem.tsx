@@ -12,6 +12,9 @@ import type { ActivityItem, UserInput } from '@lib/schemas'
 import { feedTimestamp } from '@lib/utils/date'
 import { formatINR } from '@lib/utils/currency'
 import { Timestamp } from 'firebase/firestore'
+import { useExpenseStore } from '../../stores/expense.store'
+import { useGroupStore } from '../../stores/group.store'
+import { ReceiptChip } from '../../screens/expense/components/ReceiptChip'
 
 interface Props {
   item:       ActivityItem
@@ -42,6 +45,14 @@ export const ActivityFeedItem = memo(function ActivityFeedItem({
   onPress,
 }: Props) {
   const { colors, text, spacing, radius } = useTheme()
+
+  const activeGroupId = useGroupStore((s) => s.activeGroup?.id)
+  const expense = useExpenseStore((s) =>
+    item.metadata?.expenseId && activeGroupId
+      ? s.expensesByGroup[activeGroupId]?.find((e) => e.id === item.metadata?.expenseId)
+      : undefined
+  )
+  const receiptUrl = expense?.receiptUrl
 
   const actor    = members.get(item.actorUid)
   const actorName = actor?.name?.split(' ')[0] ?? 'Someone'
@@ -139,6 +150,15 @@ export const ActivityFeedItem = memo(function ActivityFeedItem({
               {formatINR(item.metadata.amount)}
             </Text>
           )}
+
+        {item.type === 'expense_added' && item.metadata?.expenseId && (
+          <ReceiptChip
+            expenseId={item.metadata.expenseId}
+            receiptUrl={receiptUrl}
+            onPress={handlePress}
+            style={{ marginTop: spacing.xs }}
+          />
+        )}
 
         {/* Note text */}
         {item.type === 'note' && item.metadata?.note && (
