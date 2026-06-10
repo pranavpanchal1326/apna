@@ -11,6 +11,7 @@ import { CreateGroupScreen, JoinGroupScreen, GroupHomeScreen, GroupSettingsScree
 import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 import { BalanceSummaryScreen } from '../screens/settlement'
 import { NotificationDebugScreen } from '../screens/debug/NotificationDebugScreen'
+import { TripWrapScreen } from '@screens/tripWrap/TripWrapScreen'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -41,6 +42,7 @@ export function HomeNavigator() {
       <Stack.Screen name="GroupSettings"      component={GroupSettingsScreen} />
       <Stack.Screen name="GroupMembersManage" component={GroupMembersManageScreen} />
       <Stack.Screen name="SettleUp"           component={SettleUpScreen} />
+      <Stack.Screen name="TripWrap"           component={TripWrapScreen} />
       {__DEV__ && (
         <Stack.Screen name="NotificationDebug" component={NotificationDebugScreen} />
       )}

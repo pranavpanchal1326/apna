@@ -11,18 +11,19 @@ import {
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
-import { Screen, FAB } from '@components'
+import { Screen, FAB, Button } from '@components'
 import { GroupHeaderHero } from '@components/group'
 import { GroupNavigator } from '@navigation/GroupNavigator'
 import { useActiveGroup } from '@hooks/useGroups'
 import { useAuth } from '@hooks/useAuth'
+import { getCachedTripWrap } from '../../lib/utils/tripWrapData'
 import type { HomeStackScreenProps } from '@navigation/types'
 
 type Props = HomeStackScreenProps<'GroupHome'>
 
 export function GroupHomeScreen({ route, navigation }: Props) {
   const { groupId } = route.params
-  const { colors, text, spacing } = useTheme()
+  const { colors, text, spacing, radius } = useTheme()
   const { user }  = useAuth()
   const group     = useActiveGroup(groupId)
 
@@ -30,6 +31,9 @@ export function GroupHomeScreen({ route, navigation }: Props) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     navigation.navigate('SettleUp', { groupId, withUid: _withUid })
   }, [navigation, groupId])
+
+  const isTripOver = group?.status === 'completed' || (group?.endDate && new Date(group.endDate) < new Date())
+  const hasCachedWrap = group ? Boolean(getCachedTripWrap(group.id)) : false
 
   if (!group) {
     return (
@@ -48,6 +52,39 @@ export function GroupHomeScreen({ route, navigation }: Props) {
     <Screen style={{ position: 'relative' }}>
       {/* Header hero */}
       <GroupHeaderHero group={group} />
+
+      {/* Trip Wrap banner prompt */}
+      {isTripOver && (
+        <View
+          style={{
+            backgroundColor: colors.bgSecondary,
+            borderColor: colors.border,
+            borderWidth: 1,
+            borderRadius: radius.md,
+            marginHorizontal: spacing.lg,
+            marginTop: spacing.md,
+            padding: spacing.md,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
+            <Text style={{ fontSize: 24 }}>🎬</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[text.label.md, { color: colors.textPrimary }]}>
+                Trip Wrap is Ready!
+              </Text>
+              <Text style={[text.label.sm, { color: colors.textSecondary }]}>
+                Relive the squad's stats and highlight moments.
+              </Text>
+            </View>
+          </View>
+          <Button
+            variant="primary"
+            label={hasCachedWrap ? 'View Trip Wrap' : 'Generate Trip Wrap'}
+            onPress={() => navigation.navigate('TripWrap', { groupId })}
+            style={{ paddingVertical: spacing.xs, height: 36 }}
+          />
+        </View>
+      )}
 
       {/* Group navigator tabs (Feed / Members) */}
       <GroupNavigator

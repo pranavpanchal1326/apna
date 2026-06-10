@@ -24,6 +24,7 @@ import {
 } from '@components/group'
 import { useGroupSettings } from '@hooks/useGroupSettings'
 import type { HomeStackParamList } from '@navigation/types'
+import { getCachedTripWrap } from '../../lib/utils/tripWrapData'
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'GroupSettings'>
 
@@ -43,6 +44,15 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
     onCompleteGroup,
     onDissolveGroup,
   } = useGroupSettings(groupId)
+
+  const isTripOver = useMemo(() => {
+    if (!group?.endDate) return false
+    return new Date(group.endDate) < new Date()
+  }, [group?.endDate])
+
+  const hasCachedWrap = useMemo(() => {
+    return group ? Boolean(getCachedTripWrap(group.id)) : false
+  }, [group?.id])
 
   // Edit Modal State
   const [activeField, setActiveField] = useState<'name' | 'destination' | 'dates' | 'budget' | 'description' | null>(null)
@@ -319,7 +329,18 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           />
         </View>
 
-        {/* ── 5. Danger Zone ───────────────────────────────────────────────── */}
+        {/* ── 5. Trip Wrap Row ────────────────────────────────────────────── */}
+        {(group.status === 'completed' || isTripOver) && (
+          <View style={{ marginBottom: spacing.xl }}>
+            <SettingsRow
+              label={hasCachedWrap ? 'View Trip Wrap' : 'Generate Trip Wrap'}
+              rightMeta="🎬"
+              onPress={() => navigation.navigate('TripWrap', { groupId })}
+            />
+          </View>
+        )}
+
+        {/* ── 6. Danger Zone ───────────────────────────────────────────────── */}
         <DangerZoneCard>
           <SettingsRow
             label="Leave Group"
