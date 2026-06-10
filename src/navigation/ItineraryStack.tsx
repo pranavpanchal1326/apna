@@ -5,7 +5,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useTheme } from '../theme'
 import { ItineraryScreen } from '../screens/itinerary/ItineraryScreen'
-import { ItineraryMapScreen } from '../screens/itinerary/ItineraryMapScreen'
+import { MapScreen } from '../screens/map/MapScreen'
 import type { ItineraryStackParamList } from './types'
 
 const Stack = createNativeStackNavigator<ItineraryStackParamList>()
@@ -26,7 +26,7 @@ export function ItineraryStack() {
       <Stack.Screen name="ItineraryHome" component={ItineraryScreen} />
       <Stack.Screen
         name="ItineraryMap"
-        component={ItineraryMapScreen}
+        component={MapScreen}
         options={{
           headerShown:     false,
           presentation:    'modal',

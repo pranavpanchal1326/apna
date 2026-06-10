@@ -82,6 +82,8 @@ export interface ItineraryItem {
     down: string[]   // Array of uids who voted down
   } & Record<string, VoteValue | string[] | undefined>
   proposalMeta?: ActivityProposalMeta
+  checkedInUids?: string[]        // UIDs of members who checked in here
+  completedAt?: Timestamp          // Timestamp when marked completed
 }
 
 // ── Day Plan ──────────────────────────────────────────────────────
