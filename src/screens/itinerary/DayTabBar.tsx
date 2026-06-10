@@ -19,7 +19,9 @@ import {
   View,
 } from 'react-native'
 import { useTheme } from '../../theme'
+import { WeatherDayChip } from './WeatherDayChip'
 import type { DayPlan } from '../../lib/schemas'
+import type { WeatherDay } from '../../lib/types/weather.types'
 
 interface DayTabBarProps {
   dates:       string[]       // All trip dates "YYYY-MM-DD"
@@ -27,6 +29,7 @@ interface DayTabBarProps {
   activeDayId: string | null
   onSelect:    (dayId: string) => void
   itemCounts:  Record<string, number>  // itemsByDay[dayId].length per day
+  weatherByDate?: Record<string, WeatherDay>
 }
 
 // Format "YYYY-MM-DD" to "Aug 15"
@@ -41,10 +44,11 @@ export function DayTabBar({
   activeDayId,
   onSelect,
   itemCounts,
+  weatherByDate,
 }: DayTabBarProps) {
   const { colors, text, spacing } = useTheme()
   const scrollRef = useRef<ScrollView>(null)
-  const tabWidth  = 72  // Fixed tab width — consistent scrollable tabs
+  const tabWidth  = 86  // Fixed tab width for consistent scrollable tabs
 
   const handleSelect = useCallback((dayId: string, index: number) => {
     onSelect(dayId)
@@ -133,6 +137,8 @@ export function DayTabBar({
               >
                 {formatTabDate(date)}
               </Text>
+
+              <WeatherDayChip day={weatherByDate?.[date]} />
             </Pressable>
           )
         })}
@@ -143,7 +149,7 @@ export function DayTabBar({
 
 const styles = StyleSheet.create({
   container: {
-    height: 64,
+    height: 82,
     justifyContent: 'flex-end',
   },
   tab: {

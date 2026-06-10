@@ -17,6 +17,8 @@ import {
 } from 'react-native'
 import { useTheme } from '../../theme'
 import type { ItineraryItem } from '../../lib/schemas'
+import { useActivityVoting } from '../../hooks/useActivityVoting'
+import { ProposalVoteChips } from './ProposalVoteChips'
 
 interface ItemDetailBodyProps {
   item:            ItineraryItem
@@ -61,11 +63,14 @@ export function ItemDetailBody({
   const { colors, text, spacing, radius } = useTheme()
 
   const addedByName = memberNames[item.addedByUid] ?? 'Someone'
-  const myVote      = item.votes.up.includes(myUid)
-    ? 'up'
-    : item.votes.down.includes(myUid)
-      ? 'down'
-      : null
+  
+  const { voteOnProposal, summary, myVote: proposalVote } = useActivityVoting(item.id)
+  const isProposal = !!item.proposalMeta
+  const isProposalOpen = item.proposalMeta?.state === 'open'
+
+  const legacyMyVote = (!isProposal && item.votes.up)
+    ? (item.votes.up.includes(myUid) ? 'up' : item.votes.down.includes(myUid) ? 'down' : null)
+    : null
 
   return (
     <View style={{ gap: spacing.xl, padding: spacing.lg }}>
@@ -214,54 +219,103 @@ export function ItemDetailBody({
         </View>
       </View>
 
-      {/* ── Vote tally (tentative items) ─────────────────────────── */}
-      {!item.isConfirmed && (
-        <View>
-          <SectionLabel label="Group vote" />
-          <View style={styles.voteTally}>
-            <View style={styles.voteCount}>
-              <Text style={{ fontSize: 24 }}>👍</Text>
-              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
-                {item.votes.up.length}
-              </Text>
-              <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                {item.votes.up.length === 1 ? 'vote' : 'votes'}
-              </Text>
-            </View>
-            <View
-              style={[styles.voteDivider, { backgroundColor: colors.border }]}
-            />
-            <View style={styles.voteCount}>
-              <Text style={{ fontSize: 24 }}>👎</Text>
-              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
-                {item.votes.down.length}
-              </Text>
-              <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                {item.votes.down.length === 1 ? 'vote' : 'votes'}
-              </Text>
+      {/* ── Vote tally / Proposal Voting controls ───────────────── */}
+      {isProposal ? (
+        <View style={{ gap: spacing.md }}>
+          <View>
+            <SectionLabel label="Vote results" />
+            <View style={styles.voteTally}>
+              <View style={styles.voteCount}>
+                <Text style={{ fontSize: 24 }}>👍</Text>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                  {summary.yesCount}
+                </Text>
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>
+                  Going
+                </Text>
+              </View>
+              <View style={[styles.voteDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.voteCount}>
+                <Text style={{ fontSize: 24 }}>💬</Text>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                  {summary.maybeCount}
+                </Text>
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>
+                  Maybe
+                </Text>
+              </View>
+              <View style={[styles.voteDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.voteCount}>
+                <Text style={{ fontSize: 24 }}>👎</Text>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                  {summary.noCount}
+                </Text>
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>
+                  Not going
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* My vote indicator */}
-          {myVote && (
-            <Text
-              style={[
-                text.label.sm,
-                {
-                  color:     myVote === 'up' ? colors.accentPrimary : colors.accentDanger,
-                  marginTop: spacing.xs,
-                  textAlign: 'center',
-                },
-              ]}
-            >
-              You voted {myVote === 'up' ? '👍' : '👎'}
-              {' · '}
-              <Text onPress={() => onVote(myVote === 'up' ? 'down' : 'up')}>
-                Change vote
-              </Text>
-            </Text>
+          {isProposalOpen && (
+            <View>
+              <SectionLabel label="Cast your vote" />
+              <ProposalVoteChips
+                myVote={proposalVote}
+                onVote={voteOnProposal}
+              />
+            </View>
           )}
         </View>
+      ) : (
+        !item.isConfirmed && (
+          <View>
+            <SectionLabel label="Group vote" />
+            <View style={styles.voteTally}>
+              <View style={styles.voteCount}>
+                <Text style={{ fontSize: 24 }}>👍</Text>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                  {item.votes.up?.length ?? 0}
+                </Text>
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>
+                  {(item.votes.up?.length ?? 0) === 1 ? 'vote' : 'votes'}
+                </Text>
+              </View>
+              <View
+                style={[styles.voteDivider, { backgroundColor: colors.border }]}
+              />
+              <View style={styles.voteCount}>
+                <Text style={{ fontSize: 24 }}>👎</Text>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                  {item.votes.down?.length ?? 0}
+                </Text>
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>
+                  {(item.votes.down?.length ?? 0) === 1 ? 'vote' : 'votes'}
+                </Text>
+              </View>
+            </View>
+
+            {/* My vote indicator */}
+            {legacyMyVote && (
+              <Text
+                style={[
+                  text.label.sm,
+                  {
+                    color:     legacyMyVote === 'up' ? colors.accentPrimary : colors.accentDanger,
+                    marginTop: spacing.xs,
+                    textAlign: 'center',
+                  },
+                ]}
+              >
+                You voted {legacyMyVote === 'up' ? '👍' : '👎'}
+                {' · '}
+                <Text onPress={() => onVote(legacyMyVote === 'up' ? 'down' : 'up')}>
+                  Change vote
+                </Text>
+              </Text>
+            )}
+          </View>
+        )
       )}
 
       {/* ── Footer ──────────────────────────────────────────────── */}

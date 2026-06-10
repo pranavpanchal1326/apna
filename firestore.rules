@@ -269,7 +269,13 @@ service cloud.firestore {
 
         allow update: if isGroupMember(groupId) &&
           fieldUnchanged('createdBy') &&
-          fieldUnchanged('createdAt');
+          fieldUnchanged('createdAt') && (
+            isGroupAdmin(groupId) ||
+            (
+              (!('proposalMeta' in request.resource.data) || request.resource.data.proposalMeta == resource.data.proposalMeta) &&
+              (!('isConfirmed' in request.resource.data) || request.resource.data.isConfirmed == resource.data.isConfirmed)
+            )
+          );
 
         allow delete: if isGroupMember(groupId) &&
           (
@@ -333,7 +339,14 @@ service cloud.firestore {
         
         match /items/{itemId} {
           allow read: if isGroupMember(groupId);
-          allow create, update: if isGroupMember(groupId);
+          allow create: if isGroupMember(groupId);
+          allow update: if isGroupMember(groupId) && (
+            isGroupAdmin(groupId) ||
+            (
+              (!('proposalMeta' in request.resource.data) || request.resource.data.proposalMeta == resource.data.proposalMeta) &&
+              (!('isConfirmed' in request.resource.data) || request.resource.data.isConfirmed == resource.data.isConfirmed)
+            )
+          );
           allow delete: if isGroupMember(groupId);
         }
       }

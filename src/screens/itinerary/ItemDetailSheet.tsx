@@ -148,8 +148,8 @@ export const ItemDetailSheet = forwardRef<ItemDetailSheetRef, ItemDetailSheetPro
                     onVote={(v) => onVote(item.id, v)}
                   />
 
-                  {/* Confirmed CTA at bottom if tentative */}
-                  {!item.isConfirmed && (
+                  {/* Confirmed CTA at bottom if tentative and not a proposal */}
+                  {!item.isConfirmed && !item.proposalMeta && (
                     <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.md }}>
                       <ConfirmItemButton onConfirm={handleConfirm} />
                     </View>

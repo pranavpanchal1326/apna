@@ -1,20 +1,9 @@
 // src/screens/itinerary/PlaceSearchTab.tsx
-// Google Places Autocomplete search tab inside AddItemSheet.
-// Uses react-native-google-places-autocomplete for the search field.
-// On place select → builds PlaceRef snapshot → calls onPlaceSelected(PlaceRef).
-//
-// API key: stored in app.config.ts as EXPO_PUBLIC_PLACES_API_KEY
-// (Different from server key — this is the restricted client key for Autocomplete only)
-//
-// IMPORTANT: restrict this key in Google Cloud Console to:
-//   - Android app + iOS bundle ID
-//   - Places API (New) only
-//   - No server-side APIs
+// Mapbox Geocoding v6 search tab inside AddItemSheet.
 
-import { StyleSheet, View } from 'react-native'
-import {
-  GooglePlacesAutocomplete,
-} from 'react-native-google-places-autocomplete'
+import { useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import Constants from 'expo-constants'
 import { useTheme } from '../../theme'
 import type { PlaceRef, ItineraryCategory } from '../../lib/schemas'
 
@@ -22,90 +11,206 @@ interface PlaceSearchTabProps {
   onPlaceSelected: (placeRef: PlaceRef, category: ItineraryCategory) => void
 }
 
-// Infer category from Google Place types
-function inferCategory(types: string[]): ItineraryCategory {
-  const typeSet = new Set(types)
-  if (typeSet.has('restaurant') || typeSet.has('cafe') || typeSet.has('food')) return 'food'
-  if (typeSet.has('lodging')) return 'stay'
-  if (typeSet.has('transit_station') || typeSet.has('airport')) return 'transport'
-  if (typeSet.has('shopping_mall') || typeSet.has('store')) return 'shopping'
-  if (typeSet.has('amusement_park') || typeSet.has('park') || typeSet.has('natural_feature')) return 'activity'
+type MapboxFeature = {
+  id: string
+  type: 'Feature'
+  geometry: {
+    type: 'Point'
+    coordinates: [number, number]
+  }
+  properties: {
+    mapbox_id?: string
+    name?: string
+    full_address?: string
+    place_formatted?: string
+    feature_type?: string
+    poi_category?: string[]
+    context?: {
+      district?: { name?: string }
+      region?: { name?: string }
+      place?: { name?: string }
+    }
+  }
+}
+
+type MapboxGeocodeResponse = {
+  features?: MapboxFeature[]
+}
+
+type SearchState =
+  | { status: 'idle'; results: MapboxFeature[] }
+  | { status: 'loading'; results: MapboxFeature[] }
+  | { status: 'error'; results: MapboxFeature[] }
+
+function getMapboxToken(): string {
+  const extra = Constants.expoConfig?.extra as { mapboxToken?: string } | undefined
+  return process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? extra?.mapboxToken ?? ''
+}
+
+function inferCategory(feature: MapboxFeature): ItineraryCategory {
+  const labels = [
+    feature.properties.feature_type,
+    ...(feature.properties.poi_category ?? []),
+  ].map((label) => label?.toLowerCase() ?? '')
+
+  if (labels.some((label) => /restaurant|cafe|food|bar/.test(label))) return 'food'
+  if (labels.some((label) => /hotel|lodging|hostel|stay/.test(label))) return 'stay'
+  if (labels.some((label) => /airport|station|transit|bus|taxi|transport/.test(label))) return 'transport'
+  if (labels.some((label) => /shop|market|mall|store/.test(label))) return 'shopping'
+  if (labels.some((label) => /park|trail|activity|adventure|sport/.test(label))) return 'activity'
   return 'attraction'
 }
 
 export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
   const { colors, text, spacing, radius } = useTheme()
-  const apiKey = process.env.EXPO_PUBLIC_PLACES_API_KEY ?? ''
+  const token = useMemo(getMapboxToken, [])
+  const [query, setQuery] = useState('')
+  const [state, setState] = useState<SearchState>({ status: 'idle', results: [] })
+
+  useEffect(() => {
+    const trimmed = query.trim()
+    if (trimmed.length < 2 || !token) {
+      setState({ status: 'idle', results: [] })
+      return
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(async () => {
+      setState((current) => ({ status: 'loading', results: current.results }))
+      const params = new URLSearchParams({
+        q: trimmed,
+        access_token: token,
+        country: 'in',
+        language: 'en',
+        limit: '8',
+        types: 'poi,address,place,locality,neighborhood',
+      })
+
+      try {
+        const response = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`, {
+          signal: controller.signal,
+        })
+        if (!response.ok) throw new Error(`Mapbox search failed: ${response.status}`)
+        const json = (await response.json()) as MapboxGeocodeResponse
+        setState({ status: 'idle', results: json.features ?? [] })
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          setState((current) => ({ status: 'error', results: current.results }))
+        }
+      }
+    }, 300)
+
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [query, token])
+
+  function selectFeature(feature: MapboxFeature) {
+    const [lng, lat] = feature.geometry.coordinates
+    const context = feature.properties.context
+    const address = feature.properties.full_address
+      ?? feature.properties.place_formatted
+      ?? [context?.district?.name, context?.region?.name].filter(Boolean).join(', ')
+
+    const placeRef: PlaceRef = {
+      placeId: feature.properties.mapbox_id ?? feature.id,
+      name: feature.properties.name ?? query.trim(),
+      address,
+      lat,
+      lng,
+      types: [
+        feature.properties.feature_type,
+        ...(feature.properties.poi_category ?? []),
+      ].filter((value): value is string => Boolean(value)),
+    }
+
+    onPlaceSelected(placeRef, inferCategory(feature))
+  }
 
   return (
     <View style={[styles.container, { padding: spacing.lg }]}>
-      <GooglePlacesAutocomplete
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
         placeholder="Search a place..."
-        fetchDetails
-        onPress={(_, details = null) => {
-          if (!details) return
-
-          const detailsAny = details as any
-          const placeRef: PlaceRef = {
-            placeId:   detailsAny.place_id,
-            name:      detailsAny.name,
-            address:   detailsAny.formatted_address || '',
-            lat:       detailsAny.geometry.location.lat,
-            lng:       detailsAny.geometry.location.lng,
-            rating:    detailsAny.rating,
-            types:     detailsAny.types,
-            website:   detailsAny.website,
-            phone:     detailsAny.international_phone_number,
-          }
-
-          const category = inferCategory(details.types ?? [])
-          onPlaceSelected(placeRef, category)
-        }}
-        query={{
-          key:      apiKey,
-          language: 'en',
-        }}
-        styles={{
-          container: styles.autocompleteContainer,
-          textInput: {
-            backgroundColor:   colors.bgTertiary,
-            color:             colors.textPrimary,
-            fontSize:          text.body.md.fontSize,
-            fontFamily:        text.body.md.fontFamily,
-            borderRadius:      radius.md,
-            paddingHorizontal: spacing.md,
-            height:            48,
-          },
-          listView: {
-            backgroundColor: colors.bgSecondary,
-            borderRadius:    radius.md,
-            marginTop:       spacing.xs,
-          },
-          row: {
-            backgroundColor: colors.bgSecondary,
-            paddingVertical: spacing.md,
+        placeholderTextColor={colors.textMuted}
+        autoCorrect={false}
+        style={[
+          text.body.md,
+          styles.input,
+          {
+            backgroundColor: colors.bgTertiary,
+            color: colors.textPrimary,
+            borderColor: colors.border,
+            borderRadius: radius.md,
             paddingHorizontal: spacing.md,
           },
-          description: {
-            color:      colors.textPrimary,
-            fontSize:   text.body.sm.fontSize,
-            fontFamily: text.body.sm.fontFamily,
-          },
-          separator: {
-            backgroundColor: colors.border,
-            height: 1,
-          },
-        }}
-        enablePoweredByContainer={false}
-        minLength={2}
-        debounce={300}
+        ]}
+        accessibilityLabel="Search places"
+      />
+      {state.status === 'loading' && (
+        <ActivityIndicator color={colors.accentPrimary} style={{ marginTop: spacing.md }} />
+      )}
+      {!token && (
+        <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.md }]}>
+          Mapbox token is not configured.
+        </Text>
+      )}
+      {state.status === 'error' && (
+        <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.md }]}>
+          Could not load places. Try again.
+        </Text>
+      )}
+      <FlatList
+        data={state.results}
+        keyExtractor={(item) => item.properties.mapbox_id ?? item.id}
         keyboardShouldPersistTaps="handled"
+        style={{ marginTop: spacing.sm }}
+        renderItem={({ item }) => {
+          const context = item.properties.context
+          const secondary = item.properties.full_address
+            ?? item.properties.place_formatted
+            ?? [context?.place?.name, context?.district?.name, context?.region?.name]
+              .filter(Boolean)
+              .join(', ')
+
+          return (
+            <Pressable
+              onPress={() => selectFeature(item)}
+              style={[
+                styles.resultRow,
+                {
+                  borderBottomColor: colors.border,
+                  paddingVertical: spacing.md,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${item.properties.name ?? 'place'}`}
+            >
+              <Text style={[text.body.md, { color: colors.textPrimary }]} numberOfLines={1}>
+                {item.properties.name ?? 'Unnamed place'}
+              </Text>
+              {secondary ? (
+                <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={2}>
+                  {secondary}
+                </Text>
+              ) : null}
+            </Pressable>
+          )
+        }}
       />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container:             { flex: 1 },
-  autocompleteContainer: { flex: 0 },
+  container: { flex: 1 },
+  input: {
+    borderWidth: 1,
+    height: 48,
+  },
+  resultRow: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
 })

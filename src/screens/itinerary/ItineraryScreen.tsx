@@ -11,15 +11,19 @@ import {
 } from 'react-native'
 import { Screen, FAB } from '../../components'
 import { useTheme } from '../../theme'
+import { Timestamp } from 'firebase/firestore'
 import { useGroupStore } from '../../stores/group.store'
 import { useItinerary } from '../../hooks/useItinerary'
 import { useGroupMembers } from '../../hooks/useGroupMembers'
+import { useTripWeather } from '../../hooks/useTripWeather'
 import { DayTabBar } from './DayTabBar'
 import { DayPlannerView } from './DayPlannerView'
 import { AddItemSheet, AddItemSheetRef } from './AddItemSheet'
 import { ItemDetailSheet, ItemDetailSheetRef } from './ItemDetailSheet'
 import { MapFAB } from './MapFAB'
-import type { ItineraryItem, SmartSuggestion } from '../../lib/schemas'
+import { WeatherSummaryCard } from './WeatherSummaryCard'
+import type { ItineraryItem, ItineraryItemInput, SmartSuggestion } from '../../lib/schemas'
+import type { WeatherDay } from '../../lib/types/weather.types'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ItineraryStackParamList } from '../../navigation/types'
 
@@ -67,15 +71,20 @@ export function ItineraryScreen({ route, navigation }: Props) {
     }
   }, [tripDateRange, activeDayId, setActiveDay])
 
-  if (!groupId) {
+  if (
+    !groupId ||
+    activeGroup?.status !== 'active' ||
+    !activeGroup.startDate ||
+    !activeGroup.endDate
+  ) {
     return (
       <Screen>
         <View style={styles.centered}>
           <Text style={[text.heading.md, { color: colors.textPrimary }]}>
-            No Trip Selected
+            No Active Trip
           </Text>
           <Text style={[text.body.md, { color: colors.textSecondary, marginTop: spacing.md, textAlign: 'center' }]}>
-            Select a squad trip from the Home tab to view the itinerary.
+            Add trip dates to an active group to unlock the itinerary planner.
           </Text>
         </View>
       </Screen>
@@ -105,10 +114,79 @@ export function ItineraryScreen({ route, navigation }: Props) {
     return acc
   }, {} as Record<string, number>)
 
-  const handleAddStop = async (input: any) => {
+  const weatherAnchor = useMemo(() => {
+    const allItems = Object.values(itemsByDay).flat()
+    const itemWithPlace = allItems.find((item) => item.placeRef)
+    if (!itemWithPlace?.placeRef) return null
+
+    return {
+      lat: itemWithPlace.placeRef.lat,
+      lng: itemWithPlace.placeRef.lng,
+      placeName: itemWithPlace.placeRef.name,
+    }
+  }, [itemsByDay])
+
+  const {
+    weather,
+    isLoading: isWeatherLoading,
+    isRefreshing: isWeatherRefreshing,
+    hasStaleCache,
+    refreshWeather,
+  } = useTripWeather({
+    groupId,
+    destination: activeGroup?.destination ?? null,
+    anchorLocation: weatherAnchor,
+  })
+
+  const weatherByDate = useMemo(() => {
+    return (weather?.days ?? []).reduce((acc, day) => {
+      acc[day.date] = day
+      return acc
+    }, {} as Record<string, WeatherDay>)
+  }, [weather])
+
+  const activeWeatherDay = activeDayId ? weatherByDate[activeDayId] : undefined
+
+  const handleAddStop = async (input: Partial<ItineraryItemInput>, isProposal?: boolean) => {
     if (!activeDayId || !myUid) return
+    if (!input.title || !input.category) return
+
+    let proposalMeta = undefined
+    let votesValue: any = input.votes ?? { up: [], down: [] }
+    
+    if (isProposal) {
+      votesValue = { [myUid]: 'yes' }
+      proposalMeta = {
+        proposalId: '',
+        proposedBy: myUid,
+        proposedAt: Timestamp.fromDate(new Date()),
+        state: 'open' as const,
+        yesCount: 1,
+        maybeCount: 0,
+        noCount: 0,
+      }
+    }
+
+    const payload: any = {
+      title: input.title,
+      category: input.category,
+      sortOrder: input.sortOrder ?? 0,
+      placeRef: input.placeRef,
+      timeSlot: input.timeSlot,
+      duration: input.duration,
+      notes: input.notes,
+      emoji: input.emoji,
+      estimatedCost: input.estimatedCost,
+      currency: input.currency,
+      imageUrl: input.imageUrl,
+      linkedExpenseIds: input.linkedExpenseIds ?? [],
+      isConfirmed: isProposal ? false : (input.isConfirmed ?? false),
+      votes: votesValue,
+      ...(proposalMeta ? { proposalMeta } : {}),
+    }
+
     try {
-      await addItem(groupId, activeDayId, input, myUid)
+      await addItem(groupId, activeDayId, payload, myUid)
     } catch (err) {
       Alert.alert('Error', 'Failed to add stop.')
     }
@@ -156,6 +234,16 @@ export function ItineraryScreen({ route, navigation }: Props) {
         activeDayId={activeDayId}
         onSelect={setActiveDay}
         itemCounts={itemCounts}
+        weatherByDate={weatherByDate}
+      />
+
+      <WeatherSummaryCard
+        weather={weather}
+        activeDay={activeWeatherDay}
+        isLoading={isWeatherLoading}
+        isRefreshing={isWeatherRefreshing}
+        hasStaleCache={hasStaleCache}
+        onRefresh={refreshWeather}
       />
 
       {/* Main Drag-to-Reorder List */}
@@ -173,6 +261,7 @@ export function ItineraryScreen({ route, navigation }: Props) {
             onPressItem={handlePressItem}
             onSelectSuggestion={handleSelectSuggestion}
             onAddFirstStop={() => addSheetRef.current?.open()}
+            weatherDay={activeWeatherDay}
           />
         ) : (
           <View style={styles.centered}>
@@ -183,14 +272,22 @@ export function ItineraryScreen({ route, navigation }: Props) {
         )}
       </View>
 
-      {/* Floating Add Button */}
+      {/* Floating Buttons: Propose (left) & Add (right) */}
       {activeDayId && (
-        <FAB
-          icon={<Text style={{ fontSize: 24, color: colors.bgPrimary, fontWeight: '600' }}>+</Text>}
-          onPress={() => addSheetRef.current?.open()}
-          accessibilityLabel="Add stop"
-          style={{ position: 'absolute', bottom: spacing.xl, right: spacing.lg }}
-        />
+        <>
+          <FAB
+            icon={<Text style={{ fontSize: 22, color: colors.bgPrimary, fontWeight: '600' }}>🗳️</Text>}
+            onPress={() => addSheetRef.current?.open(undefined, true)}
+            accessibilityLabel="Propose activity"
+            style={{ position: 'absolute', bottom: spacing.xl, right: spacing.lg + 68 }}
+          />
+          <FAB
+            icon={<Text style={{ fontSize: 24, color: colors.bgPrimary, fontWeight: '600' }}>+</Text>}
+            onPress={() => addSheetRef.current?.open(undefined, false)}
+            accessibilityLabel="Add stop"
+            style={{ position: 'absolute', bottom: spacing.xl, right: spacing.lg }}
+          />
+        </>
       )}
 
       {/* Bottom Sheet for adding stops */}

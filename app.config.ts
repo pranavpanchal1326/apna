@@ -64,6 +64,7 @@ const config: any = {
 
     // Mapbox — Phase 3
     mapboxToken: process.env.MAPBOX_ACCESS_TOKEN,
+    openWeatherApiKey: process.env.OPENWEATHER_API_KEY,
   },
 }
 

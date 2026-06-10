@@ -168,13 +168,118 @@ export const cleanupExpiredLocations = onSchedule(
  */
 export const sendItineraryReminders = onSchedule(
   { schedule: 'every 60 minutes', region: 'asia-south1' },
-  () => {
-    console.info('[apna] sendItineraryReminders: checking upcoming items')
-    // TODO: Prompt 3.1
+  async () => {
+    const now = new Date()
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
+    const todayDate = now.toISOString().split('T')[0]
+    const windowStart = toMinutes(now)
+    const windowEnd = toMinutes(oneHourLater)
+
+    console.info(`[apna] sendItineraryReminders: checking ${todayDate} ${formatTime(now)}-${formatTime(oneHourLater)}`)
+
+    const snap = await admin.firestore()
+      .collectionGroup('items')
+      .where('dayId', '==', todayDate)
+      .get()
+
+    const reminders = snap.docs
+      .map((doc) => doc.data() as ReminderItineraryItem)
+      .filter((item) => {
+        if (item.completed === true || !item.timeSlot?.startTime) return false
+        const start = timeStringToMinutes(item.timeSlot.startTime)
+        return start >= windowStart && start <= windowEnd
+    })
+
+    for (const item of reminders) {
+      const tokens = await getGroupRecipientTokensForReminder(item.groupId)
+      if (tokens.length === 0) continue
+
+      const place = item.placeRef?.name ? ` at ${item.placeRef.name}` : ''
+      await sendReminderPush({
+        tokens,
+        title: `${item.title} in 1 hour`,
+        body: `Starting at ${item.timeSlot?.startTime ?? 'soon'}${place}`,
+        data: {
+          type: 'ITINERARY_REMINDER',
+          groupId: item.groupId,
+          dayId: item.dayId,
+          itemId: item.id,
+        },
+      })
+
+      console.info(`[apna] Sent itinerary reminder item=${item.id} group=${item.groupId} tokens=${tokens.length}`)
+    }
   },
 )
 
-export { onItineraryItemCreated, onItineraryItemDeleted } from './triggers/onItineraryWrite'
+interface ReminderItineraryItem {
+  id: string
+  groupId: string
+  dayId: string
+  title: string
+  completed?: boolean
+  timeSlot?: {
+    startTime?: string
+  }
+  placeRef?: {
+    name?: string
+  }
+}
+
+function formatTime(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function toMinutes(date: Date): number {
+  return date.getHours() * 60 + date.getMinutes()
+}
+
+function timeStringToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+async function getGroupRecipientTokensForReminder(groupId: string): Promise<string[]> {
+  const db = admin.firestore()
+  const groupSnap = await db.collection('groups').doc(groupId).get()
+  if (!groupSnap.exists) return []
+
+  const group = groupSnap.data() as { memberIds?: string[] } | undefined
+  const memberIds = group?.memberIds ?? []
+  if (memberIds.length === 0) return []
+
+  const userSnaps = await db.getAll(...memberIds.map((uid) => db.collection('users').doc(uid)))
+  const tokens = userSnaps
+    .map((snap) => snap.data() as { fcmToken?: string } | undefined)
+    .map((user) => user?.fcmToken)
+    .filter((token): token is string => Boolean(token))
+
+  return Array.from(new Set(tokens))
+}
+
+async function sendReminderPush(params: {
+  tokens: string[]
+  title: string
+  body: string
+  data: Record<string, string>
+}): Promise<void> {
+  await admin.messaging().sendEachForMulticast({
+    tokens: params.tokens,
+    notification: {
+      title: params.title,
+      body: params.body,
+    },
+    data: params.data,
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: 'itinerary_reminders',
+      },
+    },
+  })
+}
+
+export { onItineraryItemCreated, onItineraryItemDeleted, onItineraryItemUpdated } from './triggers/onItineraryWrite'
 export { getSuggestions } from './callable/getSuggestions'
 export { computeSettlements } from './computeSettlements'
 
@@ -183,6 +288,4 @@ export { onExpenseWriteNotify } from './triggers/onExpenseWriteNotify'
 export { onSettlementNotify } from './triggers/onSettlementNotify'
 export { onGroupWriteNotify } from './triggers/onGroupWriteNotify'
 export { onGroupBudgetUpdated } from './triggers/onGroupBudgetUpdated'
-
-
 

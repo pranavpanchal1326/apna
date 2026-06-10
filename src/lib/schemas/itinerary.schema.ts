@@ -11,6 +11,7 @@
 // itemId format: nanoid(12) — generated client-side at creation
 
 import type { Timestamp } from 'firebase/firestore'
+import type { ActivityProposalMeta, VoteValue } from '../types'
 
 // ── Place Reference ────────────────────────────────────────────────
 // Snapshot of Google Place data taken at item-save time.
@@ -76,10 +77,11 @@ export interface ItineraryItem {
   createdAt:   Timestamp
   updatedAt:   Timestamp
   isConfirmed: boolean            // True = locked in; false = tentative
-  votes: {                        // 👍/👎 voting for tentative items
+  votes: {                        // 👍/👎 voting for tentative items OR userId -> VoteValue for proposals
     up:   string[]   // Array of uids who voted up
     down: string[]   // Array of uids who voted down
-  }
+  } & Record<string, VoteValue | string[] | undefined>
+  proposalMeta?: ActivityProposalMeta
 }
 
 // ── Day Plan ──────────────────────────────────────────────────────

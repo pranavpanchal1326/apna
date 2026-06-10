@@ -16,6 +16,7 @@ import { ItineraryItemCard } from './ItineraryItemCard'
 import { SuggestionsCarousel } from './SuggestionsCarousel'
 import { EmptyDayState } from './EmptyDayState'
 import type { ItineraryItem, SmartSuggestion } from '../../lib/schemas'
+import type { WeatherDay } from '../../lib/types/weather.types'
 
 interface DayPlannerViewProps {
   groupId:      string
@@ -29,6 +30,7 @@ interface DayPlannerViewProps {
   onPressItem:  (item: ItineraryItem) => void
   onSelectSuggestion: (suggestion: SmartSuggestion) => void
   onAddFirstStop: () => void
+  weatherDay?: WeatherDay
 }
 
 export function DayPlannerView({
@@ -43,6 +45,7 @@ export function DayPlannerView({
   onPressItem,
   onSelectSuggestion,
   onAddFirstStop,
+  weatherDay,
 }: DayPlannerViewProps) {
   const { spacing } = useTheme()
   const [contentHeight, setContentHeight] = useState(0)
@@ -68,6 +71,7 @@ export function DayPlannerView({
           onVote={onVote}
           onDelete={onDelete}
           onPress={onPressItem}
+          weatherDay={weatherDay}
         />
       </ScaleDecorator>
     )

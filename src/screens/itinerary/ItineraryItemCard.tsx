@@ -27,8 +27,12 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
 import { useTheme } from '../../theme'
 import { CATEGORY_META } from '../../lib/schemas'
 import { VoteChips }          from './VoteChips'
+import { ProposalVoteChips }  from './ProposalVoteChips'
 import { ItemTimeSlotBadge }  from './ItemTimeSlotBadge'
+import { getRainAlertForItem } from '../../lib/weather'
+import { useActivityVoting }  from '../../hooks/useActivityVoting'
 import type { ItineraryItem } from '../../lib/schemas'
+import type { WeatherDay } from '../../lib/types/weather.types'
 import type { RenderItemParams } from 'react-native-draggable-flatlist'
 
 interface ItineraryItemCardProps {
@@ -39,6 +43,7 @@ interface ItineraryItemCardProps {
   onVote:     (itemId: string, vote: 'up' | 'down') => void
   onDelete:   (itemId: string) => void
   onPress:    (item: ItineraryItem) => void
+  weatherDay?: WeatherDay
 }
 
 export function ItineraryItemCard({
@@ -49,11 +54,22 @@ export function ItineraryItemCard({
   onVote,
   onDelete,
   onPress,
+  weatherDay,
 }: ItineraryItemCardProps) {
   const { colors, text, spacing, radius, shadows } = useTheme()
+  const { voteOnProposal, summary, myVote } = useActivityVoting(item.id)
+
   const meta       = CATEGORY_META[item.category]
-  const tentative  = !item.isConfirmed
-  const confirmed  = item.isConfirmed
+  const isProposal = !!item.proposalMeta
+  const proposalState = item.proposalMeta?.state
+  const isProposalConfirmed = proposalState === 'confirmed'
+  const isProposalRejected = proposalState === 'rejected'
+  const isProposalOpen = proposalState === 'open'
+
+  const confirmed  = item.isConfirmed || isProposalConfirmed
+  const tentative  = !confirmed && !isProposalRejected
+  const rejected   = isProposalRejected
+  const rainAlert  = getRainAlertForItem(item.category, weatherDay)
 
   // Format estimated cost
   const costLabel = item.estimatedCost
@@ -72,11 +88,11 @@ export function ItineraryItemCard({
       borderWidth:      1,
       borderColor:      confirmed
         ? colors.accentPrimary
-        : tentative
+        : rejected
           ? colors.border
           : colors.border,
-      borderStyle:      tentative ? 'dashed' as const : 'solid' as const,
-      opacity:          tentative ? 0.88 : 1,
+      borderStyle:      (tentative || rejected) ? 'dashed' as const : 'solid' as const,
+      opacity:          rejected ? 0.65 : tentative ? 0.88 : 1,
     },
     isActive && {
       ...shadows.elevated,
@@ -123,7 +139,14 @@ export function ItineraryItemCard({
           {/* Title row */}
           <View style={styles.titleRow}>
             <Text
-              style={[text.body.md, { color: colors.textPrimary, flex: 1 }]}
+              style={[
+                text.body.md,
+                {
+                  color: rejected ? colors.textMuted : colors.textPrimary,
+                  flex: 1,
+                  textDecorationLine: rejected ? 'line-through' : 'none',
+                },
+              ]}
               numberOfLines={2}
             >
               {item.title}
@@ -146,6 +169,50 @@ export function ItineraryItemCard({
               <Text style={{ color: colors.textMuted, fontSize: 16 }}>⠿</Text>
             </View>
           </View>
+
+          {/* Proposal State Badge */}
+          {isProposal && (
+            <View style={styles.badgeRow}>
+              <View
+                style={[
+                  styles.stateBadge,
+                  {
+                    backgroundColor: isProposalConfirmed
+                      ? `${colors.accentPrimary}15`
+                      : isProposalRejected
+                        ? `${colors.accentDanger}15`
+                        : `${colors.accentGold}15`,
+                    borderColor: isProposalConfirmed
+                      ? colors.accentPrimary
+                      : isProposalRejected
+                        ? colors.accentDanger
+                        : colors.accentGold,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    text.label.sm,
+                    {
+                      color: isProposalConfirmed
+                        ? colors.accentPrimary
+                        : isProposalRejected
+                          ? colors.accentDanger
+                          : colors.accentGold,
+                      fontWeight: '600',
+                      fontSize: 10,
+                    },
+                  ]}
+                >
+                  {isProposalConfirmed
+                    ? '✓ CONFIRMED'
+                    : isProposalRejected
+                      ? '✗ REJECTED'
+                      : '🗳️ VOTE OPEN'}
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Place address */}
           {item.placeRef?.address ? (
@@ -186,13 +253,90 @@ export function ItineraryItemCard({
             )}
           </View>
 
-          {/* Vote chips — tentative items only */}
-          {tentative && (
-            <VoteChips
-              votes={item.votes}
-              myUid={myUid}
-              onVote={(vote) => onVote(item.id, vote)}
-            />
+          {/* Rain alert */}
+          {rainAlert && (
+            <View
+              style={[
+                styles.rainAlert,
+                {
+                  backgroundColor: `${colors.warning}12`,
+                  borderColor: rainAlert.level === 'strong'
+                    ? `${colors.warning}66`
+                    : colors.border,
+                  marginTop: spacing.sm,
+                  borderRadius: radius.sm,
+                  paddingHorizontal: spacing.sm,
+                  paddingVertical: spacing.xs,
+                },
+              ]}
+            >
+              <Text style={[text.label.sm, { color: colors.warning }]} numberOfLines={2}>
+                {rainAlert.message}
+              </Text>
+            </View>
+          )}
+
+          {/* Vote tally progress bar — proposals only */}
+          {isProposal && (
+            <View style={styles.tallyContainer}>
+              <Text style={[text.label.sm, { color: colors.textSecondary }]}>
+                Votes: {summary.yesCount} Going · {summary.maybeCount} Maybe · {summary.noCount} Not Going
+              </Text>
+              
+              <View style={[styles.tallyBarBackground, { backgroundColor: colors.border }]}>
+                {summary.yesCount > 0 && (
+                  <View
+                    style={[
+                      styles.tallySegment,
+                      {
+                        backgroundColor: colors.accentPrimary,
+                        flex: summary.yesCount,
+                      },
+                    ]}
+                  />
+                )}
+                {summary.maybeCount > 0 && (
+                  <View
+                    style={[
+                      styles.tallySegment,
+                      {
+                        backgroundColor: colors.accentGold,
+                        flex: summary.maybeCount,
+                      },
+                    ]}
+                  />
+                )}
+                {summary.noCount > 0 && (
+                  <View
+                    style={[
+                      styles.tallySegment,
+                      {
+                        backgroundColor: colors.accentDanger,
+                        flex: summary.noCount,
+                      },
+                    ]}
+                  />
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Vote chips — proposals: Yes/Maybe/No, normal: 👍/👎 */}
+          {isProposal ? (
+            isProposalOpen && (
+              <ProposalVoteChips
+                myVote={myVote}
+                onVote={voteOnProposal}
+              />
+            )
+          ) : (
+            tentative && (
+              <VoteChips
+                votes={item.votes as any}
+                myUid={myUid}
+                onVote={(vote) => onVote(item.id, vote)}
+              />
+            )
           )}
         </Pressable>
       </View>
@@ -249,5 +393,33 @@ const styles = StyleSheet.create({
     alignItems:    'center',
     gap:           12,
     flexWrap:      'wrap',
+  },
+  rainAlert: {
+    borderWidth: 1,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  stateBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  tallyContainer: {
+    marginTop: 8,
+    gap: 4,
+  },
+  tallyBarBackground: {
+    height: 6,
+    borderRadius: 3,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    width: '100%',
+  },
+  tallySegment: {
+    height: '100%',
   },
 })

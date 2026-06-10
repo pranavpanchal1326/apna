@@ -29,12 +29,12 @@ import type {
 } from '../../lib/schemas'
 
 export interface AddItemSheetRef {
-  open:          (prefill?: SmartSuggestion) => void
+  open:          (prefill?: SmartSuggestion, isProposal?: boolean) => void
   close:         () => void
 }
 
 interface AddItemSheetProps {
-  onAdd:     (input: Partial<ItineraryItemInput>) => Promise<void>
+  onAdd:     (input: Partial<ItineraryItemInput>, isProposal?: boolean) => Promise<void>
 }
 
 type TabId = 'search' | 'manual'
@@ -45,11 +45,13 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
     const sheetRef    = useRef<BottomSheet>(null)
     const [tab, setTab]     = useState<TabId>('search')
     const [prefill, setPrefill] = useState<SmartSuggestion | undefined>()
+    const [isProposalMode, setIsProposalMode] = useState(false)
     const snapPoints = ['75%', '95%']
 
     useImperativeHandle(ref, () => ({
-      open: (suggestion?: SmartSuggestion) => {
+      open: (suggestion?: SmartSuggestion, isProposal?: boolean) => {
         setPrefill(suggestion)
+        setIsProposalMode(!!isProposal)
         if (suggestion) setTab('manual')  // Pre-filled suggestions go to manual tab
         else setTab('search')
         sheetRef.current?.snapToIndex(0)
@@ -63,13 +65,13 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
           title:          placeRef.name,
           category,
           placeRef,
-          isConfirmed:    false,
+          isConfirmed:    !isProposalMode,
           votes:          { up: [], down: [] },
           linkedExpenseIds: [],
-        })
+        }, isProposalMode)
         sheetRef.current?.close()
       },
-      [onAdd],
+      [onAdd, isProposalMode],
     )
 
     const handleManualSubmit = useCallback(
@@ -78,10 +80,12 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
         await onAdd({
           ...input,
           placeRef: prefill?.placeRef ?? undefined,
-        })
+          isConfirmed: !isProposalMode,
+          votes: { up: [], down: [] },
+        }, isProposalMode)
         sheetRef.current?.close()
       },
-      [onAdd, prefill],
+      [onAdd, prefill, isProposalMode],
     )
 
     const tabs: Array<{ id: TabId; label: string }> = [
@@ -112,7 +116,7 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
             ]}
           >
             <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
-              Add a stop
+              {isProposalMode ? 'Propose an activity' : 'Add a stop'}
             </Text>
           </View>
 
@@ -173,6 +177,7 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
             ) : (
               <ManualItemTab
                 onSubmit={handleManualSubmit}
+                isProposal={isProposalMode}
                 prefill={
                   prefill
                     ? {

@@ -6,6 +6,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { MainTabParamList } from './types'
 import { useTheme } from '@theme'
 import * as Haptics from 'expo-haptics'
+import { useGroupStore } from '@stores/group.store'
 
 // Placeholder screens — content built in Phases 1–4
 import { HomeNavigator }  from './HomeNavigator'
@@ -121,6 +122,13 @@ function DhagaTabBar({ state, navigation }: BottomTabBarProps) {
 
 // ── Main Tab Navigator ────────────────────────────────────────────
 export function MainNavigator() {
+  const activeGroup = useGroupStore((s) => s.activeGroup)
+  const tripModeActive = Boolean(
+    activeGroup?.status === 'active' &&
+    activeGroup.startDate &&
+    activeGroup.endDate,
+  )
+
   return (
     <Tab.Navigator
       tabBar={(props) => <DhagaTabBar {...props} />}
@@ -131,7 +139,9 @@ export function MainNavigator() {
     >
       <Tab.Screen name="HomeTab"  component={HomeNavigator} />
       <Tab.Screen name="Budget"   component={BudgetScreen} />
-      <Tab.Screen name="Trip"     component={ItineraryStack} />
+      {tripModeActive && (
+        <Tab.Screen name="Trip" component={ItineraryStack} />
+      )}
       <Tab.Screen name="Memories" component={MemoriesScreen} />
       <Tab.Screen name="Profile"  component={ProfileScreen} />
     </Tab.Navigator>

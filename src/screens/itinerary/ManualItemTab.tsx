@@ -21,6 +21,7 @@ import type { ItineraryCategory, ItineraryItemInput } from '../../lib/schemas'
 
 interface ManualItemTabProps {
   onSubmit: (input: Partial<ItineraryItemInput>) => void
+  isProposal?: boolean
   prefill?: {
     title?:    string
     category?: ItineraryCategory
@@ -32,7 +33,7 @@ const CATEGORIES: ItineraryCategory[] = [
   'attraction', 'food', 'stay', 'transport', 'activity', 'shopping', 'note', 'custom',
 ]
 
-export function ManualItemTab({ onSubmit, prefill }: ManualItemTabProps) {
+export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabProps) {
   const { colors, text, spacing, radius } = useTheme()
 
   const [title,     setTitle]    = useState(prefill?.title    ?? '')
@@ -228,7 +229,7 @@ export function ManualItemTab({ onSubmit, prefill }: ManualItemTabProps) {
 
         <Button
           variant="primary"
-          label="Add to plan"
+          label={isProposal ? "Propose activity" : "Add to plan"}
           onPress={handleSubmit}
           style={{ marginTop: spacing.sm }}
         />
