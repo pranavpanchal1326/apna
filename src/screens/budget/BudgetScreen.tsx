@@ -26,6 +26,9 @@ import { getAverageExpense, getTopSpendingCategory } from '@lib/budget/selectors
 import { formatBudgetAmount } from '@lib/budget/format'
 import { canEditBudget } from '@lib/budget/permissions'
 import { MainTabParamList } from '@navigation/types'
+import { useExpenses } from '@hooks/useExpenses'
+import { useGroupMembers } from '@hooks/useGroupMembers'
+import { ExportSheet } from './components/ExportSheet'
 
 type BudgetScreenRouteProp = RouteProp<MainTabParamList, 'Budget'>
 
@@ -53,6 +56,14 @@ export function BudgetScreen() {
     burnRate,
     points,
   } = useBudgetForecast(groupId)
+
+  const storeGroups = useGroupStore((s) => s.groups)
+  const activeGroup = useGroupStore((s) => s.activeGroup)
+  const fullGroup = storeGroups.find((g) => g.id === groupId) || activeGroup
+
+  const memberIds = fullGroup?.memberIds ?? []
+  const { members } = useGroupMembers(memberIds)
+  const { expenses } = useExpenses(groupId)
 
   // Analytics tracking for forecasting & burn rate
   useEffect(() => {
@@ -91,6 +102,7 @@ export function BudgetScreen() {
 
   const [refreshing, setRefreshing] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
+  const [exportSheetVisible, setExportSheetVisible] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const handleRefresh = useCallback(async () => {
@@ -120,6 +132,14 @@ export function BudgetScreen() {
     })
     setSheetVisible(true)
   }, [summary, currency, groupId])
+
+  const handleExportPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    track('budget-export-opened', {
+      groupId: groupId || '',
+    })
+    setExportSheetVisible(true)
+  }, [groupId])
 
   const handleSubmit = useCallback(async (value: string | null) => {
     if (!groupId || !myUid) return
@@ -216,18 +236,31 @@ export function BudgetScreen() {
       <Header
         title={group?.name ? `${group.name} Budget` : 'Trip Budget'}
         rightAction={
-          isGroupAdmin ? (
-            <Pressable
-              onPress={handleEditPress}
-              style={styles.headerButton}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel={hasBudget ? 'Edit budget' : 'Set budget'}
-            >
-              <Text style={[text.label.lg, { color: colors.accentPrimary }]}>
-                {hasBudget ? 'Edit' : 'Set'}
-              </Text>
-            </Pressable>
+          fullGroup ? (
+            <View style={styles.headerActionsRow}>
+              <Pressable
+                onPress={handleExportPress}
+                style={styles.headerButton}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Export expenses"
+              >
+                <Text style={{ fontSize: 20 }}>📤</Text>
+              </Pressable>
+              {isGroupAdmin && (
+                <Pressable
+                  onPress={handleEditPress}
+                  style={styles.headerButton}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={hasBudget ? 'Edit budget' : 'Set budget'}
+                >
+                  <Text style={[text.label.lg, { color: colors.accentPrimary }]}>
+                    {hasBudget ? 'Edit' : 'Set'}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           ) : undefined
         }
       />
@@ -338,6 +371,16 @@ export function BudgetScreen() {
           onSubmit={handleSubmit}
         />
       )}
+
+      {fullGroup && (
+        <ExportSheet
+          visible={exportSheetVisible}
+          onClose={() => setExportSheetVisible(false)}
+          group={fullGroup}
+          members={members}
+          expenses={expenses}
+        />
+      )}
     </Screen>
   )
 }
@@ -358,6 +401,13 @@ const styles = StyleSheet.create({
   headerButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 })
 

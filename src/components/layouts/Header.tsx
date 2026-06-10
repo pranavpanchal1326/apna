@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rightContainer: {
-    width: 44,
+    minWidth: 44,
     height: 44,
     justifyContent: 'center',
     alignItems: 'flex-end',
