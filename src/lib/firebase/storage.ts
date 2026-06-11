@@ -83,3 +83,67 @@ export async function deleteReceiptPhoto(receiptUrl: string): Promise<void> {
 export async function deleteReceipt(receiptURL: string): Promise<void> {
   return deleteReceiptPhoto(receiptURL)
 }
+
+/**
+ * Uploads a memory photo to Firebase Storage.
+ * Path: groups/{groupId}/memories/{memoryId}_{timestamp}.jpg
+ */
+export async function uploadMemoryPhoto(
+  groupId: string,
+  memoryId: string,
+  compressedUri: string,
+  onProgress?: (percent: number) => void
+): Promise<string> {
+  const timestamp = Date.now()
+  const filename = `${memoryId}_${timestamp}.jpg`
+  const path = `groups/${groupId}/memories/${filename}`
+  const storageRef = ref(storage, path)
+
+  // Convert local URI to Blob
+  const response = await fetch(compressedUri)
+  const blob = await response.blob()
+
+  return new Promise<string>((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, blob, {
+      contentType: 'image/jpeg',
+      customMetadata: { groupId, memoryId },
+    })
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const total = snapshot.totalBytes || 1
+        const percent = Math.round(
+          (snapshot.bytesTransferred / total) * 100
+        )
+        onProgress?.(percent)
+      },
+      (err) => {
+        captureError(err, { source: 'uploadMemoryPhoto', groupId, memoryId })
+        reject(err)
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+          resolve(downloadURL)
+        } catch (err) {
+          captureError(err, { source: 'uploadMemoryPhoto.complete', groupId, memoryId })
+          reject(err)
+        }
+      }
+    )
+  })
+}
+
+/**
+ * Deletes a memory photo from Firebase Storage.
+ */
+export async function deleteMemoryPhoto(photoUrl: string): Promise<void> {
+  try {
+    const storageRef = ref(storage, photoUrl)
+    await deleteObject(storageRef)
+  } catch (err) {
+    captureError(err, { source: 'deleteMemoryPhoto', photoUrl })
+  }
+}
+

@@ -14,7 +14,7 @@ import { BudgetScreen }    from '@screens/budget/BudgetScreen'
 import { ItineraryStack }  from './ItineraryStack'
 import { ListsStack }      from './ListsStack'
 import { HangoutsStack }   from './HangoutsStack'
-import { MemoriesScreen }  from '@screens/memories/MemoriesScreen'
+import { MemoriesStack }   from './MemoriesStack'
 import { ProfileScreen }   from '@screens/profile/ProfileScreen'
 
 const Tab = createBottomTabNavigator<MainTabParamList>()
@@ -156,7 +156,7 @@ export function MainNavigator() {
       )}
       <Tab.Screen name="Lists"    component={ListsStack} />
       <Tab.Screen name="Hangouts" component={HangoutsStack} />
-      <Tab.Screen name="Memories" component={MemoriesScreen} />
+      <Tab.Screen name="Memories" component={MemoriesStack} />
       <Tab.Screen name="Profile"  component={ProfileScreen} />
     </Tab.Navigator>
   )

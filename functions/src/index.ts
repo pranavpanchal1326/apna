@@ -288,4 +288,7 @@ export { onExpenseWriteNotify } from './triggers/onExpenseWriteNotify'
 export { onSettlementNotify } from './triggers/onSettlementNotify'
 export { onGroupWriteNotify } from './triggers/onGroupWriteNotify'
 export { onGroupBudgetUpdated } from './triggers/onGroupBudgetUpdated'
+export { onMemoryReaction } from './triggers/onMemoryReaction'
+export { onThisDay } from './triggers/onThisDay'
+
 

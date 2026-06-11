@@ -9,6 +9,8 @@ export type NotificationType =
   | 'group_invite_regenerated'
   | 'admin_transferred'
   | 'member_removed'
+  | 'on_this_day'
+  | 'memory_reaction'
 
 export interface BaseNotificationData {
   type: NotificationType
@@ -47,11 +49,23 @@ export interface GroupAdminNotificationData extends BaseNotificationData {
   targetUid?: string
 }
 
+export interface OnThisDayNotificationData extends BaseNotificationData {
+  type: 'on_this_day'
+  date: string
+}
+
+export interface MemoryReactionNotificationData extends BaseNotificationData {
+  type: 'memory_reaction'
+  memoryId: string
+}
+
 export type AppNotificationData =
   | ExpenseNotificationData
   | SettlementNotificationData
   | MemberJoinedNotificationData
   | GroupAdminNotificationData
+  | OnThisDayNotificationData
+  | MemoryReactionNotificationData
 
 export function buildDeepLink(data: AppNotificationData): string {
   const { type, groupId } = data
@@ -71,6 +85,12 @@ export function buildDeepLink(data: AppNotificationData): string {
     case 'admin_transferred':
     case 'member_removed':
       return `apna://group/${groupId}/members`
+    case 'on_this_day':
+      return `apna://memories/${groupId}/on-this-day`
+    case 'memory_reaction': {
+      const memoryId = (data as MemoryReactionNotificationData).memoryId
+      return `apna://memories/${groupId}/detail/${memoryId}`
+    }
     default:
       return `apna://group/${groupId}`
   }

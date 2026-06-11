@@ -29,7 +29,14 @@ export const linking: LinkingOptions<RootStackParamList> = {
           },
           Budget:   'budget/:groupId?',
           Trip:     'trip/:groupId?',
-          Memories: 'memories/:groupId?',
+          Memories: {
+            path: 'memories/:groupId?',
+            screens: {
+              MemoriesHome: '',
+              MemoryDetail: 'detail/:memoryId',
+              OnThisDay:    'on-this-day',
+            },
+          },
           Profile:  'profile',
         },
       },
