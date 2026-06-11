@@ -15,6 +15,10 @@ export const ActivityTypeSchema = z.enum([
   'list_item_claimed',
   'list_item_completed',
   'list_items_added',
+  // ── Hangout events ───────────────────────────────
+  'hangout_proposed',
+  'hangout_rsvp',
+  'hangout_confirmed',
 ])
 export type ActivityType = z.infer<typeof ActivityTypeSchema>
 
@@ -30,6 +34,11 @@ export const ActivityMetadataSchema = z.object({
   listTitle:    z.string().optional(),
   itemText:     z.string().optional(),
   itemCount:    z.number().int().nonnegative().optional(),
+  // ── Hangout metadata ────────────────────────────
+  hangoutId:     z.string().optional(),
+  scheduledDate: z.string().optional(),
+  rsvpValue:     z.string().optional(),  // 'yes' | 'maybe' | 'no'
+  yesCount:      z.number().int().nonnegative().optional(),
 }).optional()
 
 

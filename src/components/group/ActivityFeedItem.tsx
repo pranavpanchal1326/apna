@@ -41,6 +41,10 @@ const TYPE_CONFIG: Record<
   list_item_claimed:     { icon: '🤝', color: (c) => c.accentGold      },
   list_item_completed:   { icon: '✓',  color: (c) => c.positive        },
   list_items_added:      { icon: '➕', color: (c) => c.accentPrimary   },
+  // ── Hangout events ───────────────────────────────────────────────
+  hangout_proposed:      { icon: '🎉', color: (c) => c.accentGold      },
+  hangout_rsvp:          { icon: '👍', color: (c) => c.accentPrimary   },
+  hangout_confirmed:     { icon: '✅', color: (c) => c.positive        },
 }
 
 export const ActivityFeedItem = memo(function ActivityFeedItem({
@@ -218,6 +222,15 @@ function buildPrimaryText(
       return `${actorName} updated the trip budget to ${formatINR(item.metadata?.amount ?? 0)}`
     case 'budget-removed':
       return `${actorName} removed the trip budget (was ${formatINR(item.metadata?.amount ?? 0)})`
+    case 'hangout_proposed':
+      return `${actorName} proposed "${item.metadata?.title ?? 'a hangout'}"`
+    case 'hangout_rsvp': {
+      const voteVal = item.metadata?.rsvpValue
+      const voteLabel = voteVal === 'yes' ? 'Yes' : voteVal === 'maybe' ? 'Maybe' : 'No'
+      return `${actorName} voted ${voteLabel} on "${item.metadata?.title ?? 'hangout'}"`
+    }
+    case 'hangout_confirmed':
+      return `"${item.metadata?.title ?? 'Hangout'}" is confirmed — ${item.metadata?.yesCount ?? 0} going`
     default:
       return item.metadata?.title ?? 'Activity'
   }
@@ -237,6 +250,12 @@ function buildA11yLabel(item: ActivityItem, actorName: string): string {
       return `${actorName} updated the trip budget to ₹${item.metadata?.amount ?? ''}`
     case 'budget-removed':
       return `${actorName} removed the trip budget`
+    case 'hangout_proposed':
+      return `${actorName} proposed hangout: ${item.metadata?.title ?? ''}`
+    case 'hangout_rsvp':
+      return `${actorName} voted ${item.metadata?.rsvpValue ?? ''} on hangout: ${item.metadata?.title ?? ''}`
+    case 'hangout_confirmed':
+      return `Hangout confirmed: ${item.metadata?.title ?? ''}, ${item.metadata?.yesCount ?? 0} going`
     default:
       return item.metadata?.title ?? 'Activity item'
   }

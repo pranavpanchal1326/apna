@@ -284,6 +284,11 @@ service cloud.firestore {
           );
       }
 
+      // ── /groups/{groupId}/hangouts/{hangoutId} ──────────────────
+      match /hangouts/{hangoutId} {
+        allow read, write: if isGroupMember(groupId);
+      }
+
       // ── /groups/{groupId}/memories/{memoryId} ───────────────────
       match /memories/{memoryId} {
 

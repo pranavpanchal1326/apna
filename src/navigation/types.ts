@@ -50,12 +50,19 @@ export type ListsStackParamList = {
   ListDetail:  { listId: string; listTitle: string }
 }
 
+// ── Hangouts Stack ──────────────────────────────────────────────
+export type HangoutsStackParamList = {
+  HangoutsHome:  undefined
+  HangoutDetail: { hangoutId: string; title: string }
+}
+
 // ── Main Tab Navigator ───────────────────────────────────────────
 export type MainTabParamList = {
   HomeTab:  undefined
   Budget:   { groupId?: string }
   Trip:     { groupId?: string }
   Lists:    undefined
+  Hangouts: undefined
   Memories: { groupId?: string }
   Profile:  undefined
 }
@@ -77,6 +84,9 @@ export type ItineraryStackScreenProps<T extends keyof ItineraryStackParamList> =
 
 export type ListsStackScreenProps<T extends keyof ListsStackParamList> =
   NativeStackScreenProps<ListsStackParamList, T>
+
+export type HangoutsStackScreenProps<T extends keyof HangoutsStackParamList> =
+  NativeStackScreenProps<HangoutsStackParamList, T>
 
 export type MainTabScreenProps<T extends keyof MainTabParamList> =
   CompositeScreenProps<

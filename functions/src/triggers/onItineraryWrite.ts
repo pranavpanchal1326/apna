@@ -131,14 +131,14 @@ export const onItineraryItemUpdated = onDocumentUpdated(
         }
       })
       
-      let newState = 'open' as const
+      let newState: 'open' | 'confirmed' | 'rejected' = 'open'
       let isConfirmed = false
       
       if (yesCount > threshold) {
-        newState = 'confirmed' as const
+        newState = 'confirmed'
         isConfirmed = true
       } else if (noCount > threshold) {
-        newState = 'rejected' as const
+        newState = 'rejected'
       }
       
       // Prevent infinite loop: only update if something changed in proposalMeta

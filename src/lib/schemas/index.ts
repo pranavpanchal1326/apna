@@ -6,4 +6,4 @@ export * from './itinerary.schema'
 export * from './memory.schema'
 export * from './activity.schema'
 export * from './list.schema'
-
+export * from './hangout.schema'

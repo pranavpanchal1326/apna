@@ -9,12 +9,13 @@ import * as Haptics from 'expo-haptics'
 import { useGroupStore } from '@stores/group.store'
 
 // Placeholder screens — content built in Phases 1–4
-import { HomeNavigator }  from './HomeNavigator'
-import { BudgetScreen }   from '@screens/budget/BudgetScreen'
+import { HomeNavigator }   from './HomeNavigator'
+import { BudgetScreen }    from '@screens/budget/BudgetScreen'
 import { ItineraryStack }  from './ItineraryStack'
-import { ListsStack }     from './ListsStack'
-import { MemoriesScreen } from '@screens/memories/MemoriesScreen'
-import { ProfileScreen }  from '@screens/profile/ProfileScreen'
+import { ListsStack }      from './ListsStack'
+import { HangoutsStack }   from './HangoutsStack'
+import { MemoriesScreen }  from '@screens/memories/MemoriesScreen'
+import { ProfileScreen }   from '@screens/profile/ProfileScreen'
 
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
@@ -39,6 +40,11 @@ const TAB_ICONS: Record<keyof MainTabParamList, (active: boolean, color: string)
   Lists: (_active, color) => (
     <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontSize: 17, color }}>☑</Text>
+    </View>
+  ),
+  Hangouts: (_active, color) => (
+    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18, color }}>🎉</Text>
     </View>
   ),
   Memories: (_active, color) => (
@@ -149,6 +155,7 @@ export function MainNavigator() {
         <Tab.Screen name="Trip" component={ItineraryStack} />
       )}
       <Tab.Screen name="Lists"    component={ListsStack} />
+      <Tab.Screen name="Hangouts" component={HangoutsStack} />
       <Tab.Screen name="Memories" component={MemoriesScreen} />
       <Tab.Screen name="Profile"  component={ProfileScreen} />
     </Tab.Navigator>
