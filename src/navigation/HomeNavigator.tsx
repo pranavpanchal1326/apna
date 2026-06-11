@@ -13,6 +13,7 @@ import { BalanceSummaryScreen } from '../screens/settlement'
 import { NotificationDebugScreen } from '../screens/debug/NotificationDebugScreen'
 import { TripWrapScreen } from '@screens/tripWrap/TripWrapScreen'
 import { PrivacySettingsScreen } from '../screens/profile/PrivacySettingsScreen'
+import { ChoosePathScreen } from '../screens/profile/ChoosePathScreen'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -30,6 +31,7 @@ export function HomeNavigator() {
       }}
     >
       <Stack.Screen name="HomeList"     component={HomeScreen} />
+      <Stack.Screen name="ChoosePath"   component={ChoosePathScreen} />
       <Stack.Screen name="CreateGroup"  component={CreateGroupScreen} />
       <Stack.Screen name="JoinGroup"    component={JoinGroupScreen} />
       <Stack.Screen

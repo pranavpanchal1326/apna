@@ -63,6 +63,25 @@ const TAB_ICONS: Record<keyof MainTabParamList, (active: boolean, color: string)
 // PRD §7: tabBarHeight=56, dot indicator below active icon, no labels
 function DhagaTabBar({ state, navigation }: BottomTabBarProps) {
   const { colors, spacing, layout } = useTheme()
+  const groups = useGroupStore((s) => s.groups)
+
+  // Traverse down to find the active leaf route name in nested navigators
+  const currentTabRoute = state.routes[state.index]
+  let activeRouteName = currentTabRoute.name
+  let nestedState = currentTabRoute.state
+  while (nestedState) {
+    const idx = nestedState.index ?? 0
+    const route = nestedState.routes[idx]
+    activeRouteName = route.name
+    nestedState = route.state as any
+  }
+
+  // Hide the tab bar completely during onboarding if the user has 0 groups
+  const hasNoGroups = groups.length === 0
+  const isOnboardingRoute = ['ChoosePath', 'CreateGroup', 'JoinGroup'].includes(activeRouteName)
+  if (hasNoGroups && isOnboardingRoute) {
+    return null
+  }
 
   return (
     <View

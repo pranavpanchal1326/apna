@@ -14,11 +14,13 @@ import {
   Platform,
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import Constants from 'expo-constants'
 import { useTheme } from '@theme'
 import { Button, Input, Avatar, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
 import { createUserDoc } from '@lib/firebase/auth'
 import { AVATAR_COLORS } from '@lib/types'
+import { track } from '@lib/analytics'
 
 interface ProfileSetupScreenProps {
   onComplete: () => void   // Navigate to Home
@@ -49,6 +51,15 @@ export function ProfileSetupScreen({ onComplete }: ProfileSetupScreenProps) {
 
     try {
       const user = await createUserDoc(firebaseUser, name.trim(), selectedColor)
+      
+      track('profile_created', {
+        avatar_color: selectedColor,
+        name_length: name.trim().length,
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 3,
+      })
+
       setUser(user)
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       onComplete()

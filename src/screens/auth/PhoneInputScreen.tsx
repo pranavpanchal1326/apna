@@ -17,6 +17,7 @@ import { Button, Input, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
 import { sendOTP } from '@lib/firebase/auth'
 import type { RecaptchaRef } from '@lib/firebase/auth'
+import { track } from '@lib/analytics'
 
 interface PhoneInputScreenProps {
   onOTPSent: () => void       // Navigate to OTPScreen
@@ -38,18 +39,48 @@ export function PhoneInputScreen({ onOTPSent }: PhoneInputScreenProps) {
   const handleSendOTP = useCallback(async () => {
     if (!isValid) {
       setError('Enter a valid 10-digit Indian mobile number')
+      track('phone_entered', {
+        validation_success: false,
+        error_code: 'invalid_format',
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 1,
+      })
       return
     }
     setError(null)
     setIsLoading(true)
 
+    track('phone_entered', {
+      validation_success: true,
+      country_code: '+91',
+      platform: Platform.OS,
+      app_version: Constants.expoConfig?.version ?? '1.0.0',
+      step_index: 1,
+    })
+
     try {
       const verificationId = await sendOTP(phone.trim(), recaptchaRef as RecaptchaRef)
       setOTPVerificationId(verificationId, phone.trim())
       startResendCountdown()
+
+      track('otp_requested', {
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 2,
+      })
+
       onOTPSent()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to send OTP'
+
+      track('otp_request_failed', {
+        error_message: msg,
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 2,
+      })
+
       // User-friendly error messages — no raw Firebase error codes
       if (msg.includes('too-many-requests')) {
         setError('Too many attempts. Please wait a few minutes.')

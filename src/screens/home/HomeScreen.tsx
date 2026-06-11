@@ -1,5 +1,4 @@
-// src/screens/home/HomeScreen.tsx
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import {
   View,
   Text,
@@ -8,9 +7,10 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { useEffect } from 'react'
 import { useTheme } from '@theme'
 import { Screen } from '@components'
 import { useGroups } from '@hooks/useGroups'
@@ -20,16 +20,26 @@ import type { HomeStackParamList } from '@navigation/types'
 import type { GroupInput } from '@lib/schemas'
 
 
-type Nav = NativeStackNavigationProp<HomeStackParamList>
+type Nav = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>
+type Route = RouteProp<HomeStackParamList, 'HomeList'>
 
 export function HomeScreen() {
   const { colors, text, spacing, radius, shadows } = useTheme()
   const navigation = useNavigation<Nav>()
+  const route = useRoute<Route>()
   const { user }   = useAuth()
   const { groups, isLoading } = useGroups()
-  const [fabOpen, setFabOpen] = useState(false)
+  const [fabOpen, setFabOpen] = React.useState(false)
 
+  const skipped = route.params?.skipped ?? false
   const firstName = user?.name?.split(' ')[0] ?? 'there'
+
+  // Redirect to ChoosePath onboarding selection if user has 0 groups and didn't skip
+  useEffect(() => {
+    if (!isLoading && groups.length === 0 && !skipped) {
+      navigation.replace('ChoosePath', {})
+    }
+  }, [isLoading, groups.length, skipped, navigation])
 
   // ── FAB menu animation ────────────────────────────────────────
   const fabAnim = React.useRef(new Animated.Value(0)).current

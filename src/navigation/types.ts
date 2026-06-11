@@ -17,6 +17,7 @@ export type RootStackParamList = {
 
 // ── Auth Navigator ───────────────────────────────────────────────
 export type AuthStackParamList = {
+  ValueFraming: undefined
   PhoneInput:   undefined
   OTP:          { phone: string }
   ProfileSetup: undefined
@@ -24,7 +25,8 @@ export type AuthStackParamList = {
 
 // ── Home Stack (inside Home tab) ──────────────────────────────────
 export type HomeStackParamList = {
-  HomeList:           undefined                        // Groups list + FAB
+  HomeList:           { skipped?: boolean } | undefined  // Groups list + FAB
+  ChoosePath:         { inviteCode?: string }
   CreateGroup:        undefined                        // Multi-step create
   JoinGroup:          undefined                        // Invite code entry
   GroupHome:          { groupId: string; groupName: string }  // Group detail shell

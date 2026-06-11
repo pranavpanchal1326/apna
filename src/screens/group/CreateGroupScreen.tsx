@@ -24,6 +24,8 @@ import { Button, Input, Screen } from '@components'
 import { useGroupStore } from '@stores/group.store'
 import { useAuth } from '@hooks/useAuth'
 import type { HomeStackParamList } from '@navigation/types'
+import { track } from '@lib/analytics'
+import Constants from 'expo-constants'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
 
@@ -106,6 +108,24 @@ export function CreateGroupScreen() {
       })
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+
+      const trackProps: Record<string, string | number | boolean> = {
+        name: name.trim(),
+        has_start_date: Boolean(startDate),
+        has_end_date: Boolean(endDate),
+        cover_emoji: emoji,
+        has_budget: Boolean(budget),
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 5,
+      }
+      if (destination.trim()) {
+        trackProps.destination = destination.trim()
+      }
+      if (budget) {
+        trackProps.budget_amount = parseFloat(budget)
+      }
+      track('group_created', trackProps)
 
       // Replace screen in stack with the new group home
       navigation.replace('GroupHome', {

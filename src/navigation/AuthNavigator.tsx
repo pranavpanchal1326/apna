@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useNavigation } from '@react-navigation/native'
 import type { AuthStackParamList } from './types'
 import {
+  ValueFramingScreen,
   PhoneInputScreen,
   OTPScreen,
   ProfileSetupScreen,
@@ -25,6 +26,7 @@ export function AuthNavigator() {
         gestureEnabled: true,
       }}
     >
+      <Stack.Screen name="ValueFraming" component={ValueFramingScreen} />
       <Stack.Screen name="PhoneInput" component={PhoneInputScreenWrapper} />
       <Stack.Screen name="OTP"         component={OTPScreenWrapper} />
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreenWrapper} />

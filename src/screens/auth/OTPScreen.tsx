@@ -18,11 +18,11 @@ import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
-import { verifyOTP } from '@lib/firebase/auth'
-import { sendOTP } from '@lib/firebase/auth'
+import { verifyOTP, sendOTP } from '@lib/firebase/auth'
 import type { RecaptchaRef } from '@lib/firebase/auth'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import Constants from 'expo-constants'
+import { track } from '@lib/analytics'
 
 const OTP_LENGTH = 6
 
@@ -74,6 +74,13 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
       try {
         const firebaseUser = await verifyOTP(otpFlow.verificationId, code)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+        
+        track('otp_verified', {
+          platform: Platform.OS,
+          app_version: Constants.expoConfig?.version ?? '1.0.0',
+          step_index: 2,
+        })
+
         await setFirebaseUser(firebaseUser)
         onVerified()
       } catch (err: unknown) {
@@ -82,6 +89,14 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
         inputRefs.current[0]?.focus()
 
         const msg = err instanceof Error ? err.message : ''
+        
+        track('otp_verification_failed', {
+          error_message: msg,
+          platform: Platform.OS,
+          app_version: Constants.expoConfig?.version ?? '1.0.0',
+          step_index: 2,
+        })
+
         if (msg.includes('invalid-verification-code')) {
           setError('Wrong code. Check the SMS and try again.')
         } else if (msg.includes('session-expired')) {

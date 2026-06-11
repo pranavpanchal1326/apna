@@ -20,6 +20,8 @@ import type { HomeStackParamList } from '@navigation/types'
 import { getDoc, Timestamp } from 'firebase/firestore'
 import { inviteDoc, groupDoc } from '@lib/firebase/collections'
 import type { GroupInput } from '@lib/schemas'
+import { track } from '@lib/analytics'
+import Constants from 'expo-constants'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
 
@@ -82,6 +84,14 @@ export function JoinGroupScreen() {
         setError('You are already a member of this group.')
       }
 
+      track('group_join_started', {
+        invite_code: inviteCode,
+        groupId: invite.groupId,
+        group_name: group.name,
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+      })
+
       setGroupPreview(group)
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     } catch (err) {
@@ -101,6 +111,15 @@ export function JoinGroupScreen() {
       await joinGroup(code, user.uid)
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+
+      track('group_joined', {
+        invite_code: code,
+        groupId: groupPreview.id,
+        group_name: groupPreview.name,
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+        step_index: 5,
+      })
 
       navigation.replace('GroupHome', {
         groupId:   groupPreview.id,
