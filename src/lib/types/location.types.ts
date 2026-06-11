@@ -38,3 +38,29 @@ export const LOCATION_STATUS_THRESHOLDS = {
   live:   30_000,  // 30 seconds in milliseconds
   recent: 300_000, // 5 minutes in milliseconds
 } as const
+
+import type { Timestamp } from 'firebase/firestore'
+
+export interface LocationPrivacyPreferences {
+  userId: string
+  groupVisibility: Record<string, GroupLocationVisibility>
+}
+
+export interface GroupLocationVisibility {
+  shareWithAll: boolean
+  excludedMembers: string[]
+  updatedAt: Timestamp | null
+}
+
+export interface LocationSession {
+  isActive: boolean
+  isGhostMode: boolean
+  startTime: number | null      // Unix ms
+  expiryTime: number | null     // Unix ms
+  groupId: string | null
+}
+
+export const LOCATION_SESSION_DURATION_MS = 4 * 60 * 60 * 1000  // 4 hours
+export const LOCATION_EXPIRY_WARNING_MS   = 5 * 60 * 1000        // 5 min warning
+export const SOS_LOCATION_TTL_MS          = 60 * 60 * 1000       // SOS data lives 1 hour
+

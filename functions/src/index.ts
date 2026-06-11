@@ -142,20 +142,55 @@ export const generateTripWrap = onCall(
   },
 )
 
-// ── Scheduled: Clean up expired location data ─────────────────────────────────
-
-/**
- * Runs every 5 minutes.
- * Deletes /groups/{groupId}/locations/{locationId} nodes where timestamp < 4 hours ago.
- * Keeps RTDB lean — location data has no long-term value.
- * TODO Prompt 1.6: Implement the actual RTDB cleanup query.
- */
 export const cleanupExpiredLocations = onSchedule(
   { schedule: 'every 5 minutes', region: 'asia-south1' },
-  () => {
+  async () => {
     const cutoff = Date.now() - 4 * 60 * 60 * 1000 // 4 hours ago
     console.info(`[apna] cleanupExpiredLocations: cutoff=${new Date(cutoff).toISOString()}`)
-    // TODO: Prompt 1.6
+    
+    try {
+      const db = admin.database()
+      const groupsRef = db.ref('groups')
+      const snapshot = await groupsRef.once('value')
+      const groups = snapshot.val() as Record<
+        string,
+        { locations?: Record<string, { timestamp?: number }> }
+      > | null
+
+      if (!groups) {
+        console.info('[apna] No group locations found in RTDB.')
+        return
+      }
+
+      const updates: Record<string, null> = {}
+      let count = 0
+
+      for (const [groupId, groupData] of Object.entries(groups)) {
+        if (!groupData || typeof groupData !== 'object') continue
+        
+        const locations = groupData.locations
+        if (!locations || typeof locations !== 'object') continue
+
+        for (const [userId, locUpdate] of Object.entries(locations)) {
+          if (!locUpdate || typeof locUpdate !== 'object') continue
+          const timestamp = locUpdate.timestamp
+          
+          if (typeof timestamp === 'number' && timestamp < cutoff) {
+            updates[`${groupId}/locations/${userId}`] = null
+            count++
+          }
+        }
+      }
+
+      if (count > 0) {
+        await groupsRef.update(updates)
+        console.info(`[apna] cleanupExpiredLocations: cleaned up ${count} expired locations.`)
+      } else {
+        console.info('[apna] cleanupExpiredLocations: no expired locations to clean up.')
+      }
+    } catch (error) {
+      console.error('[apna] Error cleaning up expired locations:', error)
+    }
   },
 )
 

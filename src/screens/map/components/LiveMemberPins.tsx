@@ -28,9 +28,13 @@ export const LiveMemberPins = memo(function LiveMemberPins({
         const coordinate: [number, number] = [loc.lng, loc.lat]
         const isActive = activeMemberId === loc.userId
 
+        const isGhostPin = loc.sharing === false
+
         // Determine border color based on status
         let statusColor: string = colors.border
-        if (loc.status === 'live') {
+        if (isGhostPin) {
+          statusColor = colors.accentPrimary
+        } else if (loc.status === 'live') {
           statusColor = colors.positive
         } else if (loc.status === 'recent') {
           statusColor = colors.warning
@@ -57,12 +61,14 @@ export const LiveMemberPins = memo(function LiveMemberPins({
                     backgroundColor: loc.avatarColor,
                     borderColor: statusColor,
                     borderWidth: isActive ? 2.5 : 1.5,
+                    borderStyle: isGhostPin ? 'dashed' : 'solid',
+                    opacity: isGhostPin ? 0.6 : 1,
                   },
                   isActive && shadows.accentGlow,
                 ]}
               >
                 <Text style={[text.label.sm, styles.initialText]}>
-                  {loc.name.charAt(0).toUpperCase()}
+                  {isGhostPin ? '👻' : loc.name.charAt(0).toUpperCase()}
                 </Text>
               </View>
 

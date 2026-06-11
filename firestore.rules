@@ -124,6 +124,12 @@ service cloud.firestore {
 
       // No one can delete user documents (use Firebase Auth delete instead)
       allow delete: if false;
+
+      // Location privacy settings per group
+      match /locationPrivacy/{groupId} {
+        allow read: if isAuthed();
+        allow write: if isOwner(uid);
+      }
     }
 
     // ── /groups/{groupId} ──────────────────────────────────────────

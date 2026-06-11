@@ -1,19 +1,70 @@
 // src/hooks/useRealtime.ts
 // Custom hook for subscribing to member locations in the Firebase Realtime Database.
+// Filters out:
+//   - Users in Ghost Mode (sharing === false) unless it is the user themselves.
+//   - Users who have explicitly excluded the current user from seeing their location.
 
 import { useEffect, useState } from 'react'
 import { ref, onValue } from 'firebase/database'
-import { rtdb } from '../lib/firebase/config'
-import type { LocationUpdate, MemberLocation } from '../lib/types/location.types'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { rtdb, db } from '../lib/firebase/config'
+import type { LocationUpdate, MemberLocation, GroupLocationVisibility } from '../lib/types/location.types'
 import { LOCATION_STATUS_THRESHOLDS } from '../lib/types/location.types'
 import type { UserInput } from '../lib/schemas'
 
 export function useGroupLocations(
   groupId: string | null,
-  members: Map<string, UserInput>
+  members: Map<string, UserInput>,
+  myUid: string
 ): Map<string, MemberLocation> {
   const [locations, setLocations] = useState<Map<string, MemberLocation>>(new Map())
+  const [excludedBy, setExcludedBy] = useState<Set<string>>(new Set())
 
+  // 1. Subscribe to group members' location privacy documents to track who excluded me
+  useEffect(() => {
+    if (!groupId || members.size === 0) {
+      setExcludedBy(new Set())
+      return
+    }
+
+    const unsubscribes: (() => void)[] = []
+    const exclusionsMap = new Map<string, boolean>()
+
+    members.forEach((_, memberId) => {
+      if (memberId === myUid) return
+
+      const privacyDocRef = doc(db, 'users', memberId, 'locationPrivacy', groupId)
+      const unsub = onSnapshot(
+        privacyDocRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data() as GroupLocationVisibility
+            const isExcluded = data.shareWithAll === false && data.excludedMembers?.includes(myUid)
+            exclusionsMap.set(memberId, isExcluded)
+          } else {
+            exclusionsMap.set(memberId, false)
+          }
+
+          // Compute new Set of users who excluded me
+          const nextExclusions = new Set<string>()
+          exclusionsMap.forEach((val, uid) => {
+            if (val) nextExclusions.add(uid)
+          })
+          setExcludedBy(nextExclusions)
+        },
+        (err) => {
+          console.warn(`[useGroupLocations] Error loading privacy settings for member=${memberId}:`, err)
+        }
+      )
+      unsubscribes.push(unsub)
+    })
+
+    return () => {
+      unsubscribes.forEach((unsub) => unsub())
+    }
+  }, [groupId, members, myUid])
+
+  // 2. Subscribe to locations in Realtime Database and filter
   useEffect(() => {
     if (!groupId) {
       setLocations(new Map())
@@ -35,8 +86,12 @@ export function useGroupLocations(
             const member = members.get(userId)
             if (!member) return
 
-            // Skip if user turned off sharing (Ghost Mode)
-            if (update.sharing === false) return
+            // Safety check: Skip if user turned off sharing (Ghost Mode)
+            // Rule: Current user can still see themselves on their own device
+            if (update.sharing === false && userId !== myUid) return
+
+            // Safety check: Skip if this user has excluded the current user
+            if (userId !== myUid && excludedBy.has(userId)) return
 
             // Compute status
             const diff = now - update.timestamp
@@ -66,9 +121,9 @@ export function useGroupLocations(
     return () => {
       unsubscribe()
     }
-  }, [groupId, members])
+  }, [groupId, members, myUid, excludedBy])
 
-  // Periodic timer to transition statuses locally between updates
+  // 3. Periodic timer to transition statuses locally between updates
   useEffect(() => {
     const interval = setInterval(() => {
       setLocations((prev) => {

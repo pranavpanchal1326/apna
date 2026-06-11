@@ -17,7 +17,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import * as Location from 'expo-location'
+import * as Haptics from 'expo-haptics'
 import Constants from 'expo-constants'
+import { AppState, type AppStateStatus } from 'react-native'
 import type { MemberLocation } from '../../lib/types/location.types'
 
 import { useTheme } from '../../theme'
@@ -27,6 +29,8 @@ import { useItineraryStore } from '../../stores/itinerary.store'
 import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { useGroupLocations } from '../../hooks/useRealtime'
 import { useAuth } from '../../hooks/useAuth'
+import { useLocationStore } from '../../stores/location.store'
+import { updateMemberLocation, triggerSOSEvent } from '../../lib/firebase/realtime'
 
 import { ItineraryPins } from './components/ItineraryPins'
 import { LiveMemberPins } from './components/LiveMemberPins'
@@ -34,6 +38,7 @@ import { RouteOverlay } from './components/RouteOverlay'
 import { PlaceDetailsSheet, PlaceDetailsSheetRef, SelectedPin } from './components/PlaceDetailsSheet'
 import { MapFAB } from '../itinerary/MapFAB'
 import { DayFilterBar, type DayFilter } from '../itinerary/DayFilterBar'
+import { PrivacyQuickSheet } from './components/PrivacyQuickSheet'
 
 import {
   normalizeItineraryPins,
@@ -71,7 +76,21 @@ export function MapScreen() {
 
   const memberIds = activeGroup?.memberIds ?? []
   const { members } = useGroupMembers(memberIds)
-  const liveLocations = useGroupLocations(groupId, members)
+  const liveLocations = useGroupLocations(groupId, members, myUid)
+
+  // Location Privacy Store
+  const {
+    isSharing,
+    isGhostMode,
+    sessionExpiryTime,
+    checkExpiry,
+    stopSession,
+    toggleGhostMode,
+  } = useLocationStore()
+
+  // Local UI states
+  const [privacySheetVisible, setPrivacySheetVisible] = useState(false)
+  const [isSendingSOS, setIsSendingSOS] = useState(false)
 
   // 2. Map & Camera State
   const cameraRef = useRef<MapboxGL.Camera>(null)
@@ -122,6 +141,96 @@ export function MapScreen() {
     }
     requestLocation()
   }, [])
+
+  // ── Session Expiry AppState Watcher ────────────────────────────────
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (status: AppStateStatus) => {
+      if (status === 'active') {
+        checkExpiry()
+      }
+    })
+    return () => sub.remove()
+  }, [checkExpiry])
+
+  // ── Location Watcher Loop ──────────────────────────────────────────
+  const watcherRef = useRef<Location.LocationSubscription | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    async function startWatching() {
+      if (watcherRef.current) {
+        watcherRef.current.remove()
+        watcherRef.current = null
+      }
+
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync()
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Please enable location permissions to share your location.')
+          stopSession()
+          return
+        }
+
+        const sub = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Balanced,
+            timeInterval: 15000,
+            distanceInterval: 5,
+          },
+          async (loc) => {
+            if (!active) return
+            const coords = {
+              lat: loc.coords.latitude,
+              lng: loc.coords.longitude,
+              accuracy: loc.coords.accuracy ?? 10,
+            }
+            setUserLocation([coords.lng, coords.lat])
+
+            const latestGhostMode = useLocationStore.getState().isGhostMode
+
+            try {
+              await updateMemberLocation(groupId!, myUid, coords, !latestGhostMode)
+            } catch (err) {
+              console.error('[MapScreen] Failed to push location update:', err)
+            }
+          }
+        )
+
+        if (active) {
+          watcherRef.current = sub
+        } else {
+          sub.remove()
+        }
+      } catch (err) {
+        console.warn('[MapScreen] Error starting location watcher:', err)
+      }
+    }
+
+    if (isSharing && groupId) {
+      startWatching()
+    }
+
+    return () => {
+      active = false
+      if (watcherRef.current) {
+        watcherRef.current.remove()
+        watcherRef.current = null
+      }
+    }
+  }, [isSharing, groupId, myUid, stopSession])
+
+  // ── Immediate Push on Ghost Mode Change ──────────────────────────
+  useEffect(() => {
+    if (isSharing && groupId && userLocation) {
+      const coords = {
+        lat: userLocation[1],
+        lng: userLocation[0],
+        accuracy: 10,
+      }
+      updateMemberLocation(groupId, myUid, coords, !isGhostMode).catch(() => {})
+    }
+  }, [isGhostMode])
 
   // ── Derived Data for rendering ──────────────────────────────────────
   const allItems = useMemo(() => Object.values(itemsByDay).flat(), [itemsByDay])
@@ -375,6 +484,42 @@ export function MapScreen() {
       .slice(0, 3)
   }, [userLocation, allItems, myUid])
 
+  const handleSOSTrigger = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+    Alert.alert(
+      'Send Emergency SOS?',
+      `This will immediately broadcast your current location to all members of ${activeGroup?.name || 'the group'} and send a high-priority push alert.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send SOS',
+          style: 'destructive',
+          onPress: async () => {
+            setIsSendingSOS(true)
+            try {
+              const loc = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+              })
+              const coords = {
+                lat: loc.coords.latitude,
+                lng: loc.coords.longitude,
+                accuracy: loc.coords.accuracy ?? 10,
+              }
+              await triggerSOSEvent(groupId!, myUid, coords)
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              Alert.alert('SOS Sent', 'Your location has been sent and group members notified.')
+            } catch (err) {
+              console.error('[SOS] Failed to send SOS:', err)
+              Alert.alert('SOS Failed', 'Failed to acquire location or notify group.')
+            } finally {
+              setIsSendingSOS(false)
+            }
+          }
+        }
+      ]
+    )
+  }
+
   if (!groupId) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.bgPrimary }]}>
@@ -425,8 +570,104 @@ export function MapScreen() {
           />
         </MapboxGL.MapView>
 
+        {/* ── LOCATION PRIVACY HEADER ROW ─────────────────────────────── */}
+        <View style={[styles.headerRow, { top: insets.top + spacing.sm }]}>
+          {(() => {
+            let bgColor: string = colors.bgSecondary
+            let borderColor: string = colors.border
+            let textColor: string = colors.textSecondary
+            let labelText = 'Location off'
+            let hasDot = false
+            let isGhost = false
+
+            if (isSharing) {
+              if (isGhostMode) {
+                bgColor = colors.accentPrimary + '15'
+                borderColor = colors.accentPrimary
+                textColor = colors.accentPrimary
+                labelText = 'Ghost Mode'
+                isGhost = true
+              } else if (sessionExpiryTime) {
+                const remaining = sessionExpiryTime - Date.now()
+                const mins = Math.floor(remaining / 60000)
+                const hrs = Math.floor(mins / 60)
+                const remMins = mins % 60
+
+                if (remaining > 0 && remaining < 5 * 60 * 1000) {
+                  bgColor = colors.warning + '15'
+                  borderColor = colors.warning
+                  textColor = colors.warning
+                  labelText = `Expiring in ${remMins}m · Extend`
+                } else {
+                  bgColor = colors.positive + '15'
+                  borderColor = colors.positive
+                  textColor = colors.positive
+                  labelText = hrs > 0 ? `Sharing · ${hrs}h ${remMins}m left` : `Sharing · ${remMins}m left`
+                  hasDot = true
+                }
+              }
+            }
+
+            return (
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                  setPrivacySheetVisible(true)
+                }}
+                style={[
+                  styles.sharingPill,
+                  {
+                    backgroundColor: bgColor,
+                    borderColor,
+                    borderRadius: radius.full,
+                  },
+                ]}
+              >
+                {hasDot && (
+                  <View style={[styles.pulseDot, { backgroundColor: colors.positive, borderRadius: radius.full }]} />
+                )}
+                <Text style={[text.label.sm, { color: textColor, fontWeight: '700' }]}>
+                  {isGhost ? '👻 ' : ''}{labelText}
+                </Text>
+              </Pressable>
+            )
+          })()}
+        </View>
+
+        {/* Ghost Mode Persistent Floating Warning Banner */}
+        {isSharing && isGhostMode && (
+          <View style={[styles.headerRow, { top: insets.top + spacing.sm + 44 }]}>
+            <View
+              style={[
+                styles.ghostBanner,
+                {
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.accentPrimary,
+                  borderRadius: radius.md,
+                  ...shadows.card,
+                },
+              ]}
+            >
+              <Text style={[text.body.sm, { color: colors.textPrimary, flex: 1 }]}>
+                👻 Ghost Mode active — others cannot see you.
+              </Text>
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                  toggleGhostMode()
+                }}
+                style={{ marginLeft: spacing.sm }}
+              >
+                <Text style={[text.label.sm, { color: colors.accentPrimary, fontWeight: '700' }]}>
+                  TURN OFF
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         {/* ── FLOAT LAYER 1: Header Contextual Banner ─────────────────────── */}
-        <View style={[styles.floatingHeader, { top: insets.top + spacing.sm }]}>
+        <View style={[styles.floatingHeader, { top: insets.top + spacing.sm + (isSharing && isGhostMode ? 104 : 48) }]}>
           {proximityAlertStop ? (
             <Pressable
               onPress={() => handlePressItineraryPin(proximityAlertStop)}
@@ -556,6 +797,30 @@ export function MapScreen() {
             ]}
           >
             <Text style={{ fontSize: 20, color: colors.bgPrimary }}>📍</Text>
+          </Pressable>
+
+          {/* SOS button */}
+          <Pressable
+            delayLongPress={2000}
+            onLongPress={handleSOSTrigger}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+              Alert.alert(
+                'Hold to Trigger SOS',
+                'Press and hold this button for 2 seconds to broadcast your live location to all group members.'
+              )
+            }}
+            style={({ pressed }) => [
+              styles.fabBtn,
+              {
+                backgroundColor: colors.accentDanger,
+                borderRadius: radius.full,
+                opacity: pressed || isSendingSOS ? 0.8 : 1,
+              },
+              shadows.card,
+            ]}
+          >
+            <Text style={{ fontSize: 20 }}>🆘</Text>
           </Pressable>
         </View>
 
@@ -692,6 +957,12 @@ export function MapScreen() {
             </View>
           </View>
         )}
+
+        <PrivacyQuickSheet
+          visible={privacySheetVisible}
+          onClose={() => setPrivacySheetVisible(false)}
+          groupId={groupId}
+        />
       </View>
     </GestureHandlerRootView>
   )
@@ -780,5 +1051,35 @@ const styles = StyleSheet.create({
   },
   searchResultRow: {
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerRow: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    zIndex: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sharingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1.5,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    marginRight: 6,
+  },
+  ghostBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    width: '100%',
+    padding: 10,
+    marginTop: 8,
   },
 })
