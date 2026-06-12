@@ -22,6 +22,9 @@ interface LocationStore {
   sessionExpiryTime: number | null
   activeGroupId:     string | null
   privacyPreferences: Record<string, GroupLocationVisibility> // key: groupId
+  isBackgroundActive:    boolean
+  backgroundStartedAt:   number | null
+  backgroundRemainingMs: number
 
   // ── Actions ────────────────────────────────────────────────────────
   hydrate:                () => void
@@ -31,6 +34,8 @@ interface LocationStore {
   checkExpiry:            () => void
   loadPrivacyPreferences: (groupId: string) => Promise<void>
   updateGroupVisibility:  (groupId: string, visibility: GroupLocationVisibility) => Promise<void>
+  setBackgroundActive:    (active: boolean, startedAt?: number) => void
+  setBackgroundRemainingMs: (ms: number) => void
 }
 
 // Scoped MMKV instance for location settings
@@ -43,6 +48,9 @@ export const useLocationStore = create<LocationStore>((set, get) => ({
   sessionExpiryTime: null,
   activeGroupId:     null,
   privacyPreferences: {},
+  isBackgroundActive:    false,
+  backgroundStartedAt:   null,
+  backgroundRemainingMs: 0,
 
   // ── Hydrate ────────────────────────────────────────────────────────
 
@@ -53,6 +61,8 @@ export const useLocationStore = create<LocationStore>((set, get) => ({
       const start = locationStorage.getNumber('location_session_start') || null
       const expiry = locationStorage.getNumber('location_session_expiry') || null
       const groupId = locationStorage.getString('location_session_groupId') || null
+      const bgActive = locationStorage.getBoolean('location_bg_active') ?? false
+      const bgStart = locationStorage.getNumber('location_bg_start') || null
 
       set({
         isSharing: active,
@@ -60,6 +70,9 @@ export const useLocationStore = create<LocationStore>((set, get) => ({
         sessionStartTime: start,
         sessionExpiryTime: expiry,
         activeGroupId: groupId,
+        isBackgroundActive: bgActive,
+        backgroundStartedAt: bgStart,
+        backgroundRemainingMs: bgStart ? Math.max(0, 4 * 60 * 60 * 1000 - (Date.now() - bgStart)) : 0,
       })
 
       // Immediate check if session expired while app was closed
@@ -204,5 +217,23 @@ export const useLocationStore = create<LocationStore>((set, get) => ({
       await get().loadPrivacyPreferences(groupId)
       throw err
     }
+  },
+
+  setBackgroundActive(active, startedAt) {
+    const start = startedAt ?? (active ? Date.now() : null)
+    set({
+      isBackgroundActive: active,
+      backgroundStartedAt: start,
+    })
+    locationStorage.set('location_bg_active', active)
+    if (start) {
+      locationStorage.set('location_bg_start', start)
+    } else {
+      locationStorage.remove('location_bg_start')
+    }
+  },
+
+  setBackgroundRemainingMs(ms) {
+    set({ backgroundRemainingMs: ms })
   },
 }))

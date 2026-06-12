@@ -30,7 +30,7 @@ import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { useGroupLocations } from '../../hooks/useRealtime'
 import { useAuth } from '../../hooks/useAuth'
 import { useLocationStore } from '../../stores/location.store'
-import { updateMemberLocation, triggerSOSEvent } from '../../lib/firebase/realtime'
+import { triggerSOSEvent } from '../../lib/firebase/realtime'
 
 import { ItineraryPins } from './components/ItineraryPins'
 import { LiveMemberPins } from './components/LiveMemberPins'
@@ -39,6 +39,7 @@ import { PlaceDetailsSheet, PlaceDetailsSheetRef, SelectedPin } from './componen
 import { MapFAB } from '../itinerary/MapFAB'
 import { DayFilterBar, type DayFilter } from '../itinerary/DayFilterBar'
 import { PrivacyQuickSheet } from './components/PrivacyQuickSheet'
+import { LocationSharingBanner } from '@components'
 
 import {
   normalizeItineraryPins,
@@ -84,7 +85,6 @@ export function MapScreen() {
     isGhostMode,
     sessionExpiryTime,
     checkExpiry,
-    stopSession,
     toggleGhostMode,
   } = useLocationStore()
 
@@ -152,85 +152,6 @@ export function MapScreen() {
     return () => sub.remove()
   }, [checkExpiry])
 
-  // ── Location Watcher Loop ──────────────────────────────────────────
-  const watcherRef = useRef<Location.LocationSubscription | null>(null)
-
-  useEffect(() => {
-    let active = true
-
-    async function startWatching() {
-      if (watcherRef.current) {
-        watcherRef.current.remove()
-        watcherRef.current = null
-      }
-
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync()
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Please enable location permissions to share your location.')
-          stopSession()
-          return
-        }
-
-        const sub = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.Balanced,
-            timeInterval: 15000,
-            distanceInterval: 5,
-          },
-          async (loc) => {
-            if (!active) return
-            const coords = {
-              lat: loc.coords.latitude,
-              lng: loc.coords.longitude,
-              accuracy: loc.coords.accuracy ?? 10,
-            }
-            setUserLocation([coords.lng, coords.lat])
-
-            const latestGhostMode = useLocationStore.getState().isGhostMode
-
-            try {
-              await updateMemberLocation(groupId!, myUid, coords, !latestGhostMode)
-            } catch (err) {
-              console.error('[MapScreen] Failed to push location update:', err)
-            }
-          }
-        )
-
-        if (active) {
-          watcherRef.current = sub
-        } else {
-          sub.remove()
-        }
-      } catch (err) {
-        console.warn('[MapScreen] Error starting location watcher:', err)
-      }
-    }
-
-    if (isSharing && groupId) {
-      startWatching()
-    }
-
-    return () => {
-      active = false
-      if (watcherRef.current) {
-        watcherRef.current.remove()
-        watcherRef.current = null
-      }
-    }
-  }, [isSharing, groupId, myUid, stopSession])
-
-  // ── Immediate Push on Ghost Mode Change ──────────────────────────
-  useEffect(() => {
-    if (isSharing && groupId && userLocation) {
-      const coords = {
-        lat: userLocation[1],
-        lng: userLocation[0],
-        accuracy: 10,
-      }
-      updateMemberLocation(groupId, myUid, coords, !isGhostMode).catch(() => {})
-    }
-  }, [isGhostMode])
 
   // ── Derived Data for rendering ──────────────────────────────────────
   const allItems = useMemo(() => Object.values(itemsByDay).flat(), [itemsByDay])
@@ -531,6 +452,7 @@ export function MapScreen() {
   return (
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       <View style={StyleSheet.absoluteFill}>
+        <LocationSharingBanner />
         {/* edge-to-edge Mapbox View */}
         <MapboxGL.MapView
           style={StyleSheet.absoluteFill}
@@ -549,6 +471,12 @@ export function MapScreen() {
           <MapboxGL.UserLocation
             renderMode={UserLocationRenderMode.Normal}
             visible={permissionStatus === 'granted'}
+            onUpdate={(location) => {
+              if (location && location.coords) {
+                setUserLocation([location.coords.longitude, location.coords.latitude])
+              }
+            }}
+            minDisplacement={5}
           />
 
           {/* Connect stops with thread polyline */}

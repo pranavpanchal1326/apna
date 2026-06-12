@@ -26,6 +26,13 @@ const config: any = {
         category: ['BROWSABLE', 'DEFAULT'],
       },
     ],
+    permissions: [
+      'ACCESS_COARSE_LOCATION',
+      'ACCESS_FINE_LOCATION',
+      'ACCESS_BACKGROUND_LOCATION',
+      'FOREGROUND_SERVICE',
+      'FOREGROUND_SERVICE_LOCATION',
+    ],
   },
   // Memory reel (Prompt 4.4): ffmpeg-kit-react-native requires a dev/EAS build.
   // Expo Go does not include native FFmpeg — use: npx expo run:android or EAS Build.
@@ -48,6 +55,19 @@ const config: any = {
           targetSdkVersion: 35,   // Android 15
           compileSdkVersion: 35,
         },
+      },
+    ],
+    [
+      'expo-location',
+      {
+        locationAlwaysAndWhenInUsePermission:
+          'apna needs your location to show friends where you are during your trip.',
+        locationAlwaysPermission:
+          'apna uses background location so friends can see you even when the app is closed.',
+        locationWhenInUsePermission:
+          'apna needs your location to show friends where you are.',
+        isAndroidBackgroundLocationEnabled: true,
+        isAndroidForegroundServiceEnabled: true,
       },
     ],
   ],

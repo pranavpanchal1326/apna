@@ -7,6 +7,7 @@
 //   5. QueryClient + PostHog available to all screens
 
 import 'react-native-gesture-handler'  // MUST be first import
+import './src/tasks/backgroundLocation.task' // eslint-disable-next-line import/first
 import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { QueryClientProvider } from '@tanstack/react-query'

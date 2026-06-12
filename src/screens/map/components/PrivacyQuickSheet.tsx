@@ -7,7 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../../theme'
 import { useLocationStore } from '../../../stores/location.store'
-import { BottomSheet, Button } from '@components'
+import { BottomSheet, Button, LocationSharingToggle } from '@components'
 import type { HomeStackParamList } from '../../../navigation/types'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
@@ -26,8 +26,6 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
     isSharing,
     isGhostMode,
     sessionExpiryTime,
-    startSession,
-    stopSession,
     toggleGhostMode,
   } = useLocationStore()
 
@@ -45,15 +43,6 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
       return `Sharing · Expires in ${hrs}h ${remMins}m`
     }
     return `Sharing · Expires in ${remMins}m`
-  }
-
-  const handleToggleSharing = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-    if (isSharing) {
-      await stopSession()
-    } else {
-      await startSession(groupId)
-    }
   }
 
   const handleToggleGhost = () => {
@@ -79,20 +68,7 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
         </View>
 
         {/* Share Location Row */}
-        <Pressable
-          onPress={handleToggleSharing}
-          style={[styles.row, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, padding: spacing.md, borderColor: colors.border }]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[text.label.md, { color: colors.textPrimary }]}>Share Location</Text>
-            <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]}>
-              Broadcast location to group for 4 hours
-            </Text>
-          </View>
-          <View style={[styles.switchTrack, { backgroundColor: isSharing ? colors.positive + '30' : colors.border, borderRadius: radius.full }]}>
-            <View style={[styles.switchThumb, { backgroundColor: isSharing ? colors.positive : colors.textSecondary, alignSelf: isSharing ? 'flex-end' : 'flex-start', borderRadius: radius.full }]} />
-          </View>
-        </Pressable>
+        <LocationSharingToggle />
 
         {/* Ghost Mode Row */}
         <Pressable
