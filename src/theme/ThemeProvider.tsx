@@ -11,10 +11,11 @@
 import React, {
   createContext,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
-import { useColorScheme } from 'react-native'
+import { useColorScheme, useWindowDimensions } from 'react-native'
 import { createMMKV } from 'react-native-mmkv'
 
 import { DarkColors, LightColors, type AppColors, type ColorScheme } from './colors'
@@ -22,6 +23,7 @@ import { Text, FontFamily, FontSize, LineHeight, LetterSpacing } from './typogra
 import { Spacing, Layout, Radius, DarkShadows, LightShadows, type Shadows } from './spacing'
 import { Duration, Ease, Spring, TimingConfig } from './motion'
 import { DarkMapStyle, LightMapStyle } from './mapStyle'
+import { useUIStore } from '../stores/ui.store'
 
 // Separate MMKV instance for theme preference
 const themeStorage = createMMKV({ id: 'apna-theme' })
@@ -55,7 +57,16 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const systemScheme = useColorScheme()
+  const systemColorScheme = useColorScheme()
+  const { fontScale } = useWindowDimensions()
+  
+  const setFontScale = useUIStore((state) => state.setFontScale)
+  const highContrastMode = useUIStore((state) => state.highContrastMode)
+
+  // Synchronize font scale with global UI store
+  useEffect(() => {
+    setFontScale(fontScale)
+  }, [fontScale, setFontScale])
 
   // Initialize from MMKV — undefined means follow system
   const [userPreference, setUserPreference] = useState<ColorScheme | 'system'>(() => {
@@ -66,10 +77,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Resolve actual scheme
   const scheme: ColorScheme = useMemo(() => {
     if (userPreference === 'system') {
-      return systemScheme === 'light' ? 'light' : 'dark'
+      return systemColorScheme === 'light' ? 'light' : 'dark'
     }
     return userPreference
-  }, [userPreference, systemScheme])
+  }, [userPreference, systemColorScheme])
 
   const isDark = scheme === 'dark'
 
@@ -78,8 +89,28 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     themeStorage.set(THEME_KEY, newPref)
   }, [])
 
+  const baseColors = isDark ? DarkColors : LightColors
+
+  // Override textMuted with textSecondary in high contrast mode
+  const colors = useMemo<AppColors>(() => {
+    if (highContrastMode) {
+      if (isDark) {
+        return {
+          ...DarkColors,
+          textMuted: DarkColors.textSecondary,
+        } as unknown as AppColors
+      } else {
+        return {
+          ...LightColors,
+          textMuted: LightColors.textSecondary,
+        } as unknown as AppColors
+      }
+    }
+    return baseColors
+  }, [baseColors, highContrastMode, isDark])
+
   const value = useMemo<ThemeContextValue>(() => ({
-    colors:       isDark ? DarkColors  : LightColors,
+    colors,
     text:         Text,
     fonts:        FontFamily,
     fontSize:     FontSize,
@@ -97,7 +128,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     scheme,
     isDark,
     setScheme,
-  }), [isDark, scheme, setScheme])
+  }), [colors, isDark, scheme, setScheme])
 
   return (
     <ThemeContext.Provider value={value}>

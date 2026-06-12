@@ -16,7 +16,7 @@ export const DarkColors = {
   // ── Text ────────────────────────────────────────────────────────
   textPrimary:   '#F0F4FF',  // Main content — headings, amounts, names
   textSecondary: '#8A94B0',  // Labels, metadata, secondary info
-  textMuted:     '#4A5468',  // Timestamps, hints, disabled states
+  textMuted:     '#6B7591',  // Timestamps, hints, disabled states (WCAG compliant)
 
   // ── Borders ─────────────────────────────────────────────────────
   border:        'rgba(255,255,255,0.06)',   // Default card border — very subtle

@@ -22,6 +22,12 @@ interface UIStore {
   // ── Global loading overlay ───────────────────────────────────────
   isGlobalLoading: boolean
   setGlobalLoading: (loading: boolean) => void
+
+  // ── Accessibility ───────────────────────────────────────────────
+  highContrastMode: boolean
+  setHighContrastMode: (enabled: boolean) => void
+  fontScale: number
+  setFontScale: (scale: number) => void
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -45,4 +51,17 @@ export const useUIStore = create<UIStore>((set) => ({
   // Global loading
   isGlobalLoading: false,
   setGlobalLoading: (loading) => set({ isGlobalLoading: loading }),
+
+  // Accessibility
+  highContrastMode: false,
+  setHighContrastMode: (enabled) => set({ highContrastMode: enabled }),
+  fontScale: 1.0,
+  setFontScale: (scale) => set((state) => {
+    // Automatically enable high contrast mode if font scale > 1.3 as per Prompt 4.8
+    const autoHighContrast = scale > 1.3
+    return { 
+      fontScale: scale, 
+      highContrastMode: state.highContrastMode || autoHighContrast 
+    }
+  }),
 }))
