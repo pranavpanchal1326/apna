@@ -1,5 +1,5 @@
 // src/screens/group/JoinGroupScreen.tsx
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { inviteDoc, groupDoc } from '@lib/firebase/collections'
 import type { GroupInput } from '@lib/schemas'
 import { track } from '@lib/analytics'
 import Constants from 'expo-constants'
+import { getPendingNavigation, clearPendingNavigation } from '@navigation/deeplink'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
 
@@ -35,6 +36,20 @@ export function JoinGroupScreen() {
   const [groupPreview, setGroupPreview]       = useState<GroupInput | null>(null)
   const [loadingPreview, setLoadingPreview]   = useState(false)
   const [error, setError]                     = useState<string | null>(null)
+
+  // Auto-fill code if screen was opened via a deep link invite
+  useEffect(() => {
+    const pending = getPendingNavigation()
+    if (pending?.type === 'group_invite' && pending.params.code) {
+      clearPendingNavigation()
+      const deepLinkCode = pending.params.code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+      setCode(deepLinkCode)
+      if (deepLinkCode.length === 6) {
+        verifyInviteCode(deepLinkCode)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleTextChange = (val: string) => {
     setError(null)

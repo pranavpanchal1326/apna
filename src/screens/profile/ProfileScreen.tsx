@@ -9,6 +9,7 @@ import { track, resetAnalyticsUser } from '@lib/analytics'
 import { clearSentryUser } from '@lib/sentry'
 
 import { removePushToken } from '@lib/notifications'
+import { ReferralDashboard } from '@components/referral'
 
 export function ProfileScreen() {
   const { colors, text, spacing, radius } = useTheme()
@@ -57,6 +58,8 @@ export function ProfileScreen() {
           {user.phone}
         </Text>
       </View>
+
+      <ReferralDashboard />
 
       {/* Version info */}
       <View

@@ -13,8 +13,6 @@ import {
 } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
-import * as Sharing from 'expo-sharing'
-import { captureRef } from 'react-native-view-shot'
 import { Screen, Header, Button } from '@components'
 import { useTheme } from '@theme'
 import { useGroupStore } from '@stores/group.store'
@@ -30,7 +28,12 @@ import {
   clearCachedTripWrap,
   type TripWrapBundle,
 } from '../../lib/utils/tripWrapData'
-import { TripWrapCard } from './components/TripWrapCard'
+import { PublicRecapCard, PUBLIC_RECAP_CARD_WIDTH, PUBLIC_RECAP_CARD_HEIGHT } from '@components/recap'
+import { ReelOverlayFrame, MemoryReelExportPanel } from '@components/reel'
+import { useTripRecap } from '@hooks/useTripRecap'
+import { useMemoryReelExport } from '@hooks/useMemoryReelExport'
+import { shareRecapCard } from '@lib/recap/share'
+import type { RecapVisibility } from '@lib/schemas/publicRecap.schema'
 import { HomeStackParamList } from '../../navigation/types'
 
 type TripWrapRouteProp = RouteProp<HomeStackParamList, 'TripWrap'>
@@ -114,38 +117,79 @@ export function TripWrapScreen() {
     }
   }, [isHooksLoading, loadingExtra, group, members, expenses, memories, itineraryItems, groupId])
 
-  // 5. Card capturing & sharing
+  // 5. Memory reel export
+  const titleFrameRef = useRef<View>(null)
+  const closingFrameRef = useRef<View>(null)
+  const reelExport = useMemoryReelExport({
+    group,
+    memories,
+    dateRange: wrapData?.dateRange,
+    titleFrameRef,
+    closingFrameRef,
+  })
+
+  // 6. Public recap generation & sharing
   const cardRef = useRef<View>(null)
   const [sharing, setSharing] = useState(false)
+  const [includeSpend, setIncludeSpend] = useState(false)
+  const [visibility, setVisibility] = useState<RecapVisibility>('unlisted')
+
+  const {
+    publicRecap,
+    isGenerating,
+    generateError,
+    shareSuccess,
+    setShareSuccess,
+    publicUrl,
+    createPublicRecap,
+    setVisibility: updateVisibility,
+  } = useTripRecap(groupId)
+
+  const handleGenerateRecap = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    await createPublicRecap({ includeSpend, visibility })
+  }, [createPublicRecap, includeSpend, visibility])
+
+  const handleVisibilityChange = useCallback(
+    async (next: RecapVisibility) => {
+      setVisibility(next)
+      if (publicRecap) {
+        await updateVisibility(next)
+      }
+    },
+    [publicRecap, updateVisibility],
+  )
 
   const handleShareCard = async () => {
-    if (!cardRef.current) return
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     setSharing(true)
+    setShareSuccess(false)
+
     try {
-      const localUri = await captureRef(cardRef, {
-        format: 'jpg',
-        quality: 0.9,
+      let recap = publicRecap
+      if (!recap) {
+        recap = await createPublicRecap({ includeSpend, visibility })
+      }
+      if (!recap) {
+        Alert.alert('Not ready yet', generateError ?? 'Add more trip memories before sharing.')
+        return
+      }
+
+      const result = await shareRecapCard({
+        cardRef,
+        recap,
+        includeLink: visibility !== 'private',
       })
 
-      const isSharingAvailable = await Sharing.isAvailableAsync()
-      if (isSharingAvailable) {
-        await Sharing.shareAsync(localUri, {
-          mimeType: 'image/jpeg',
-          dialogTitle: 'Share Recap Card',
-        })
-      } else {
-        Alert.alert('Sharing not available', 'Native sharing is not supported on this device.')
+      if (result.success) {
+        setShareSuccess(true)
       }
-    } catch (err) {
-      console.error('[TripWrap] Failed to share card:', err)
-      Alert.alert('Export Failed', 'Could not generate shareable card image.')
     } finally {
       setSharing(false)
     }
   }
 
-  // 6. Manual Regeneration
+  // 7. Manual Regeneration
   const handleRegenerate = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     clearCachedTripWrap(groupId)
@@ -153,10 +197,8 @@ export function TripWrapScreen() {
     setRefreshTrigger((prev) => prev + 1)
   }, [groupId])
 
-  // 7. Preview scale math
-  const CARD_WIDTH = 350
-  const CARD_HEIGHT = 580
-  const previewScale = (screenWidth - spacing.lg * 2) / CARD_WIDTH
+  // 8. Preview scale math
+  const previewScale = (screenWidth - spacing.lg * 2) / PUBLIC_RECAP_CARD_WIDTH
 
   if (isAllLoading) {
     return (
@@ -353,45 +395,177 @@ export function TripWrapScreen() {
           </View>
         )}
 
-        {/* Shareable Recap Card Preview */}
-        <View style={{ padding: spacing.lg, alignItems: 'center' }}>
-          <Text style={[text.heading.sm, { color: colors.textPrimary, alignSelf: 'flex-start', marginBottom: spacing.md }]}>
-            🎬 Share Recap Card
-          </Text>
+        {/* Memory Reel MP4 Export */}
+        <View style={{ padding: spacing.lg }}>
+          <MemoryReelExportPanel
+            plan={reelExport.plan}
+            progress={reelExport.progress}
+            isExporting={reelExport.isExporting}
+            outputUri={reelExport.outputUri}
+            errorMessage={
+              reelExport.errorMessage ??
+              (!reelExport.ffmpegAvailable
+                ? 'Reel export requires a development build (FFmpeg not available in Expo Go).'
+                : null)
+            }
+            onStartExport={() => void reelExport.startExport()}
+            onCancelExport={reelExport.cancelExport}
+            onShare={() => void reelExport.shareExport()}
+            onRetry={reelExport.retryExport}
+          />
+        </View>
 
-          {/* Scaled Preview Wrapper */}
-          <View
-            style={{
-              height: CARD_HEIGHT * previewScale,
-              width: CARD_WIDTH * previewScale,
-              overflow: 'hidden',
-            }}
-          >
-            <View
-              ref={cardRef}
-              collapsable={false}
-              style={{
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT,
-                transform: [{ scale: previewScale }],
-                transformOrigin: 'top left',
-              }}
-            >
-              <TripWrapCard data={wrapData} />
+        {/* Offscreen frames for title/closing capture */}
+        {reelExport.plan ? (
+          <View style={styles.offscreen} pointerEvents="none">
+            <View ref={titleFrameRef} collapsable={false}>
+              <ReelOverlayFrame plan={reelExport.plan} variant="title" />
+            </View>
+            <View ref={closingFrameRef} collapsable={false}>
+              <ReelOverlayFrame plan={reelExport.plan} variant="closing" />
             </View>
           </View>
+        ) : null}
+
+        {/* Public Shareable Recap — sanitized, no private balances */}
+        <View style={{ padding: spacing.lg, alignItems: 'center' }}>
+          <Text style={[text.heading.sm, { color: colors.textPrimary, alignSelf: 'flex-start', marginBottom: spacing.xs }]}>
+            Share trip recap
+          </Text>
+          <Text style={[text.body.sm, { color: colors.textSecondary, alignSelf: 'flex-start', marginBottom: spacing.md }]}>
+            A polished memory card — private balances stay in the squad view above.
+          </Text>
+
+          <View style={[styles.shareOptions, { marginBottom: spacing.md, gap: spacing.sm }]}>
+            <Pressable
+              onPress={() => setIncludeSpend((v) => !v)}
+              style={[
+                styles.optionChip,
+                {
+                  backgroundColor: includeSpend ? colors.accentPrimary : colors.bgTertiary,
+                  borderRadius: radius.full,
+                },
+              ]}
+            >
+              <Text style={[text.label.sm, { color: includeSpend ? colors.bgPrimary : colors.textSecondary }]}>
+                Include spend
+              </Text>
+            </Pressable>
+            {(['unlisted', 'public', 'private'] as RecapVisibility[]).map((mode) => (
+              <Pressable
+                key={mode}
+                onPress={() => void handleVisibilityChange(mode)}
+                style={[
+                  styles.optionChip,
+                  {
+                    backgroundColor: visibility === mode ? colors.bgSecondary : colors.bgTertiary,
+                    borderColor: visibility === mode ? colors.accentPrimary : colors.border,
+                    borderRadius: radius.full,
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <Text style={[text.label.sm, { color: colors.textSecondary, textTransform: 'capitalize' }]}>
+                  {mode}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {(publicRecap || wrapData) && (
+            <View
+              style={{
+                height: PUBLIC_RECAP_CARD_HEIGHT * previewScale,
+                width: PUBLIC_RECAP_CARD_WIDTH * previewScale,
+                overflow: 'hidden',
+              }}
+            >
+              <View
+                ref={cardRef}
+                collapsable={false}
+                style={{
+                  width: PUBLIC_RECAP_CARD_WIDTH,
+                  height: PUBLIC_RECAP_CARD_HEIGHT,
+                  transform: [{ scale: previewScale }],
+                  transformOrigin: 'top left',
+                }}
+              >
+                <PublicRecapCard
+                  recap={
+                    publicRecap ?? {
+                      id: 'preview',
+                      groupId,
+                      tripName: wrapData.groupName,
+                      destination: group?.destination,
+                      startDate: group?.startDate,
+                      endDate: group?.endDate,
+                      dateRangeLabel: wrapData.dateRange,
+                      createdAt: Date.now(),
+                      createdBy: '',
+                      topPhotos: wrapData.topMemories
+                        .map((m) => m.photoThumb || m.photoUrl)
+                        .filter((u): u is string => Boolean(u))
+                        .slice(0, 6),
+                      coverEmoji: group?.coverEmoji,
+                      currency: wrapData.currency,
+                      memberCount: wrapData.memberCount,
+                      memoriesCount: wrapData.memoriesCount,
+                      placesCount: wrapData.placesVisitedCount,
+                      daysCount: wrapData.tripDays,
+                      shareSlug: 'preview',
+                      isPublic: visibility === 'public',
+                      visibility,
+                      template: 'default',
+                      includeSpend,
+                      version: 1,
+                    }
+                  }
+                />
+              </View>
+            </View>
+          )}
+
+          {generateError ? (
+            <Text style={[text.body.sm, { color: colors.negative, marginTop: spacing.sm, textAlign: 'center' }]}>
+              {generateError}
+            </Text>
+          ) : null}
+
+          {shareSuccess ? (
+            <Text style={[text.body.sm, { color: colors.positive, marginTop: spacing.sm, textAlign: 'center' }]}>
+              Recap shared successfully.
+            </Text>
+          ) : null}
+
+          {publicUrl && visibility !== 'private' ? (
+            <Text style={[text.body.sm, { color: colors.textMuted, marginTop: spacing.sm, textAlign: 'center' }]} numberOfLines={2}>
+              {publicUrl}
+            </Text>
+          ) : null}
 
           <Button
             variant="primary"
-            label={sharing ? 'Generating image...' : '📤 Share Recap to WhatsApp'}
+            label={
+              sharing || isGenerating
+                ? 'Preparing recap...'
+                : 'Share recap'
+            }
             onPress={handleShareCard}
-            disabled={sharing}
+            disabled={sharing || isGenerating}
             style={{ width: '100%', marginTop: spacing.md }}
+          />
+
+          <Button
+            variant="secondary"
+            label="Refresh public recap"
+            onPress={handleGenerateRecap}
+            disabled={isGenerating}
+            style={{ width: '100%', marginTop: spacing.sm }}
           />
 
           <Pressable onPress={handleRegenerate} style={{ marginTop: spacing.lg }}>
             <Text style={[text.body.sm, { color: colors.textMuted, textDecorationLine: 'underline' }]}>
-              Regenerate Wrap Data
+              Regenerate squad data
             </Text>
           </Pressable>
         </View>
@@ -464,5 +638,20 @@ const styles = StyleSheet.create({
   },
   settleCard: {
     width: '100%',
+  },
+  shareOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignSelf: 'flex-start',
+  },
+  optionChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  offscreen: {
+    position: 'absolute',
+    left: -9999,
+    top: 0,
+    opacity: 0,
   },
 })

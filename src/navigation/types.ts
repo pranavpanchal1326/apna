@@ -10,9 +10,10 @@ import type { CompositeScreenProps }   from '@react-navigation/native'
 // ── Root Navigator ───────────────────────────────────────────────
 // Switches between Auth stack and Main tab navigator
 export type RootStackParamList = {
-  Auth:    undefined
-  Main:    undefined
-  Splash:  undefined
+  Auth:         undefined
+  Main:         undefined
+  Splash:       undefined
+  PublicRecap:  { slug: string }
 }
 
 // ── Auth Navigator ───────────────────────────────────────────────

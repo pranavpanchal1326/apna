@@ -400,6 +400,30 @@ service cloud.firestore {
         isGroupAdmin(resource.data.groupId);
     }
 
+    // ── /referralLinks/{code} ─────────────────────────────────────
+    // User referral links — separate from group /invites codes.
+    // Writes are server-only (Cloud Functions Admin SDK).
+    match /referralLinks/{code} {
+      allow read: if isAuthed();
+      allow write: if false;
+    }
+
+    // ── /referralAttributions/{id} ────────────────────────────────
+    match /referralAttributions/{attributionId} {
+      allow read: if isAuthed() && (
+        resource.data.referrerUserId == request.auth.uid ||
+        resource.data.referredUserId == request.auth.uid
+      );
+      allow write: if false;
+    }
+
+    // ── /publicRecaps/{shareSlug} ─────────────────────────────────
+    // Public trip recaps — sanitized artifacts, separate from live trip data.
+    match /publicRecaps/{shareSlug} {
+      allow read: if resource.data.visibility in ['unlisted', 'public'];
+      allow write: if false;
+    }
+
     // ── Catch-all: deny everything else ───────────────────────────
     match /{document=**} {
       allow read, write: if false;

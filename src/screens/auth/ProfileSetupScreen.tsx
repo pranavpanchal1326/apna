@@ -20,7 +20,8 @@ import { Button, Input, Avatar, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
 import { createUserDoc } from '@lib/firebase/auth'
 import { AVATAR_COLORS } from '@lib/types'
-import { track } from '@lib/analytics'
+import { track, identifyAnalyticsUser } from '@lib/analytics'
+import { flushPendingReferralAttribution } from '@lib/firebase/referrals'
 
 interface ProfileSetupScreenProps {
   onComplete: () => void   // Navigate to Home
@@ -61,6 +62,8 @@ export function ProfileSetupScreen({ onComplete }: ProfileSetupScreenProps) {
       })
 
       setUser(user)
+      identifyAnalyticsUser(user.uid)
+      void flushPendingReferralAttribution(user.uid)
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       onComplete()
     } catch {

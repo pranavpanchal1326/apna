@@ -129,6 +129,7 @@ export const onSOSTriggered = onCall(
  *   3. Return settlement summary
  *   4. Store wrap doc for sharing
  */
+/** @deprecated Use generateTripRecap — kept for backward compatibility */
 export const generateTripWrap = onCall(
   { region: 'asia-south1' },
   (request) => {
@@ -136,9 +137,8 @@ export const generateTripWrap = onCall(
       throw new HttpsError('unauthenticated', 'Sign in required')
     }
     const { groupId } = request.data as { groupId: string }
-    console.info(`[apna] generateTripWrap: uid=${request.auth.uid} group=${groupId}`)
-    // TODO: Prompt 3.6
-    return { success: true }
+    console.info(`[apna] generateTripWrap (legacy): uid=${request.auth.uid} group=${groupId}`)
+    return { success: true, message: 'use_generateTripRecap' }
   },
 )
 
@@ -316,6 +316,12 @@ async function sendReminderPush(params: {
 
 export { onItineraryItemCreated, onItineraryItemDeleted, onItineraryItemUpdated } from './triggers/onItineraryWrite'
 export { getSuggestions } from './callable/getSuggestions'
+export {
+  ensureReferralLink,
+  captureReferralAttribution,
+  processReferralQualification,
+} from './callable/referralCallables'
+export { generateTripRecap, updateRecapVisibility } from './callable/tripRecapCallables'
 export { computeSettlements } from './computeSettlements'
 
 // ── Notification Triggers ──────────────────────────────────────────────────

@@ -24,6 +24,7 @@ import {
 } from '@lib/firebase/groups'
 import { captureError } from '@lib/sentry'
 import { track } from '@lib/analytics'
+import { processReferralQualification } from '@lib/firebase/referrals'
 import { useAuthStore } from './auth.store'
 
 interface GroupStore {
@@ -118,6 +119,9 @@ export const useGroupStore = create<GroupStore>((set) => ({
         has_budget:   Boolean(params.totalBudget),
       })
 
+      track('referral_group_joined', { method: 'create' })
+      void processReferralQualification(result.groupId)
+
       set({ isCreating: false })
       return result
     } catch (err) {
@@ -154,6 +158,9 @@ export const useGroupStore = create<GroupStore>((set) => ({
       }
 
       track('group_joined', { method: 'invite_code' })
+      track('referral_group_joined', { method: 'join' })
+      void processReferralQualification(result.groupId)
+
       set({ isJoining: false })
       return result
     } catch (err) {

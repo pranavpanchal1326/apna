@@ -1,7 +1,19 @@
 // src/navigation/linking.ts
-// Deep link config — apna:// URL scheme.
-// Enables: apna://group/abc123, apna://invite/xyz789
-// Phase 2 will add group invite deep links — structure defined here now.
+// Deep link config — apna:// URL scheme + https://apna.app universal links.
+// All link types supported:
+//   apna://join?code=GOA26A          → JoinGroup (invite)
+//   apna://group/:groupId            → GroupHome
+//   apna://group/:groupId/expense/:id → ExpenseDetail
+//   apna://group/:groupId/settings   → GroupSettings
+//   apna://group/:groupId/members    → GroupMembersManage
+//   apna://memories/:groupId/detail/:memoryId → MemoryDetail
+//   apna://memories/:groupId/on-this-day      → OnThisDay
+//   apna://recap/:slug               → PublicRecap (public, no auth)
+//   apna://r/:code                   → captured by initReferralCapture, lands on Home
+//
+// NOTE: /join is handled by the deep link handler (parseDeepLink) rather than
+// React Navigation's config because it uses a query param (?code=) for the invite
+// code, which is more robust across chat apps and QR codes.
 
 import type { LinkingOptions } from '@react-navigation/native'
 import type { RootStackParamList } from './types'
@@ -11,10 +23,10 @@ export const linking: LinkingOptions<RootStackParamList> = {
 
   config: {
     screens: {
+      PublicRecap: 'recap/:slug',
       Main: {
         screens: {
           HomeTab: {
-            path: 'home',
             screens: {
               HomeList: '',
               CreateGroup: 'create',

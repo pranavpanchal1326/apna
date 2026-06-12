@@ -7,6 +7,21 @@
 //   Good: 'expense_added', 'group_created', 'otp_sent'
 //   Bad: 'addExpense', 'GroupCreate', 'sendOTP'
 //
+// Memory reel funnel (Prompt 4.4):
+//   memory_reel_created, memory_reel_export_started, memory_reel_export_progress,
+//   memory_reel_export_completed, memory_reel_export_failed, memory_reel_shared,
+//   memory_reel_cancelled
+//
+// Trip recap funnel (Prompt 4.3):
+//   trip_recap_created, trip_recap_rendered, trip_recap_shared,
+//   trip_recap_share_sheet_opened, trip_recap_public_link_opened,
+//   trip_recap_public_viewed, trip_recap_export_failed
+//
+// Referral funnel (Prompt 4.2):
+//   referral_link_created, referral_link_shared, referral_link_opened,
+//   referral_attribution_captured, referral_signup_completed, referral_group_joined,
+//   referral_qualified, referral_reward_granted, referral_reward_rejected
+//
 // Privacy: phone numbers NEVER tracked. uid only.
 
 import PostHog from 'posthog-react-native'

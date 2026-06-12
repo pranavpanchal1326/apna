@@ -25,6 +25,7 @@ import {
 import { useGroupSettings } from '@hooks/useGroupSettings'
 import type { HomeStackParamList } from '@navigation/types'
 import { getCachedTripWrap } from '../../lib/utils/tripWrapData'
+import { ReferralShareRow } from '@components/referral'
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'GroupSettings'>
 
@@ -282,6 +283,14 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
             />
           </View>
         )}
+
+        <View style={{ marginBottom: spacing.xl }}>
+          <ReferralShareRow
+            entryPoint="group_settings"
+            groupId={groupId}
+            groupName={group.name}
+          />
+        </View>
 
         {/* ── 3. Edit Metadata Section ──────────────────────────────────────── */}
         <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>

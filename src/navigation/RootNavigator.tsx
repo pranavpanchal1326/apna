@@ -4,44 +4,113 @@
 //   - Navigation-based Sentry breadcrumbs
 //   - PostHog screen tracking
 //   - Auth status transitions (auto-redirect after login/logout)
+//   - Deep link routing via parseDeepLink + handleDeepLink (cold-start + warm-start)
+//   - Auth-gated routing: pending nav resumed after successful login
+//   - Public recap deep links (no login required)
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
+import * as Linking from 'expo-linking'
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useRoute, useNavigation } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { trackScreen } from '@lib/analytics'
 import { useAuth } from '@hooks/useAuth'
 import { linking } from './linking'
 import { AuthNavigator } from './AuthNavigator'
 import { MainNavigator } from './MainNavigator'
 import { SplashScreen } from '@screens/auth'
+import { PublicRecapLandingScreen } from '@screens/recap/PublicRecapLandingScreen'
 import { useTheme } from '@theme'
+import { captureError } from '@lib/sentry'
+import {
+  handleDeepLink,
+  resumePendingNavigation,
+  getPendingNavigation,
+} from './deeplink/handler'
 import type { RootStackParamList } from './types'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
+function PublicRecapScreenWrapper() {
+  const route = useRoute<RouteProp<RootStackParamList, 'PublicRecap'>>()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  return (
+    <PublicRecapLandingScreen
+      slug={route.params.slug}
+      onClose={() => navigation.goBack()}
+    />
+  )
+}
+
 export function RootNavigator() {
   const { colors, isDark } = useTheme()
   const { status } = useAuth()
-  const navigationRef = useNavigationContainerRef()
+  const navigationRef = useNavigationContainerRef<RootStackParamList>()
   const routeNameRef = useRef<string | undefined>(undefined)
+  // Track whether we've already processed the cold-start URL
+  const coldStartHandled = useRef(false)
+  // Track previous auth status to detect login completion
+  const prevStatusRef = useRef(status)
 
-  // ── Track screen changes in PostHog + Sentry ─────────────────
   const onNavigationReady = useCallback(() => {
     routeNameRef.current = navigationRef.getCurrentRoute()?.name
-  }, [navigationRef])
+
+    // Process cold-start deep link once navigation is ready
+    if (!coldStartHandled.current) {
+      coldStartHandled.current = true
+      Linking.getInitialURL()
+        .then((url) => {
+          if (url) {
+            handleDeepLink(url, {
+              navigationRef,
+              authStatus: status,
+              urlSource: 'cold_start',
+            })
+          }
+        })
+        .catch((err) => captureError(err, { source: 'RootNavigator.coldStart' }))
+    }
+  }, [navigationRef, status])
 
   const onStateChange = useCallback(() => {
     const previousRoute = routeNameRef.current
     const currentRoute = navigationRef.getCurrentRoute()?.name
-
     if (currentRoute && currentRoute !== previousRoute) {
       trackScreen(currentRoute)
       routeNameRef.current = currentRoute
     }
   }, [navigationRef])
 
+  // Warm-start: subscribe to incoming URLs while app is open
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url, {
+        navigationRef,
+        authStatus: status,
+        urlSource: 'warm_start',
+      })
+    })
+    return () => subscription.remove()
+  }, [navigationRef, status])
+
+  // Auth-gated resume: when user transitions to authenticated, check pending nav
+  useEffect(() => {
+    if (
+      prevStatusRef.current !== 'authenticated' &&
+      status === 'authenticated' &&
+      navigationRef.isReady()
+    ) {
+      const pending = getPendingNavigation()
+      if (pending) {
+        resumePendingNavigation(pending, navigationRef)
+      }
+    }
+    prevStatusRef.current = status
+  }, [status, navigationRef])
+
   if (status === 'initializing') {
-    // Hold splash while Firebase Auth resolves (typically < 300ms)
     return <SplashScreen onComplete={() => {}} />
   }
 
@@ -75,6 +144,11 @@ export function RootNavigator() {
         ) : (
           <Stack.Screen name="Main" component={MainNavigator} />
         )}
+        <Stack.Screen
+          name="PublicRecap"
+          component={PublicRecapScreenWrapper}
+          options={{ animation: 'slide_from_bottom' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )

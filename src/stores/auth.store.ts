@@ -17,6 +17,7 @@ import {
   signOut as firebaseSignOut,
 } from '@lib/firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
+import { identifyAnalyticsUser } from '@lib/analytics'
 
 const authStorage = createMMKV({ id: 'apna-auth' })
 const USER_CACHE_KEY = 'cached-user'
@@ -124,6 +125,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         set({ status: 'needs_profile', isLoading: false })
       } else {
         cacheUser(userDoc)
+        identifyAnalyticsUser(userDoc.uid)
         set({ status: 'authenticated', user: userDoc, isLoading: false })
       }
     } catch (err) {
@@ -137,6 +139,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   setUser: (user) => {
     cacheUser(user)
+    identifyAnalyticsUser(user.uid)
     set({ user, status: 'authenticated' })
   },
 

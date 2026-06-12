@@ -24,6 +24,7 @@ import { queryClient } from '@lib/query'
 
 import { useNotifications } from '@hooks/useNotifications'
 import { initializeUploadQueue } from '@lib/utils/receiptUploadQueue'
+import { initReferralCapture } from '@lib/referral/referralCapture'
 
 // ── Keep native splash visible until fonts loaded ────────────────
 SplashScreen.preventAutoHideAsync()
@@ -45,7 +46,11 @@ function AppShell() {
   useEffect(() => {
     const unsubscribe = initialize()
     initializeUploadQueue()
-    return unsubscribe
+    const removeReferralCapture = initReferralCapture()
+    return () => {
+      unsubscribe()
+      removeReferralCapture()
+    }
   }, [initialize])
 
   // Hide native splash once fonts are ready

@@ -18,6 +18,8 @@ import { useTheme } from '@theme'
 import { Screen } from '@components'
 import { track } from '@lib/analytics'
 import type { HomeStackParamList } from '@navigation/types'
+import { ReferralWelcomeBanner, ReferralShareRow } from '@components/referral'
+import { hasPendingReferral } from '@lib/referral/referralCapture'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList, 'ChoosePath'>
 type Route = RouteProp<HomeStackParamList, 'ChoosePath'>
@@ -28,6 +30,7 @@ export function ChoosePathScreen() {
   const route = useRoute<Route>()
 
   const inviteCode = route.params?.inviteCode ?? null
+  const referralPending = hasPendingReferral()
   const startTimeRef = useRef<number>(Date.now())
 
   // Animated values
@@ -100,6 +103,8 @@ export function ChoosePathScreen() {
     <Screen edges={['top', 'bottom', 'left', 'right']}>
       <Animated.View style={[styles.container, { opacity: fadeAnim, paddingHorizontal: spacing['2xl'] }]}>
         
+        {referralPending && <ReferralWelcomeBanner />}
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={[text.heading.lg, { color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }]}>
@@ -176,6 +181,10 @@ export function ChoosePathScreen() {
             </Pressable>
           </Animated.View>
 
+        </View>
+
+        <View style={{ marginTop: spacing.lg }}>
+          <ReferralShareRow entryPoint="choose_path" compact />
         </View>
 
         {/* Skip button */}

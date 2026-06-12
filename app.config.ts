@@ -27,6 +27,8 @@ const config: any = {
       },
     ],
   },
+  // Memory reel (Prompt 4.4): ffmpeg-kit-react-native requires a dev/EAS build.
+  // Expo Go does not include native FFmpeg — use: npx expo run:android or EAS Build.
   plugins: [
     'expo-font',
     'expo-haptics',

@@ -18,6 +18,9 @@ import {
   itineraryConverter,
   memoryConverter,
   activityConverter,
+  referralLinkConverter,
+  referralAttributionConverter,
+  publicRecapConverter,
 } from './converters'
 import type {
   UserInput,
@@ -26,6 +29,9 @@ import type {
   ItineraryItem,
   MemoryInput,
   ActivityItem,
+  ReferralLink,
+  ReferralAttribution,
+  PublicRecap,
 } from '@lib/schemas'
 
 // ── Top-level collections ─────────────────────────────────────────
@@ -38,6 +44,15 @@ export const groupsCol = (): CollectionReference<GroupInput> =>
 export const invitesCol = () =>
   collection(db, 'invites')
 
+export const referralLinksCol = (): CollectionReference<ReferralLink> =>
+  collection(db, 'referralLinks').withConverter(referralLinkConverter)
+
+export const referralAttributionsCol = (): CollectionReference<ReferralAttribution> =>
+  collection(db, 'referralAttributions').withConverter(referralAttributionConverter)
+
+export const publicRecapsCol = (): CollectionReference<PublicRecap> =>
+  collection(db, 'publicRecaps').withConverter(publicRecapConverter)
+
 // ── Document refs ─────────────────────────────────────────────────
 export const userDoc = (uid: string): DocumentReference<UserInput> =>
   doc(db, 'users', uid).withConverter(userConverter)
@@ -47,6 +62,15 @@ export const groupDoc = (groupId: string): DocumentReference<GroupInput> =>
 
 export const inviteDoc = (inviteCode: string) =>
   doc(db, 'invites', inviteCode)
+
+export const referralLinkDoc = (code: string): DocumentReference<ReferralLink> =>
+  doc(db, 'referralLinks', code).withConverter(referralLinkConverter)
+
+export const referralAttributionDoc = (id: string): DocumentReference<ReferralAttribution> =>
+  doc(db, 'referralAttributions', id).withConverter(referralAttributionConverter)
+
+export const publicRecapDoc = (shareSlug: string): DocumentReference<PublicRecap> =>
+  doc(db, 'publicRecaps', shareSlug).withConverter(publicRecapConverter)
 
 // ── Subcollections ────────────────────────────────────────────────
 export const expensesCol = (groupId: string): CollectionReference<ExpenseInput> =>
