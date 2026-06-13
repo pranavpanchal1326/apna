@@ -1,48 +1,52 @@
 jest.mock('expo-contacts', () => ({
-  Fields: {
-    PhoneNumbers: 'phoneNumbers',
-    Name: 'name',
-  },
+  Fields: { PhoneNumbers: 'phoneNumbers', Name: 'name' },
   getContactsAsync: jest.fn(),
 }))
 
-import { normalisePhoneNumber } from '../lib/contacts/reader'
+import { normalisePhoneNumber } from '@/lib/contacts/reader'
 
-describe('normalisePhoneNumber', () => {
-  test('+91XXXXXXXXXX → +91XXXXXXXXXX unchanged', () => {
+describe('normalisePhoneNumber — all Indian formats', () => {
+  test('+91XXXXXXXXXX stays unchanged', () => {
     expect(normalisePhoneNumber('+919876543210')).toBe('+919876543210')
   })
-
-  test('10-digit number → +91 prepended', () => {
+  test('10-digit gets +91 prepended', () => {
     expect(normalisePhoneNumber('9876543210')).toBe('+919876543210')
   })
-
-  test('0XXXXXXXXXX (11 digits) → +91XXXXXXXXXX', () => {
+  test('0XXXXXXXXXX → +91XXXXXXXXXX', () => {
     expect(normalisePhoneNumber('09876543210')).toBe('+919876543210')
   })
-
-  test('91XXXXXXXXXX (12 digits) → +91XXXXXXXXXX', () => {
+  test('91XXXXXXXXXX → +91XXXXXXXXXX', () => {
     expect(normalisePhoneNumber('919876543210')).toBe('+919876543210')
   })
-
-  test('international number → null', () => {
-    // If not matching E.164 Indian format or 10-12 digit range, returns null
-    expect(normalisePhoneNumber('+14155552671')).toBeNull()
+  test('number with spaces → normalised', () => {
+    expect(normalisePhoneNumber('98765 43210')).toBe('+919876543210')
   })
-
-  test('garbage string → null', () => {
-    expect(normalisePhoneNumber('garbage123')).toBeNull()
+  test('number with dashes → normalised', () => {
+    expect(normalisePhoneNumber('98765-43210')).toBe('+919876543210')
   })
-
+  test('number with brackets → normalised', () => {
+    expect(normalisePhoneNumber('(98765) 43210')).toBe('+919876543210')
+  })
+  test('+1 US number → null', () => {
+    expect(normalisePhoneNumber('+12125551234')).toBeNull()
+  })
+  test('international without +91 → null', () => {
+    expect(normalisePhoneNumber('+447911123456')).toBeNull()
+  })
   test('empty string → null', () => {
     expect(normalisePhoneNumber('')).toBeNull()
   })
-
-  test('number with spaces and dashes → normalised', () => {
-    expect(normalisePhoneNumber('+91 98765-43210')).toBe('+919876543210')
+  test('garbage string → null', () => {
+    expect(normalisePhoneNumber('not-a-phone')).toBeNull()
   })
-
-  test('number with +91 already → not double-prefixed', () => {
-    expect(normalisePhoneNumber('+919876543210')).toBe('+919876543210')
+  test('8-digit number → null (too short)', () => {
+    expect(normalisePhoneNumber('98765432')).toBeNull()
+  })
+  test('+91 not double-prepended', () => {
+    const result = normalisePhoneNumber('+919876543210')
+    expect(result).not.toContain('+9191')
+  })
+  test('landline 044-XXXXXXXX → null (not mobile)', () => {
+    expect(normalisePhoneNumber('04423456789')).toBeNull()
   })
 })

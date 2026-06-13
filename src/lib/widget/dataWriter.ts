@@ -70,3 +70,98 @@ export async function clearWidgetData(): Promise<void> {
     captureError(err as Error, { source: 'widget.dataWriter.clearWidgetData' })
   }
 }
+
+/**
+ * Builds balance widget payload.
+ */
+export async function buildBalanceWidgetData(params: {
+  groupId: string
+  groupName: string
+  currency: string
+  userId: string
+  netBalances: Record<string, number>
+}): Promise<{
+  balanceLabel: 'You are owed' | 'You owe' | 'All settled'
+  userBalance: number
+  formattedBalance: string
+  deepLinkUrl: string
+}> {
+  const userBalance = params.netBalances[params.userId] ?? 0
+  let balanceLabel: 'You are owed' | 'You owe' | 'All settled' = 'All settled'
+  if (userBalance > 0) {
+    balanceLabel = 'You are owed'
+  } else if (userBalance < 0) {
+    balanceLabel = 'You owe'
+  }
+
+  const symbol = params.currency === 'USD' ? '$' : '₹'
+  const formattedBalance = `${symbol}${Math.abs(userBalance)}`
+
+  return {
+    balanceLabel,
+    userBalance,
+    formattedBalance,
+    deepLinkUrl: `apna://budget?groupId=${params.groupId}`,
+  }
+}
+
+/**
+ * Builds map widget payload.
+ */
+export async function buildMapWidgetData(params: {
+  groupId: string
+  groupName: string
+  memberProfiles: Record<string, { name: string; avatarColor: string }>
+  memberLocations: Record<
+    string,
+    { lat: number; lng: number; accuracy: number; timestamp: number; sharing: boolean }
+  >
+}): Promise<{
+  members: Array<{
+    uid: string
+    name: string
+    avatarColor: string
+    isLive: boolean
+    initials: string
+  }>
+  liveCount: number
+}> {
+  const now = Date.now()
+  const members = Object.entries(params.memberLocations)
+    .map(([uid, loc]) => {
+      const profile = params.memberProfiles[uid] || { name: 'Member', avatarColor: '#4ECDC4' }
+      const isLive = loc.sharing && (now - loc.timestamp < 60000)
+      
+      const names = profile.name.trim().split(/\s+/)
+      const initials = names.length > 1
+        ? (names[0][0] + names[1][0]).toUpperCase()
+        : names[0].slice(0, 2).toUpperCase()
+
+      return {
+        uid,
+        name: profile.name,
+        avatarColor: profile.avatarColor,
+        isLive,
+        initials,
+        timestamp: loc.timestamp,
+        sharing: loc.sharing,
+      }
+    })
+    
+  members.sort((a, b) => b.timestamp - a.timestamp)
+
+  const liveCount = members.filter(m => m.sharing && (now - m.timestamp < 60000)).length
+
+  const cappedMembers = members.slice(0, 3).map(m => ({
+    uid: m.uid,
+    name: m.name,
+    avatarColor: m.avatarColor,
+    isLive: m.isLive,
+    initials: m.initials,
+  }))
+
+  return {
+    members: cappedMembers,
+    liveCount,
+  }
+}

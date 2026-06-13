@@ -302,6 +302,21 @@ service cloud.firestore {
         allow read, write: if isGroupMember(groupId);
       }
 
+      // ── /groups/{groupId}/lists/{listId} ────────────────────────
+      match /lists/{listId} {
+        allow read, create, update: if isGroupMember(groupId);
+        allow delete: if isGroupAdmin(groupId);
+
+        match /items/{itemId} {
+          allow read, create: if isGroupMember(groupId);
+          allow update: if isGroupMember(groupId);
+          allow delete: if isGroupMember(groupId) && (
+            resource.data.claimedBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          );
+        }
+      }
+
       // ── /groups/{groupId}/memories/{memoryId} ───────────────────
       match /memories/{memoryId} {
 

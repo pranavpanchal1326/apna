@@ -5,6 +5,7 @@ const SESSION_START_KEY = 'location_session_start_ms'
 const SESSION_DURATION_MS = 4 * 60 * 60 * 1000  // 4 hours exactly
 
 export const sessionTimer = {
+  storage: locationTimerStorage,
   start(): void {
     locationTimerStorage.set(SESSION_START_KEY, Date.now())
   },

@@ -43,9 +43,12 @@ export function calculateNetBalances(
   })
 
   expenses.forEach((expense) => {
-    // Credit the payer — they're owed the full amount
+    // Credit the payer — they're owed the full amount in base currency
+    const rate = (expense as any).exchangeRateToBase || 1
+    const creditAmount = rate > 0 ? expense.amount * rate : expense.amount
+
     if (balances[expense.paidBy] !== undefined) {
-      balances[expense.paidBy] += expense.amount
+      balances[expense.paidBy] += creditAmount
     }
 
     // Debit each split member — they owe their share

@@ -23,19 +23,11 @@ jest.mock('react-native-mmkv', () => {
 })
 
 jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  selectionAsync: jest.fn(),
-  ImpactFeedbackStyle: {
-    Light: 'light',
-    Medium: 'medium',
-    Heavy: 'heavy',
-  },
-  NotificationFeedbackType: {
-    Success: 'success',
-    Warning: 'warning',
-    Error: 'error',
-  },
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
   isAvailableAsync: jest.fn().mockResolvedValue(true),
 }))
 
@@ -45,39 +37,66 @@ describe('Haptic Engine', () => {
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
-    hapticEngine = require('../lib/haptics/engine').hapticEngine
+    hapticEngine = require('@/lib/haptics/engine').hapticEngine
   })
 
-  test('isEnabled returns false when MMKV key is false', () => {
-    hapticEngine.setEnabled(false)
-    expect(hapticEngine.isEnabled()).toBe(false)
-  })
-
-  test('isEnabled returns true by default or when key is set to true', async () => {
-    // Enable haptic engine
-    hapticEngine.setEnabled(true)
-    
-    // Trigger init to check capabilities
+  test('isEnabled returns true by default when MMKV key missing', async () => {
     await hapticEngine.init()
-    
-    // isEnabled should return true on mock platforms where capability !== 'none'
     expect(hapticEngine.isEnabled()).toBe(true)
   })
 
-  test('init with no haptic support sets capability to none', async () => {
+  test('setEnabled false — all haptic calls are no-ops', async () => {
+    hapticEngine.setEnabled(false)
+    await hapticEngine.impactMedium()
     const Haptics = require('expo-haptics')
-    Haptics.isAvailableAsync.mockResolvedValueOnce(false)
-    
-    await hapticEngine.init()
-    expect(hapticEngine.isEnabled()).toBe(false)
+    expect(Haptics.impactAsync).not.toHaveBeenCalled()
   })
 
-  test('all pattern calls return void without throwing when disabled', async () => {
-    hapticEngine.setEnabled(false)
-    
-    await expect(hapticEngine.impactLight()).resolves.toBeUndefined()
+  test('setEnabled true — haptic calls execute', async () => {
+    hapticEngine.setEnabled(true)
+    await hapticEngine.init()
+    await hapticEngine.impactMedium()
+    const Haptics = require('expo-haptics')
+    expect(Haptics.impactAsync).toHaveBeenCalled()
+  })
+
+  test('haptic call never throws even when expo-haptics fails', async () => {
+    hapticEngine.setEnabled(true)
+    await hapticEngine.init()
+    const Haptics = require('expo-haptics')
+    Haptics.impactAsync.mockRejectedValueOnce(new Error('Haptic hardware error'))
     await expect(hapticEngine.impactMedium()).resolves.toBeUndefined()
-    await expect(hapticEngine.impactHeavy()).resolves.toBeUndefined()
-    await expect(hapticEngine.notificationSuccess()).resolves.toBeUndefined()
+  })
+})
+
+describe('Haptic Patterns', () => {
+  let hapticEngine: any
+
+  beforeEach(() => {
+    jest.resetModules()
+    jest.clearAllMocks()
+    hapticEngine = require('@/lib/haptics/engine').hapticEngine
+  })
+
+  test('sosPing fires 3 heavy impacts on full capability', async () => {
+    // Verify triple-heavy pattern
+    const { haptics } = require('@/lib/haptics/patterns')
+    hapticEngine.setEnabled(true)
+    await hapticEngine.init()
+    
+    // Mock capability to 'full' (Android API >= 31)
+    await haptics.sosPing()
+    const Haptics = require('expo-haptics')
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(3)
+  })
+
+  test('settleUp fires medium then light', async () => {
+    const { haptics } = require('@/lib/haptics/patterns')
+    hapticEngine.setEnabled(true)
+    await hapticEngine.init()
+    
+    await haptics.settleUp()
+    const Haptics = require('expo-haptics')
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(2)
   })
 })

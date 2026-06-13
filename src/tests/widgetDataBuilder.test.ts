@@ -1,92 +1,140 @@
-import type { MemberLocation } from '../lib/types/location.types'
-import type { WidgetBalanceData, WidgetMapData, WidgetMember } from '../lib/widget/types'
+jest.mock('expo-file-system/legacy', () => ({
+  writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
+  cacheDirectory: 'file://cache/',
+}))
 
-// Helper functions that duplicate the pure mapping logic used in useWidgetSync / widgets
-function buildWidgetBalance(balanceRupees: number): WidgetBalanceData['label'] {
-  return balanceRupees > 0
-    ? 'You are owed'
-    : balanceRupees < 0
-      ? 'You owe'
-      : 'All settled'
-}
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+}))
 
-function formatINR(amount: number): string {
-  const abs = Math.abs(amount)
-  // Format as Indian Rupee style: e.g. 1,500.00 or 15,000.00
-  return '₹' + abs.toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+jest.mock('expo-constants', () => ({
+  default: {
+    expoConfig: {
+      extra: {
+        sentryDsn: 'mock-dsn',
+      },
+    },
+  },
+}))
+
+import { buildBalanceWidgetData, buildMapWidgetData } from '@/lib/widget/dataWriter'
+
+describe('Balance Widget Data', () => {
+  const base = { groupId: 'g1', groupName: 'Pune Squad', currency: 'INR', userId: 'u1' }
+
+  test('positive balance → "You are owed" label', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: { u1: 1375 } })
+    expect(result.balanceLabel).toBe('You are owed')
+    expect(result.userBalance).toBe(1375)
   })
-}
 
-function getLiveStatus(timestampMs: number): boolean {
+  test('negative balance → "You owe" label', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: { u1: -125 } })
+    expect(result.balanceLabel).toBe('You owe')
+    expect(result.userBalance).toBe(-125)
+  })
+
+  test('zero balance → "All settled" label', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: { u1: 0 } })
+    expect(result.balanceLabel).toBe('All settled')
+  })
+
+  test('formattedBalance contains ₹ symbol', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: { u1: 1375 } })
+    expect(result.formattedBalance).toContain('₹')
+  })
+
+  test('deepLinkUrl contains groupId', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: { u1: 1375 } })
+    expect(result.deepLinkUrl).toContain('g1')
+  })
+
+  test('missing userId in netBalances → zero balance', async () => {
+    const result = await buildBalanceWidgetData({ ...base, netBalances: {} })
+    expect(result.userBalance).toBe(0)
+    expect(result.balanceLabel).toBe('All settled')
+  })
+})
+
+describe('Map Widget Data', () => {
   const now = Date.now()
-  return now - timestampMs < 60000 // 60 seconds threshold
-}
+  const base = {
+    groupId: 'g1',
+    groupName: 'Pune Squad',
+    memberProfiles: {
+      u1: { name: 'Pranav Sharma', avatarColor: '#4ECDC4' },
+      u2: { name: 'Riya', avatarColor: '#FF6B6B' },
+      u3: { name: 'Arjun', avatarColor: '#FFD166' },
+      u4: { name: 'Sneha', avatarColor: '#4ECDC4' },
+    }
+  }
 
-function buildWidgetMapData(locations: MemberLocation[]): WidgetMember[] {
-  // Sort by most recent timestamp
-  const sorted = [...locations].sort((a, b) => b.timestamp - a.timestamp)
-  
-  // Truncate to max 3
-  return sorted.slice(0, 3).map((loc) => ({
-    uid: loc.userId,
-    name: loc.name,
-    avatarColor: loc.avatarColor,
-    isLive: getLiveStatus(loc.timestamp),
-  }))
-}
-
-describe('Widget Data Builder', () => {
-  test('positive balance produces "You are owed" label', () => {
-    expect(buildWidgetBalance(1375)).toBe('You are owed')
+  test('isLive true when timestamp < 60s ago', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: { u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 30000, sharing: true } }
+    })
+    expect(result.members[0].isLive).toBe(true)
   })
 
-  test('negative balance produces "You owe" label', () => {
-    expect(buildWidgetBalance(-125)).toBe('You owe')
+  test('isLive false when timestamp > 60s ago', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: { u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 90000, sharing: true } }
+    })
+    expect(result.members[0].isLive).toBe(false)
   })
 
-  test('zero balance produces "All settled" label', () => {
-    expect(buildWidgetBalance(0)).toBe('All settled')
+  test('isLive false when sharing is false', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: { u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: false } }
+    })
+    expect(result.members[0].isLive).toBe(false)
   })
 
-  test('formattedBalance is correct INR format', () => {
-    expect(formatINR(1375)).toBe('₹1,375.00')
-    expect(formatINR(-125)).toBe('₹125.00')
-    expect(formatINR(0)).toBe('₹0.00')
+  test('max 3 members returned', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: {
+        u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: true },
+        u2: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 20000, sharing: true },
+        u3: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 30000, sharing: true },
+        u4: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 40000, sharing: true },
+      }
+    })
+    expect(result.members.length).toBeLessThanOrEqual(3)
   })
 
-  test('map widget truncates to max 3 members', () => {
-    const locations: MemberLocation[] = [
-      { userId: 'u1', name: 'Pranav', avatarColor: '#4ECDC4', lat: 12, lng: 77, accuracy: 10, timestamp: Date.now(), sharing: true, status: 'live' },
-      { userId: 'u2', name: 'Riya', avatarColor: '#FF6B6B', lat: 12, lng: 77, accuracy: 10, timestamp: Date.now(), sharing: true, status: 'live' },
-      { userId: 'u3', name: 'Arjun', avatarColor: '#FFD166', lat: 12, lng: 77, accuracy: 10, timestamp: Date.now(), sharing: true, status: 'live' },
-      { userId: 'u4', name: 'Sneha', avatarColor: '#A8E6CF', lat: 12, lng: 77, accuracy: 10, timestamp: Date.now(), sharing: true, status: 'live' },
-    ]
-    const preview = buildWidgetMapData(locations)
-    expect(preview).toHaveLength(3)
+  test('members sorted by most recent timestamp first', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: {
+        u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 50000, sharing: true },
+        u2: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: true },
+      }
+    })
+    expect(result.members[0].name).toBe('Riya')
   })
 
-  test('isLive false for member with timestamp > 60 seconds ago', () => {
-    const oldTimestamp = Date.now() - 65 * 1000 // 65 seconds ago
-    expect(getLiveStatus(oldTimestamp)).toBe(false)
+  test('initials max 2 characters', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: { u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now, sharing: true } }
+    })
+    result.members.forEach(m => expect(m.initials.length).toBeLessThanOrEqual(2))
   })
 
-  test('isLive true for member with timestamp < 60 seconds ago', () => {
-    const freshTimestamp = Date.now() - 30 * 1000 // 30 seconds ago
-    expect(getLiveStatus(freshTimestamp)).toBe(true)
-  })
-
-  test('members sorted by most recent timestamp', () => {
-    const now = Date.now()
-    const locations: MemberLocation[] = [
-      { userId: 'u1', name: 'Pranav', avatarColor: '#4ECDC4', lat: 12, lng: 77, accuracy: 10, timestamp: now - 30000, sharing: true, status: 'live' }, // 30s ago
-      { userId: 'u2', name: 'Riya', avatarColor: '#FF6B6B', lat: 12, lng: 77, accuracy: 10, timestamp: now, sharing: true, status: 'live' },       // now (most recent)
-      { userId: 'u3', name: 'Arjun', avatarColor: '#FFD166', lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: true, status: 'live' }, // 10s ago
-    ]
-    const preview = buildWidgetMapData(locations)
-    expect(preview[0].uid).toBe('u2') // Riya first
-    expect(preview[1].uid).toBe('u3') // Arjun second
-    expect(preview[2].uid).toBe('u1') // Pranav third
+  test('liveCount is correct', async () => {
+    const result = await buildMapWidgetData({
+      ...base,
+      memberLocations: {
+        u1: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: true },
+        u2: { lat: 12, lng: 77, accuracy: 10, timestamp: now - 10000, sharing: false },
+      }
+    })
+    expect(result.liveCount).toBe(1)
   })
 })

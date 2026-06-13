@@ -8,13 +8,13 @@ export interface NormalisedContact {
 export function normalisePhoneNumber(raw: string): string | null {
   // Strip all non-digit characters
   const digits = raw.replace(/\D/g, '')
-  if (digits.length === 12 && digits.startsWith('91')) {
+  if (digits.length === 12 && digits.startsWith('91') && ['6','7','8','9'].includes(digits[2])) {
     return `+${digits}`
   }
-  if (digits.length === 10 && !digits.startsWith('0')) {
+  if (digits.length === 10 && ['6','7','8','9'].includes(digits[0])) {
     return `+91${digits}`
   }
-  if (digits.length === 11 && digits.startsWith('0')) {
+  if (digits.length === 11 && digits.startsWith('0') && ['6','7','8','9'].includes(digits[1])) {
     return `+91${digits.slice(1)}`
   }
   return null
