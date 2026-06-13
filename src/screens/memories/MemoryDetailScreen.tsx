@@ -24,6 +24,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
+import { haptics } from '@lib/haptics'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -76,7 +77,7 @@ export function MemoryDetailScreen() {
     .numberOfTaps(2)
     .onStart(() => {
       // Run Haptic feedback on main thread
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      haptics.reactionAdded()
       
       // Trigger heart animation
       heartScale.value = 0
@@ -120,10 +121,10 @@ export function MemoryDetailScreen() {
 
   // Handle toggling reaction
   const handleToggleEmoji = (emoji: ReactionEmoji) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     if (activeReaction === emoji) {
       removeReaction(groupId, memoryId, myUid)
     } else {
+      haptics.reactionAdded()
       castReaction(groupId, memoryId, myUid, emoji)
     }
   }

@@ -12,6 +12,7 @@ export const MemorySchema = z.object({
   caption:     z.string().max(200).optional(),
   photoUrl:    z.string().url().optional(),    // Firebase Storage URL
   photoThumb:  z.string().url().optional(),    // Thumbnail URL (Phase 4)
+  uploadPending: z.boolean().optional(),
   takenBy:     z.string().min(1).optional(),   // uid of photographer
   location:    z.object({
     name:  z.string().max(100).optional(),

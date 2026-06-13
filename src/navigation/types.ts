@@ -36,6 +36,7 @@ export type HomeStackParamList = {
   BalanceSummary:     { groupId: string; withUid?: string }
   GroupSettings:      { groupId: string }
   GroupMembersManage: { groupId: string }
+  AddMembers:         { groupId: string }
   SettleUp:           { groupId: string; withUid?: string }
   NotificationDebug:  undefined
   TripWrap:           { groupId: string }

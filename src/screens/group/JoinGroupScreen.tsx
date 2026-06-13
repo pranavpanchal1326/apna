@@ -12,6 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { haptics } from '@lib/haptics'
 import { useTheme } from '@theme'
 import { Button, Input, Screen } from '@components'
 import { useGroupStore } from '@stores/group.store'
@@ -108,7 +109,7 @@ export function JoinGroupScreen() {
       })
 
       setGroupPreview(group)
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      haptics.qrScanSuccess()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to verify invite code.')
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)

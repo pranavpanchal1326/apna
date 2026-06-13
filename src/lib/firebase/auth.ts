@@ -27,8 +27,11 @@ import type { User } from '@lib/types'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import { userDoc } from './collections'
 import type { UserInput } from '@lib/schemas'
+import { hashPhoneNumber, truncateHashForLookup } from '@lib/contacts/hasher'
+import { normalisePhoneNumber } from '@lib/contacts/reader'
 
 export type RecaptchaRef = React.RefObject<FirebaseRecaptchaVerifierModal>
+
 
 /**
  * Send OTP to phone number.
@@ -81,9 +84,18 @@ export async function createUserDoc(
 ): Promise<User> {
   const userRef = userDoc(firebaseUser.uid)
 
+  const rawPhone = firebaseUser.phoneNumber ?? ''
+  const normalisedPhone = normalisePhoneNumber(rawPhone) || rawPhone
+  let phoneHash = ''
+  if (normalisedPhone) {
+    const fullHash = await hashPhoneNumber(normalisedPhone)
+    phoneHash = truncateHashForLookup(fullHash)
+  }
+
   const userData: UserInput = {
     uid: firebaseUser.uid,
-    phone: firebaseUser.phoneNumber ?? '',
+    phone: rawPhone,
+    phoneHash,
     name: name.trim(),
     avatarColor: avatarColor as any,
     createdAt: serverTimestamp(),
@@ -94,6 +106,7 @@ export async function createUserDoc(
 
   return { ...userData, createdAt: userData.createdAt as any } as User
 }
+
 
 /**
  * Fetch existing user document from Firestore.

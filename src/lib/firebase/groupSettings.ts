@@ -37,6 +37,7 @@ export interface UpdateGroupMetaParams {
   endDate?:     string
   totalBudget?: number
   description?: string
+  coverPhotoUrl?: string
 }
 
 export interface TransferAdminParams {

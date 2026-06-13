@@ -32,14 +32,27 @@ const config: any = {
       'ACCESS_BACKGROUND_LOCATION',
       'FOREGROUND_SERVICE',
       'FOREGROUND_SERVICE_LOCATION',
+      'CAMERA',
+      'READ_MEDIA_IMAGES',
+      'READ_MEDIA_VIDEO',
+      'READ_EXTERNAL_STORAGE',
+      'WRITE_EXTERNAL_STORAGE',
+      'READ_CONTACTS',
+      'READ_PHONE_NUMBERS',
     ],
   },
   // Memory reel (Prompt 4.4): ffmpeg-kit-react-native requires a dev/EAS build.
   // Expo Go does not include native FFmpeg — use: npx expo run:android or EAS Build.
   plugins: [
     'expo-font',
-    'expo-haptics',
-    'expo-blur',
+    './plugins/withApnaWidgets',
+    [
+      'expo-contacts',
+      {
+        contactsPermission:
+          'apna reads your contacts to suggest friends who are already on apna.',
+      },
+    ],
     [
       '@sentry/react-native/expo',
       {
@@ -68,6 +81,30 @@ const config: any = {
           'apna needs your location to show friends where you are.',
         isAndroidBackgroundLocationEnabled: true,
         isAndroidForegroundServiceEnabled: true,
+      },
+    ],
+    [
+      'expo-camera',
+      {
+        cameraPermission:
+          'apna needs camera access to capture memories and receipt photos.',
+      },
+    ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'apna needs photo library access to add memories from your gallery.',
+      },
+    ],
+    [
+      'expo-media-library',
+      {
+        photosPermission:
+          'apna needs photo library access to save memories to your camera roll.',
+        savePhotosPermission:
+          'apna needs permission to save photos to your camera roll.',
+        isAccessMediaLocationEnabled: true,
       },
     ],
   ],

@@ -147,3 +147,108 @@ export async function deleteMemoryPhoto(photoUrl: string): Promise<void> {
   }
 }
 
+export interface UploadPhotoResult {
+  downloadUrl: string
+  storagePath: string
+  fileSizeBytes: number
+}
+
+/**
+ * Resumable upload task with progress tracking and abort controller support.
+ */
+export async function uploadPhotoWithProgress(params: {
+  localUri: string
+  storagePath: string
+  onProgress?: (percent: number) => void
+  signal?: AbortSignal
+}): Promise<UploadPhotoResult> {
+  const { localUri, storagePath, onProgress, signal } = params
+  const storageRef = ref(storage, storagePath)
+
+  // Fetch localUri to get blob
+  const response = await fetch(localUri)
+  const blob = await response.blob()
+  const fileSizeBytes = blob.size
+
+  return new Promise<UploadPhotoResult>((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, blob, {
+      contentType: 'image/jpeg',
+    })
+
+    const onAbort = () => {
+      uploadTask.cancel()
+      reject(new Error('Upload aborted'))
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', onAbort)
+    }
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const total = snapshot.totalBytes || 1
+        const percent = Math.round((snapshot.bytesTransferred / total) * 100)
+        onProgress?.(percent)
+      },
+      (err) => {
+        if (signal) {
+          signal.removeEventListener('abort', onAbort)
+        }
+        captureError(err, { source: 'uploadPhotoWithProgress', storagePath })
+        reject(err)
+      },
+      async () => {
+        if (signal) {
+          signal.removeEventListener('abort', onAbort)
+        }
+        try {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
+          resolve({
+            downloadUrl,
+            storagePath,
+            fileSizeBytes,
+          })
+        } catch (err) {
+          captureError(err as Error, { source: 'uploadPhotoWithProgress.complete', storagePath })
+          reject(err)
+        }
+      }
+    )
+  })
+}
+
+/**
+ * Returns a time-limited download URL on the client.
+ */
+export async function getSignedUrl(params: {
+  storagePath: string
+  expirySeconds?: number   // default 86400 (24 hours)
+}): Promise<string> {
+  const storageRef = ref(storage, params.storagePath)
+  return getDownloadURL(storageRef)
+}
+
+export function buildMemoryPhotoPath(params: {
+  groupId: string
+  memoryId: string
+  index: number
+}): string {
+  return `groups/${params.groupId}/memories/${params.memoryId}/photo_${params.index}.jpg`
+}
+
+export function buildReceiptPhotoPath(params: {
+  groupId: string
+  expenseId: string
+}): string {
+  return `groups/${params.groupId}/receipts/${params.expenseId}.jpg`
+}
+
+export function buildGroupCoverPath(params: {
+  groupId: string
+}): string {
+  // We use groups/{groupId}/cover/cover.jpg to match the storage rules path: groups/{groupId}/cover/{allPaths=**}
+  return `groups/${params.groupId}/cover/cover.jpg`
+}
+
+

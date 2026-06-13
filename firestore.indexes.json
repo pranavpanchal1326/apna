@@ -141,6 +141,14 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "users",
+      "fieldPath": "phoneHash",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
       "collectionGroup": "activity",
       "fieldPath": "createdAt",
       "indexes": [

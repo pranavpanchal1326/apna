@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native'
 import { useTheme } from '../../theme'
 import { useBackgroundLocation } from '../../hooks/useBackgroundLocation'
 import { LocationPermissionGate } from './LocationPermissionGate'
-import * as Haptics from 'expo-haptics'
+import { haptics } from '@lib/haptics'
 
 export function LocationSharingToggle() {
   const { colors, text, spacing, radius } = useTheme()
@@ -11,11 +11,12 @@ export function LocationSharingToggle() {
   const [gateVisible, setGateVisible] = useState(false)
 
   const handleToggleSharing = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     if (isSharing) {
+      haptics.locationSharingOff()
       await stopSharing()
     } else {
       if (permissionStatus === 'background_granted') {
+        haptics.locationSharingOn()
         await startSharing()
       } else {
         setGateVisible(true)

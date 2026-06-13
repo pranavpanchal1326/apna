@@ -260,6 +260,13 @@ service cloud.firestore {
         allow write: if false;  // Cloud Functions write with Admin SDK (bypasses rules)
       }
 
+      // ── /groups/{groupId}/balances/{balanceId} ──────────────────
+      // Balances document is WRITE-PROTECTED — only Cloud Functions can write
+      match /balances/{balanceId} {
+        allow read: if isGroupMember(groupId);
+        allow write: if false;
+      }
+
       // ── /groups/{groupId}/itinerary/{itemId} ────────────────────
       match /itinerary/{itemId} {
 

@@ -9,6 +9,7 @@ export const AVATAR_COLORS_ARRAY = [
 export const UserSchema = z.object({
   uid:         z.string().min(1).max(128),
   phone:       z.string().regex(/^\+91[6-9]\d{9}$/, 'Invalid Indian phone number'),
+  phoneHash:   z.string().length(16).optional(),
   name:        z.string().min(1).max(40),
   avatarColor: z.enum(AVATAR_COLORS_ARRAY),
   createdAt:   z.unknown(),   // Firestore Timestamp — validated as present, not typed

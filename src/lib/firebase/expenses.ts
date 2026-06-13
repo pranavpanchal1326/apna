@@ -5,6 +5,8 @@
 
 import {
   addDoc,
+  setDoc,
+  doc,
   updateDoc,
   deleteDoc,
   getDoc,
@@ -23,6 +25,7 @@ export const EXPENSE_PAGE_SIZE = 30
 
 // ── CREATE EXPENSE ─────────────────────────────────────────────────
 export interface CreateExpenseParams {
+  id?:          string           // Optional pre-specified ID
   groupId:      string
   description:  string
   amount:       number           // Rupees — positive value
@@ -34,12 +37,14 @@ export interface CreateExpenseParams {
   notes?:       string
   receiptUrl?:  string           // Set later by background upload
   createdBy:    string           // uid of creator
+  uploadPending?: boolean
 }
 
 export async function createExpense(
   params: CreateExpenseParams
 ): Promise<string> {
   const {
+    id,
     groupId,
     description,
     amount,
@@ -51,9 +56,10 @@ export async function createExpense(
     notes,
     receiptUrl,
     createdBy,
+    uploadPending,
   } = params
 
-  const data: ExpenseCreate = {
+  const data: ExpenseCreate & { uploadPending?: boolean } = {
     groupId,
     description:  description.trim(),
     amount,
@@ -68,10 +74,17 @@ export async function createExpense(
     createdBy,
     isSettled:    false,
     createdAt:    serverTimestamp(),
+    uploadPending: uploadPending || undefined,
   }
 
-  const ref = await addDoc(expensesCol(groupId), data)
-  return ref.id
+  if (id) {
+    const ref = doc(expensesCol(groupId), id)
+    await setDoc(ref, data)
+    return id
+  } else {
+    const ref = await addDoc(expensesCol(groupId), data)
+    return ref.id
+  }
 }
 
 // ── UPDATE EXPENSE ─────────────────────────────────────────────────

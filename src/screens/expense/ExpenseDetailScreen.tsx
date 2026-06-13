@@ -14,8 +14,8 @@ import {
   Dimensions,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
+import { haptics } from '@lib/haptics'
 import { Screen, Button } from '@components'
 import { Avatar } from '@components/ui/Avatar'
 import { useExpenses } from '@hooks/useExpenses'
@@ -66,7 +66,6 @@ export function ExpenseDetailScreen({ route }: Props) {
 
   // Delete handler
   const handleDelete = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
     Alert.alert(
       'Delete Expense?',
       'Are you sure you want to delete this expense? This will automatically recalculate balances for everyone in the group.',
@@ -78,7 +77,7 @@ export function ExpenseDetailScreen({ route }: Props) {
           onPress: async () => {
             try {
               await removeExpense(groupId, expenseId)
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              haptics.destructiveConfirmed()
               navigation.goBack()
             } catch (err) {
               Alert.alert('Error', 'Failed to delete expense.')

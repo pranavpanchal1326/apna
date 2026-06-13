@@ -31,6 +31,7 @@ export const BaseExpenseSchema = z.object({
   isSettled:   z.boolean().default(false),
   notes:       z.string().max(200).optional(),
   receiptUrl:  z.string().url().optional(),   // Phase 4 — receipt photo
+  uploadPending: z.boolean().optional(),
 })
 
 const refineSplitsSum = (data: { splits?: Record<string, number>; amount?: number }) => {

@@ -11,18 +11,23 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  ActivityIndicator,
+  Pressable,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
-import { Screen, Header, Button } from '@components'
+import { haptics } from '@lib/haptics'
+import { Screen, Header, Button, MediaPickerSheet } from '@components'
 import {
   SettingsRow,
   DangerZoneCard,
   InviteCodeCard,
 } from '@components/group'
 import { useGroupSettings } from '@hooks/useGroupSettings'
+import { usePhotoUpload } from '@hooks/usePhotoUpload'
 import type { HomeStackParamList } from '@navigation/types'
 import { getCachedTripWrap } from '../../lib/utils/tripWrapData'
 import { ReferralShareRow } from '@components/referral'
@@ -61,6 +66,30 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
   const [editValueEnd, setEditValueEnd] = useState('') // Only used for dates (endDate)
   const [isUpdating, setIsUpdating]   = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [galleryVisible, setGalleryVisible] = useState(false)
+
+  const { state: uploadState, uploadPhotos } = usePhotoUpload()
+
+  const handleCoverSelect = useCallback(async (uris: string[]) => {
+    if (uris.length === 0) return
+    const uri = uris[0]
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      const results = await uploadPhotos({
+        localUris: [uri],
+        context: 'cover',
+        groupId,
+        referenceId: groupId,
+      })
+      if (results.length > 0) {
+        await onUpdateMeta({ coverPhotoUrl: results[0].downloadUrl })
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      }
+    } catch (err: any) {
+      console.error('[GroupSettings] Failed to upload cover photo:', err)
+      Alert.alert('Upload Failed', err.message ?? 'Failed to upload group cover photo. It will be uploaded automatically when you are back online.')
+    }
+  }, [groupId, uploadPhotos, onUpdateMeta])
 
   // ── Share flow ─────────────────────────────────────────────────────────────
   const handleShareInvite = useCallback(async () => {
@@ -161,7 +190,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           onPress: async () => {
             try {
               await onLeaveGroup()
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              haptics.destructiveConfirmed()
               navigation.replace('HomeList')
             } catch (err: any) {
               Alert.alert('Error', err.message ?? 'Could not leave group.')
@@ -208,7 +237,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           onPress: async () => {
             try {
               await onDissolveGroup()
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              haptics.destructiveConfirmed()
               navigation.replace('HomeList')
             } catch (err: any) {
               Alert.alert('Error', err.message ?? 'Could not dissolve group.')
@@ -241,36 +270,74 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing['4xl'] }}>
         
         {/* ── 1. Group Overview Card ────────────────────────────────────────── */}
-        <View style={[styles.overviewCard, {
-          backgroundColor: colors.bgSecondary,
-          borderRadius: radius.lg,
-          padding: spacing.lg,
-          marginBottom: spacing.xl,
-          borderWidth: 1,
-          borderColor: colors.border,
-          ...shadows.card,
-        }]}>
-          <View style={styles.emojiRow}>
-            <Text style={{ fontSize: 48 }}>{group.coverEmoji ?? '✈️'}</Text>
-            <View style={{ flex: 1, marginLeft: spacing.md }}>
-              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>{group.name}</Text>
-              <Text style={[text.body.sm, { color: colors.textSecondary }]}>
-                {group.destination || 'No destination'}
-              </Text>
+        <Pressable
+          onPress={isAdmin ? () => setGalleryVisible(true) : undefined}
+          style={({ pressed }) => [
+            styles.overviewCard,
+            {
+              backgroundColor: colors.bgSecondary,
+              borderRadius: radius.lg,
+              marginBottom: spacing.xl,
+              borderWidth: 1,
+              borderColor: colors.border,
+              overflow: 'hidden',
+              opacity: pressed ? 0.95 : 1,
+              ...shadows.card,
+            }
+          ]}
+          disabled={!isAdmin}
+          accessibilityLabel="Change group cover photo"
+          accessibilityRole="button"
+        >
+          {(group as any).coverPhotoUrl ? (
+            <Image
+              source={{ uri: (group as any).coverPhotoUrl }}
+              style={{ width: '100%', height: 140 }}
+              resizeMode="cover"
+            />
+          ) : (
+            isAdmin && (
+              <View style={{ width: '100%', height: 64, backgroundColor: colors.accentPrimary + '15', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: colors.accentPrimary }}>
+                <Text style={[text.label.sm, { color: colors.accentPrimary, fontWeight: '700' }]}>
+                  📸 ADD TRIP COVER PHOTO
+                </Text>
+              </View>
+            )
+          )}
+          
+          <View style={{ padding: spacing.lg }}>
+            <View style={styles.emojiRow}>
+              <Text style={{ fontSize: 48 }}>{group.coverEmoji ?? '✈️'}</Text>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text style={[text.heading.sm, { color: colors.textPrimary }]}>{group.name}</Text>
+                <Text style={[text.body.sm, { color: colors.textSecondary }]}>
+                  {group.destination || 'No destination'}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.divider, { backgroundColor: colors.border, marginVertical: spacing.md }]} />
+            
+            <View style={styles.overviewMeta}>
+              <Text style={[text.body.sm, { color: colors.textSecondary }]}>Dates: {dateRangeStr}</Text>
+              <Text style={[text.body.sm, { color: colors.textSecondary }]}>Status: {group.status}</Text>
+              <Text style={[text.body.sm, { color: colors.textSecondary }]}>Members: {group.memberIds?.length ?? 0}</Text>
+              <Text style={[text.body.sm, { color: colors.textSecondary }]}>Currency: {group.currency ?? 'INR'}</Text>
+              {group.totalBudget != null && (
+                <Text style={[text.body.sm, { color: colors.textSecondary }]}>Budget: ₹{group.totalBudget}</Text>
+              )}
             </View>
           </View>
-          <View style={[styles.divider, { backgroundColor: colors.border, marginVertical: spacing.md }]} />
-          
-          <View style={styles.overviewMeta}>
-            <Text style={[text.body.sm, { color: colors.textSecondary }]}>Dates: {dateRangeStr}</Text>
-            <Text style={[text.body.sm, { color: colors.textSecondary }]}>Status: {group.status}</Text>
-            <Text style={[text.body.sm, { color: colors.textSecondary }]}>Members: {group.memberIds?.length ?? 0}</Text>
-            <Text style={[text.body.sm, { color: colors.textSecondary }]}>Currency: {group.currency ?? 'INR'}</Text>
-            {group.totalBudget != null && (
-              <Text style={[text.body.sm, { color: colors.textSecondary }]}>Budget: ₹{group.totalBudget}</Text>
-            )}
-          </View>
-        </View>
+
+          {/* Progress Overlay during upload */}
+          {uploadState.isUploading && (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 20 }]}>
+              <ActivityIndicator size="large" color={colors.accentPrimary} />
+              <Text style={[text.label.md, { color: '#FFF', marginTop: spacing.sm, fontWeight: '700' }]}>
+                Uploading Cover… {uploadState.progress}%
+              </Text>
+            </View>
+          )}
+        </Pressable>
 
         {/* ── 2. Invite Section ────────────────────────────────────────────── */}
         {inviteCode && (
@@ -451,6 +518,14 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Media Picker Sheet Overlay */}
+      <MediaPickerSheet
+        visible={galleryVisible}
+        maxPhotos={1}
+        onSelect={handleCoverSelect}
+        onClose={() => setGalleryVisible(false)}
+      />
     </Screen>
   )
 }

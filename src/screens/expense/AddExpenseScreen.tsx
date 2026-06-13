@@ -33,10 +33,10 @@ import {
   Image,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import * as ImagePicker from 'expo-image-picker'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
-import { Button, Screen } from '@components'
+import { haptics } from '@lib/haptics'
+import { Button, Screen, MediaPickerSheet, NativeCameraSheet, UploadProgressChip } from '@components'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import {
   CategoryPicker,
@@ -55,8 +55,8 @@ import { useExpenseStore } from '@stores/expense.store'
 import { useGroupStore } from '@stores/group.store'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useAuth } from '@hooks/useAuth'
-import { compressReceiptImage } from '@lib/utils/imageCompression'
-import { ReceiptCamera } from './components/ReceiptCamera'
+import { usePhotoUpload } from '@hooks/usePhotoUpload'
+import { nanoid } from 'nanoid/non-secure'
 import type { HomeStackScreenProps } from '@navigation/types'
 import type { ExpenseCategory } from '@lib/schemas'
 
@@ -85,10 +85,14 @@ export function AddExpenseScreen({ route }: Props) {
   const [paidByUid, setPaidByUid]       = useState(user?.uid ?? '')
   const [splitMethod, setSplitMethod]   = useState<SplitMethod>('equal')
   const [notes, setNotes]               = useState('')
+  const [expenseId]                     = useState(() => nanoid())
   const [receiptUri, setReceiptUri]     = useState<string | null>(null)
   const [error, setError]               = useState<string | null>(null)
   const [receiptOptionsVisible, setReceiptOptionsVisible] = useState(false)
-  const [cameraActive, setCameraActive] = useState(false)
+  const [cameraVisible, setCameraVisible] = useState(false)
+  const [galleryVisible, setGalleryVisible] = useState(false)
+
+  const { state: uploadState, uploadPhotos, cancelUpload } = usePhotoUpload()
   
   // Paid by BottomSheet visibility
   const [payerSheetVisible, setPayerSheetVisible] = useState(false)
@@ -246,43 +250,16 @@ export function AddExpenseScreen({ route }: Props) {
   }, [selected])
 
   // ── Image Snapping / Picking ─────────────────────────────────────
-  const processImageUri = async (uri: string) => {
-    try {
-      const compressed = await compressReceiptImage(uri)
-      setReceiptUri(compressed.uri)
-    } catch (err) {
-      console.error('[AddExpenseScreen] Image compression failed:', err)
-      Alert.alert('Error', 'Failed to compress receipt photo.')
-    }
-  }
-
-  const pickGalleryImage = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
-      if (!permissionResult.granted) {
-        Alert.alert('Permission Denied', 'We need library permissions to select receipts.')
-        return
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 0.9,
-      })
-
-      if (result.canceled || !result.assets?.[0]?.uri) return
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await processImageUri(result.assets[0].uri)
-    } catch (err) {
-      console.error('Error selecting gallery image:', err)
-      Alert.alert('Error', 'Failed to pick image.')
-    }
-  }
-
-  const handleCameraCapture = async (uri: string) => {
-    setCameraActive(false)
-    await processImageUri(uri)
+  const handlePhotoSelect = async (uris: string[]) => {
+    if (uris.length === 0) return
+    const uri = uris[0]
+    setReceiptUri(uri)
+    await uploadPhotos({
+      localUris: [uri],
+      context: 'receipt',
+      groupId,
+      referenceId: expenseId,
+    })
   }
 
   // ── Save Operation ────────────────────────────────────────────────
@@ -304,7 +281,11 @@ export function AddExpenseScreen({ route }: Props) {
     }
 
     try {
+      const hasUploaded = uploadState.results.length > 0 && !uploadState.isUploading && !uploadState.error
+      const receiptUrl = hasUploaded ? uploadState.results[0].downloadUrl : ''
+
       await addExpense({
+        id:           expenseId,
         groupId,
         description:  title.trim(),
         amount,
@@ -315,9 +296,11 @@ export function AddExpenseScreen({ route }: Props) {
         date,
         notes:        notes.trim() || undefined,
         createdBy:    user?.uid ?? '',
-      }, receiptUri ?? undefined)
+        receiptUrl:   receiptUrl || undefined,
+        uploadPending: !hasUploaded && receiptUri ? true : undefined,
+      })
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      haptics.expenseAdded()
       navigation.goBack()
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to save expense.'
@@ -329,15 +312,6 @@ export function AddExpenseScreen({ route }: Props) {
   // ── Paid By Display Name ──────────────────────────────────────────
   const paidByUser = members.get(paidByUid)
   const paidByLabel = paidByUid === user?.uid ? 'You' : paidByUser?.name ?? 'Select Member'
-
-  if (cameraActive) {
-    return (
-      <ReceiptCamera
-        onCapture={handleCameraCapture}
-        onClose={() => setCameraActive(false)}
-      />
-    )
-  }
 
   return (
     <Screen>
@@ -539,7 +513,7 @@ export function AddExpenseScreen({ route }: Props) {
               RECEIPT
             </Text>
             {receiptUri ? (
-              <View style={styles.receiptChipContainer}>
+              <View style={[styles.receiptChipContainer, { gap: spacing.sm, alignItems: 'center' }]}>
                 <Pressable
                   onPress={() => setReceiptOptionsVisible(true)}
                   style={[
@@ -557,10 +531,26 @@ export function AddExpenseScreen({ route }: Props) {
                     Receipt attached
                   </Text>
                 </Pressable>
+
+                <UploadProgressChip
+                  state={uploadState.isUploading ? 'uploading' : uploadState.error ? 'error' : uploadState.results.length > 0 ? 'done' : 'idle'}
+                  progress={uploadState.progress}
+                  onRetry={() => {
+                    if (receiptUri) {
+                      uploadPhotos({
+                        localUris: [receiptUri],
+                        context: 'receipt',
+                        groupId,
+                        referenceId: expenseId,
+                      })
+                    }
+                  }}
+                />
                 
                 <Pressable
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                    cancelUpload()
                     setReceiptUri(null)
                   }}
                   style={[styles.miniRemoveBtn, { backgroundColor: colors.accentDanger, borderRadius: radius.full }]}
@@ -662,7 +652,7 @@ export function AddExpenseScreen({ route }: Props) {
           <Pressable
             onPress={() => {
               setReceiptOptionsVisible(false)
-              setCameraActive(true)
+              setCameraVisible(true)
             }}
             style={[styles.sheetOptionRow, { borderBottomColor: colors.border }]}
             accessible
@@ -676,7 +666,7 @@ export function AddExpenseScreen({ route }: Props) {
           <Pressable
             onPress={() => {
               setReceiptOptionsVisible(false)
-              pickGalleryImage()
+              setGalleryVisible(true)
             }}
             style={styles.sheetOptionRow}
             accessible
@@ -688,6 +678,22 @@ export function AddExpenseScreen({ route }: Props) {
           </Pressable>
         </View>
       </BottomSheet>
+
+      {/* Native Camera Sheet Overlay */}
+      <NativeCameraSheet
+        visible={cameraVisible}
+        maxPhotos={1}
+        onCapture={handlePhotoSelect}
+        onClose={() => setCameraVisible(false)}
+      />
+
+      {/* Media Picker Sheet Overlay */}
+      <MediaPickerSheet
+        visible={galleryVisible}
+        maxPhotos={1}
+        onSelect={handlePhotoSelect}
+        onClose={() => setGalleryVisible(false)}
+      />
     </Screen>
   )
 }

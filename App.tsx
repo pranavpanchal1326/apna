@@ -26,6 +26,8 @@ import { queryClient } from '@lib/query'
 import { useNotifications } from '@hooks/useNotifications'
 import { initializeUploadQueue } from '@lib/utils/receiptUploadQueue'
 import { initReferralCapture } from '@lib/referral/referralCapture'
+import { hapticEngine } from '@lib/haptics'
+import { clearWidgetData } from '@lib/widget'
 
 // ── Keep native splash visible until fonts loaded ────────────────
 SplashScreen.preventAutoHideAsync()
@@ -39,6 +41,7 @@ function AppShell() {
   const { colors, isDark } = useTheme()
   const [fontsLoaded, fontError] = useDhagaFonts()
   const initialize = useAuthStore((s) => s.initialize)
+  const authStatus = useAuthStore((s) => s.status)
 
   // Register for FCM push notifications
   useNotifications()
@@ -53,6 +56,22 @@ function AppShell() {
       removeReferralCapture()
     }
   }, [initialize])
+
+  // Clear widget bridge data on logout so stale data isn't shown
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      void clearWidgetData()
+    }
+  }, [authStatus])
+
+  // Initialize haptics once fonts are ready and auth state has resolved
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && authStatus !== 'initializing') {
+      hapticEngine.init().catch((err) => {
+        captureError(err, { source: 'haptic_init' })
+      })
+    }
+  }, [fontsLoaded, fontError, authStatus])
 
   // Hide native splash once fonts are ready
   useEffect(() => {

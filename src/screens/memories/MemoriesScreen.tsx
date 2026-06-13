@@ -20,14 +20,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
-import * as ImagePicker from 'expo-image-picker'
+import { haptics } from '@lib/haptics'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
 import { useAuthStore } from '../../stores/auth.store'
-import { Header, Button, BottomSheet } from '@components'
-import { uploadMemoryPhoto } from '../../lib/firebase/storage'
-import { compressReceiptImage } from '../../lib/utils/imageCompression'
+import {
+  Header,
+  Button,
+  BottomSheet,
+  NativeCameraSheet,
+  MediaPickerSheet,
+  PhotoThumbnailStrip,
+  UploadProgressChip,
+} from '@components'
+import { usePhotoUpload } from '../../hooks/usePhotoUpload'
+import { nanoid } from 'nanoid/non-secure'
 import type { MemoriesStackParamList } from '../../navigation/types'
 import type { MemoryInput } from '../../lib/schemas/memory.schema'
 
@@ -55,15 +63,43 @@ export function MemoriesScreen() {
   const myUid = useAuthStore((s) => s.user?.uid ?? '')
 
   // Zustand Memory Store
-  const { memories, isLoading, subscribeToGroup, unsubscribe, addMemory } = useMemoryStore()
+  const { memories, isLoading, subscribeToGroup, unsubscribe } = useMemoryStore()
 
   // UI state
   const [pickerVisible, setPickerVisible] = useState(false)
   const [captionModalVisible, setCaptionModalVisible] = useState(false)
-  const [stagedPhotoUri, setStagedPhotoUri] = useState<string | null>(null)
+  const [cameraVisible, setCameraVisible] = useState(false)
+  const [galleryVisible, setGalleryVisible] = useState(false)
+  const [stagedUris, setStagedUris] = useState<string[]>([])
   const [captionText, setCaptionText] = useState('')
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadPercent, setUploadPercent] = useState(0)
+
+  const { state: uploadState, uploadPhotos, cancelUpload } = usePhotoUpload()
+
+  const uploadProgressMap = useMemo(() => {
+    const map: Record<string, number> = {}
+    if (!uploadState.isUploading) {
+      stagedUris.forEach((uri, idx) => {
+        if (idx < uploadState.uploadedCount) {
+          map[uri] = 100
+        }
+      })
+      return map
+    }
+
+    stagedUris.forEach((uri, idx) => {
+      if (idx < uploadState.uploadedCount) {
+        map[uri] = 100
+      } else if (idx === uploadState.uploadedCount) {
+        const N = stagedUris.length
+        const K = uploadState.uploadedCount
+        const P = Math.min(100, Math.max(0, uploadState.progress * N - K * 100))
+        map[uri] = P
+      } else {
+        map[uri] = 0
+      }
+    })
+    return map
+  }, [stagedUris, uploadState.isUploading, uploadState.uploadedCount, uploadState.progress])
 
   // Subscribe to memories
   useEffect(() => {
@@ -126,96 +162,67 @@ export function MemoriesScreen() {
     return sections
   }, [memories])
 
-  // Image upload pipeline
-  const processSelectedImage = async (uri: string) => {
-    try {
-      setStagedPhotoUri(uri)
-      setCaptionText('')
-      setPickerVisible(false)
-      setCaptionModalVisible(true)
-    } catch (err) {
-      console.error('[MemoriesScreen] processSelectedImage error:', err)
-      Alert.alert('Error', 'Failed to read image.')
-    }
+  const handleRemoveUri = (uri: string) => {
+    setStagedUris((prev) => prev.filter((u) => u !== uri))
   }
 
-  const pickImage = async (useCamera: boolean) => {
-    try {
-      const permission = useCamera
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync()
-
-      if (!permission.granted) {
-        Alert.alert(
-          'Permission Denied',
-          `Apna needs access to your ${useCamera ? 'camera' : 'gallery'} to add photos.`
-        )
-        return
-      }
-
-      const result = useCamera
-        ? await ImagePicker.launchCameraAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            quality: 0.9,
-          })
-        : await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            quality: 0.9,
-          })
-
-      if (result.canceled || !result.assets?.[0]?.uri) return
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await processSelectedImage(result.assets[0].uri)
-    } catch (err) {
-      console.error('[MemoriesScreen] pickImage error:', err)
-      Alert.alert('Error', 'Failed to pick image.')
+  // Close caption modal if staged URIs become empty
+  useEffect(() => {
+    if (captionModalVisible && stagedUris.length === 0 && !uploadState.isUploading) {
+      setCaptionModalVisible(false)
     }
-  }
+  }, [stagedUris.length, captionModalVisible, uploadState.isUploading])
 
   const handlePostMemory = async () => {
-    if (!stagedPhotoUri || !groupId) return
-    setIsUploading(true)
-    setUploadPercent(0)
+    if (stagedUris.length === 0 || !groupId) return
 
     try {
-      // 1. Compress image client-side to keep under 5MB limit
-      const compressed = await compressReceiptImage(stagedPhotoUri)
-      
-      // 2. Generate a random ID for the memory and storage filename
-      const memoryId = Math.random().toString(36).substring(7)
-      
-      // 3. Upload photo to storage
-      const downloadUrl = await uploadMemoryPhoto(groupId, memoryId, compressed.uri, (pct) => {
-        setUploadPercent(pct)
-      })
-
-      // Today as YYYY-MM-DD
       const dateStr = new Date().toISOString().split('T')[0]
+      const basePostId = nanoid()
 
-      // 4. Create document in Firestore
-      await addMemory(groupId, {
+      // Upload photos sequentially
+      const uploadResults = await uploadPhotos({
+        localUris: stagedUris,
+        context: 'memory',
         groupId,
-        createdAt: undefined,
-        type: 'photo',
-        date: dateStr,
-        photoUrl: downloadUrl,
-        caption: captionText.trim() || undefined,
-        takenBy: myUid,
-        createdBy: myUid,
+        referenceId: basePostId,
       })
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      const { doc, setDoc, serverTimestamp } = require('firebase/firestore')
+      const { memoriesCol } = require('../../lib/firebase/collections')
+      const { buildMemoryPhotoPath } = require('../../lib/firebase/storage')
+
+      for (let i = 0; i < stagedUris.length; i++) {
+        const memoryId = `${basePostId}_${i}`
+        const storagePath = buildMemoryPhotoPath({ groupId, memoryId: basePostId, index: i })
+        const match = uploadResults.find((r: { storagePath: string }) => r.storagePath === storagePath)
+        const photoUrl = match ? match.downloadUrl : ''
+        const hasUploaded = !!match
+
+        const ref = doc(memoriesCol(groupId), memoryId)
+
+        await setDoc(ref, {
+          id: memoryId,
+          groupId,
+          type: 'photo',
+          date: dateStr,
+          photoUrl,
+          uploadPending: !hasUploaded,
+          caption: captionText.trim() || undefined,
+          takenBy: myUid,
+          createdBy: myUid,
+          reactions: {},
+          createdAt: serverTimestamp(),
+        })
+      }
+
+      haptics.memoryPosted()
       setCaptionModalVisible(false)
-      setStagedPhotoUri(null)
+      setStagedUris([])
       setCaptionText('')
     } catch (err) {
       console.error('[MemoriesScreen] handlePostMemory error:', err)
       Alert.alert('Upload Failed', 'Failed to upload and post your memory. Please try again.')
-    } finally {
-      setIsUploading(false)
     }
   }
 
@@ -355,7 +362,7 @@ export function MemoriesScreen() {
         </Pressable>
       )}
 
-      {/* Picker BottomSheet */}
+      {/* Picker Options BottomSheet */}
       <BottomSheet
         visible={pickerVisible}
         onClose={() => setPickerVisible(false)}
@@ -363,7 +370,10 @@ export function MemoriesScreen() {
       >
         <View style={{ padding: spacing.md, gap: spacing.sm }}>
           <Pressable
-            onPress={() => pickImage(true)}
+            onPress={() => {
+              setPickerVisible(false)
+              setCameraVisible(true)
+            }}
             style={[styles.sheetOption, { borderBottomColor: colors.border }]}
           >
             <Text style={{ fontSize: 20, marginRight: spacing.md }}>📸</Text>
@@ -371,7 +381,10 @@ export function MemoriesScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => pickImage(false)}
+            onPress={() => {
+              setPickerVisible(false)
+              setGalleryVisible(true)
+            }}
             style={styles.sheetOption}
           >
             <Text style={{ fontSize: 20, marginRight: spacing.md }}>🖼️</Text>
@@ -380,13 +393,36 @@ export function MemoriesScreen() {
         </View>
       </BottomSheet>
 
+      {/* Native Camera Sheet */}
+      <NativeCameraSheet
+        visible={cameraVisible}
+        onClose={() => setCameraVisible(false)}
+        onCapture={(uris) => {
+          setStagedUris(uris)
+          setCaptionModalVisible(true)
+        }}
+      />
+
+      {/* Media Picker Sheet */}
+      <MediaPickerSheet
+        visible={galleryVisible}
+        onClose={() => setGalleryVisible(false)}
+        onSelect={(uris) => {
+          setStagedUris(uris)
+          setCaptionModalVisible(true)
+        }}
+      />
+
       {/* Caption modal */}
       <Modal
         visible={captionModalVisible}
         animationType="slide"
         transparent
         onRequestClose={() => {
-          if (!isUploading) setCaptionModalVisible(false)
+          if (!uploadState.isUploading) {
+            setCaptionModalVisible(false)
+            setStagedUris([])
+          }
         }}
       >
         <View style={styles.modalOverlay}>
@@ -395,8 +431,18 @@ export function MemoriesScreen() {
               Add Caption
             </Text>
 
-            {stagedPhotoUri && (
-              <Image source={{ uri: stagedPhotoUri }} style={[styles.stagedPreview, { borderRadius: radius.lg, marginVertical: spacing.md }]} />
+            {stagedUris.length > 0 && (
+              <View style={{ marginVertical: spacing.md }}>
+                <PhotoThumbnailStrip
+                  uris={stagedUris}
+                  uploadProgress={uploadProgressMap}
+                  onRemove={handleRemoveUri}
+                  onAddMore={() => {
+                    setCaptionModalVisible(false)
+                    setGalleryVisible(true)
+                  }}
+                />
+              </View>
             )}
 
             <TextInput
@@ -405,7 +451,7 @@ export function MemoriesScreen() {
               placeholder="Write a caption... (optional)"
               placeholderTextColor={colors.textMuted}
               maxLength={200}
-              editable={!isUploading}
+              editable={!uploadState.isUploading}
               multiline
               style={[
                 styles.captionInput,
@@ -419,29 +465,47 @@ export function MemoriesScreen() {
               ]}
             />
 
-            {isUploading ? (
-              <View style={{ marginVertical: spacing.md, alignItems: 'center' }}>
-                <ActivityIndicator color={colors.accentPrimary} />
-                <Text style={[text.label.sm, { color: colors.textSecondary, marginTop: spacing.xs }]}>
-                  Uploading... {uploadPercent}%
-                </Text>
-              </View>
-            ) : (
-              <View style={[styles.modalActions, { marginTop: spacing.md }]}>
-                <Button
-                  label="Cancel"
-                  variant="secondary"
-                  onPress={() => setCaptionModalVisible(false)}
-                  style={{ flex: 1, marginRight: spacing.sm }}
-                />
-                <Button
-                  label="Post"
-                  variant="primary"
-                  onPress={handlePostMemory}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            )}
+            <View style={[styles.modalActions, { marginTop: spacing.md, alignItems: 'center', gap: spacing.sm }]}>
+              {uploadState.isUploading ? (
+                <>
+                  <UploadProgressChip
+                    state="uploading"
+                    progress={uploadState.progress}
+                  />
+                  <Button
+                    label="Cancel"
+                    variant="secondary"
+                    onPress={cancelUpload}
+                    style={{ flex: 1 }}
+                  />
+                </>
+              ) : (
+                <>
+                  {uploadState.error && (
+                    <UploadProgressChip
+                      state="error"
+                      onRetry={handlePostMemory}
+                    />
+                  )}
+                  <Button
+                    label="Cancel"
+                    variant="secondary"
+                    onPress={() => {
+                      setCaptionModalVisible(false)
+                      setStagedUris([])
+                    }}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    label="Post"
+                    variant="primary"
+                    onPress={handlePostMemory}
+                    disabled={stagedUris.length === 0}
+                    style={{ flex: 1 }}
+                  />
+                </>
+              )}
+            </View>
           </View>
         </View>
       </Modal>

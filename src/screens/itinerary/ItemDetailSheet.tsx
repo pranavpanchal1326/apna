@@ -17,6 +17,7 @@ import {
 } from 'react-native'
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
 import { useTheme } from '../../theme'
+import { haptics } from '@lib/haptics'
 import { ItemDetailHeader }  from './ItemDetailHeader'
 import { MapPinView }         from './MapPinView'
 import { ItemDetailBody }     from './ItemDetailBody'
@@ -77,6 +78,7 @@ export const ItemDetailSheet = forwardRef<ItemDetailSheetRef, ItemDetailSheetPro
 
     const handleConfirm = async () => {
       await onUpdate(item.id, { isConfirmed: true })
+      haptics.itineraryItemConfirmed()
       // Keep sheet open but update local item representation to show checkmark
       setItem(prev => prev ? { ...prev, isConfirmed: true } : null)
     }

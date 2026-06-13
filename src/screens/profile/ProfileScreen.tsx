@@ -7,6 +7,8 @@ import { useTheme } from '@theme'
 import { useAuth } from '@hooks/useAuth'
 import { track, resetAnalyticsUser } from '@lib/analytics'
 import { clearSentryUser } from '@lib/sentry'
+import { SettingsRow } from '@components/group'
+import { useHaptics } from '@hooks/useHaptics'
 
 import { removePushToken } from '@lib/notifications'
 import { ReferralDashboard } from '@components/referral'
@@ -14,6 +16,7 @@ import { ReferralDashboard } from '@components/referral'
 export function ProfileScreen() {
   const { colors, text, spacing, radius } = useTheme()
   const { user, logout, isLoading } = useAuth()
+  const { isEnabled, setEnabled, hasHaptics } = useHaptics()
 
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -60,6 +63,21 @@ export function ProfileScreen() {
       </View>
 
       <ReferralDashboard />
+
+      {/* Preferences Section */}
+      {hasHaptics && (
+        <View style={{ marginBottom: spacing.xl }}>
+          <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
+            PREFERENCES
+          </Text>
+          <SettingsRow
+            label="Haptic feedback"
+            value={isEnabled}
+            onToggle={setEnabled}
+            description="Feel physical feedback on key actions"
+          />
+        </View>
+      )}
 
       {/* Version info */}
       <View

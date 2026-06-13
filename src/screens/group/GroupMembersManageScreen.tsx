@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { View, Text, FlatList, StyleSheet, Alert } from 'react-native'
+import { View, Text, FlatList, StyleSheet, Alert, Pressable } from 'react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Screen, Header } from '@components'
 import { MemberRoleRow } from '@components/group/MemberRoleRow'
@@ -9,7 +10,7 @@ import type { HomeStackScreenProps } from '@navigation/types'
 
 type Props = HomeStackScreenProps<'GroupMembersManage'>
 
-export function GroupMembersManageScreen({ route }: Props) {
+export function GroupMembersManageScreen({ route, navigation }: Props) {
   const { groupId } = route.params
   const { colors, spacing, text } = useTheme()
   const { user } = useAuth()
@@ -94,7 +95,24 @@ export function GroupMembersManageScreen({ route }: Props) {
 
   return (
     <Screen>
-      <Header title="Manage Members" showBack />
+      <Header
+        title="Manage Members"
+        showBack
+        rightAction={
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+              navigation.navigate('AddMembers', { groupId })
+            }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Add members"
+          >
+            <Text style={{ color: colors.accentPrimary, fontSize: 24 }}>+</Text>
+          </Pressable>
+        }
+      />
       <FlatList
         data={listData}
         keyExtractor={(item) => item}

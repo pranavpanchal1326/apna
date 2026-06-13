@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  balance_widget_preview.xml
+  Static preview shown in the Android widget picker.
+  Uses plain XML views so it renders without a live app process.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#0D1424">
+
+    <!-- App label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="apna"
+        android:textColor="#4ECDC4"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
+    <!-- Group name placeholder -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Goa Squad 🏖️"
+        android:textColor="#8A94B0"
+        android:textSize="11sp" />
+
+    <!-- Balance amount -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="₹1,250"
+        android:textColor="#4ECDC4"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <!-- Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="You are owed"
+        android:textColor="#8A94B0"
+        android:textSize="11sp" />
+
+    <!-- Spacer -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Last updated -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Updated 14:32"
+        android:textColor="#4A5275"
+        android:textSize="9sp" />
+
+</LinearLayout>

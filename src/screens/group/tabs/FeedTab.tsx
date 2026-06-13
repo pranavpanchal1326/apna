@@ -2,7 +2,7 @@
 // The main activity feed tab. Real-time list of all group activity.
 // Handles loading, empty, error, and pagination states.
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   FlatList,
   View,
@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useTheme } from '@theme'
+import { haptics } from '@lib/haptics'
 import { ActivityFeedItem } from '@components/group'
 import { BalanceSummaryCard } from '@components/group'
 import { MemberAvatarRow } from '@components/group'
@@ -32,6 +33,41 @@ export function FeedTab({ group, myUid, balances, onSettle, onViewMembers }: Pro
   const navigation = useNavigation<any>()
   const { items, isLoading, isLoadingMore, hasMore, loadMore } = useActivityFeed(group.id)
   const { members } = useGroupMembers(group.memberIds)
+
+  const seenItemIds = useRef<Set<string>>(new Set())
+  const isInitialLoaded = useRef(false)
+
+  useEffect(() => {
+    if (isLoading) {
+      isInitialLoaded.current = false
+      return
+    }
+
+    if (!isInitialLoaded.current) {
+      seenItemIds.current = new Set(items.map(item => item.id))
+      isInitialLoaded.current = true
+      return
+    }
+
+    if (isLoadingMore) {
+      items.forEach(item => seenItemIds.current.add(item.id))
+      return
+    }
+
+    let joinedCount = 0
+    items.forEach(item => {
+      if (!seenItemIds.current.has(item.id)) {
+        seenItemIds.current.add(item.id)
+        if (item.type === 'member_joined') {
+          joinedCount++
+        }
+      }
+    })
+
+    if (joinedCount > 0) {
+      haptics.memberJoined()
+    }
+  }, [items, isLoading, isLoadingMore])
 
   const handlePress = useCallback((_item: ActivityItem) => {
     if (_item.metadata?.expenseId) {

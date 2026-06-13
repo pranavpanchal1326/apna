@@ -4,14 +4,9 @@
       "$groupId": {
         "locations": {
           "$userId": {
-            ".read":  "auth != null",
-            ".write": "auth != null && auth.uid === $userId",
-            ".validate": "newData.hasChildren(['lat', 'lng', 'accuracy', 'timestamp', 'sharing'])
-              && newData.child('lat').isNumber()
-              && newData.child('lng').isNumber()
-              && newData.child('accuracy').isNumber()
-              && newData.child('timestamp').isNumber()
-              && newData.child('sharing').isBoolean()"
+            ".read": "auth != null && root.child('groups').child($groupId).child('members').child(auth.uid).exists()",
+            ".write": "auth != null && auth.uid == $userId",
+            ".validate": "newData.hasChildren(['lat', 'lng', 'accuracy', 'timestamp', 'sharing']) && newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('accuracy').isNumber() && newData.child('timestamp').isNumber() && newData.child('sharing').isBoolean()"
           }
         }
       }

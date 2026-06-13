@@ -20,6 +20,7 @@ import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import Constants from 'expo-constants'
 import { AppState, type AppStateStatus } from 'react-native'
+import { haptics } from '@lib/haptics'
 import type { MemberLocation } from '../../lib/types/location.types'
 
 import { useTheme } from '../../theme'
@@ -406,7 +407,6 @@ export function MapScreen() {
   }, [userLocation, allItems, myUid])
 
   const handleSOSTrigger = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
     Alert.alert(
       'Send Emergency SOS?',
       `This will immediately broadcast your current location to all members of ${activeGroup?.name || 'the group'} and send a high-priority push alert.`,
@@ -416,6 +416,7 @@ export function MapScreen() {
           text: 'Send SOS',
           style: 'destructive',
           onPress: async () => {
+            haptics.sosPing()
             setIsSendingSOS(true)
             try {
               const loc = await Location.getCurrentPositionAsync({
@@ -427,7 +428,6 @@ export function MapScreen() {
                 accuracy: loc.coords.accuracy ?? 10,
               }
               await triggerSOSEvent(groupId!, myUid, coords)
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
               Alert.alert('SOS Sent', 'Your location has been sent and group members notified.')
             } catch (err) {
               console.error('[SOS] Failed to send SOS:', err)

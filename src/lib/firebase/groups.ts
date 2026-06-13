@@ -205,8 +205,8 @@ export async function joinGroupByCode(
   }
 
   // Group member limit check
-  if (group.memberIds.length >= 20) {
-    throw new Error('This group is full (max 20 members).')
+  if (group.memberIds.length >= 30) {
+    throw new Error('This group is full (max 30 members).')
   }
 
   // 3. Atomic batch: add member to group + update user.groups + increment useCount
@@ -335,4 +335,31 @@ export async function regenerateInviteCode(
 
   await batch.commit()
   return newCode
+}
+
+export async function addMemberToGroup(groupId: string, targetUid: string): Promise<void> {
+  const ref = groupDoc(groupId)
+  const snap = await getDoc(ref)
+  if (!snap.exists()) throw new Error('Group not found.')
+  const group = snap.data()
+  
+  if (group.memberIds.includes(targetUid)) {
+    return // Already a member
+  }
+  
+  if (group.memberIds.length >= 30) {
+    throw new Error('This group is full (max 30 members).')
+  }
+  
+  const batch = writeBatch(db)
+  
+  batch.update(groupDoc(groupId), {
+    memberIds: arrayUnion(targetUid),
+  })
+  
+  batch.update(userDoc(targetUid), {
+    groups: arrayUnion(groupId),
+  })
+  
+  await batch.commit()
 }

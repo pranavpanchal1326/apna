@@ -18,6 +18,7 @@ import {
 } from '@lib/firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { identifyAnalyticsUser } from '@lib/analytics'
+import { contactCache } from '@lib/contacts/cache'
 
 const authStorage = createMMKV({ id: 'apna-auth' })
 const USER_CACHE_KEY = 'cached-user'
@@ -183,6 +184,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       await firebaseSignOut()
       clearUserCache()
+      contactCache.clear()
       set({
         status: 'unauthenticated',
         firebaseUser: null,

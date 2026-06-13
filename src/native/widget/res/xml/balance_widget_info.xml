@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  balance_widget_info.xml
+  AppWidgetProviderInfo metadata for the Balance Widget.
+
+  minWidth / minHeight: 2 × 2 cell grid (110 dp per cell, minus 30 dp padding each).
+  targetCellWidth/Height (API 31+): explicit 2 × 2 declaration.
+  updatePeriodMillis: 0 — apna uses app-driven push updates only.
+  widgetCategory: keyguard is excluded — balance data should not appear on the lock screen.
+-->
+<appwidget-provider
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:minWidth="180dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+
+    android:previewImage="@layout/balance_widget_preview"
+    android:previewLayout="@layout/balance_widget_preview"
+
+    android:initialLayout="@layout/balance_widget_preview"
+    android:updatePeriodMillis="0"
+
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable"
+
+    android:description="@string/balance_widget_description"
+    android:resizeMode="horizontal|vertical" />

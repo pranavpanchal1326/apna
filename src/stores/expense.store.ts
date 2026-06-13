@@ -93,6 +93,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         currency:     'INR',
         createdAt:    new Date() as any, // Mock timestamp for local ordering
         receiptUrl:   params.receiptUrl,
+        uploadPending: params.uploadPending,
       }
 
       set((state) => ({

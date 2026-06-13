@@ -5,6 +5,7 @@ import { createMMKV } from 'react-native-mmkv'
 import { writeLocationUpdate } from '../lib/firebase/location'
 import { getActiveGroupId, getUserId } from '../lib/session'
 import { sessionTimer } from '../lib/location/sessionTimer'
+import { writeWidgetData, refreshWidgets } from '../lib/widget'
 
 export const BACKGROUND_LOCATION_TASK = 'apna-background-location'
 
@@ -94,6 +95,14 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
 
     lastWriteTime = now
 
+    // Sync map widget — update the current user's sharing state.
+    // Full member map is only available in the foreground; here we just
+    // ensure the widget file updatedAt timestamp advances so the widget
+    // re-renders with latest data when the app next opens.
+    void writeWidgetData({}).then(() => {
+      refreshWidgets()
+    })
+
     Sentry.addBreadcrumb({
       category: 'background-location',
       message: 'write success',
@@ -104,3 +113,4 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     Sentry.captureException(err as Error)
   }
 })
+

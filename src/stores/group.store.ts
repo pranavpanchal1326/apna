@@ -18,6 +18,7 @@ import {
   leaveGroup,
   fetchUserGroups,
   fetchGroup,
+  addMemberToGroup,
   type CreateGroupParams,
   type CreateGroupResult,
   type JoinGroupResult,
@@ -44,13 +45,14 @@ interface GroupStore {
   createGroup:  (params: CreateGroupParams) => Promise<CreateGroupResult>
   joinGroup:    (code: string, uid: string) => Promise<JoinGroupResult>
   leaveGroup:   (groupId: string, uid: string) => Promise<void>
+  addMember:    (groupId: string, uid: string) => Promise<void>
   updateGroupInCache: (updated: GroupInput) => void
 
   setError:     (error: string | null) => void
   reset:        () => void
 }
 
-export const useGroupStore = create<GroupStore>((set) => ({
+export const useGroupStore = create<GroupStore>((set, get) => ({
   // ── Initial state ─────────────────────────────────────────────
   groups:       [],
   activeGroup:  null,
@@ -195,6 +197,21 @@ export const useGroupStore = create<GroupStore>((set) => ({
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to leave group.'
       captureError(err, { source: 'group.store.leaveGroup' })
+      set({ isLoading: false, error: msg })
+      throw err
+    }
+  },
+
+  // ── Add member ─────────────────────────────────────────────────
+  addMember: async (groupId, uid) => {
+    set({ isLoading: true, error: null })
+    try {
+      await addMemberToGroup(groupId, uid)
+      await get().refreshActiveGroup(groupId)
+      set({ isLoading: false })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to add member.'
+      captureError(err, { source: 'group.store.addMember' })
       set({ isLoading: false, error: msg })
       throw err
     }

@@ -81,20 +81,57 @@ export { onSettlementCreate } from './triggers/onSettlementCreate'
  */
 export const onMemberJoin = onDocumentUpdated(
   { document: 'groups/{groupId}', region: 'asia-south1' },
-  (event) => {
+  async (event) => {
     const { groupId } = event.params
-    const before = event.data?.before.data() as Record<string, unknown> | undefined
-    const after  = event.data?.after.data()  as Record<string, unknown> | undefined
+    const before = event.data?.before.data() as Record<string, any> | undefined
+    const after  = event.data?.after.data()  as Record<string, any> | undefined
 
-    const beforeMembers = Object.keys((before?.members ?? {}) as object)
-    const afterMembers  = Object.keys((after?.members  ?? {}) as object)
+    const beforeMembers = (before?.memberIds ?? []) as string[]
+    const afterMembers  = (after?.memberIds  ?? []) as string[]
     const newUids = afterMembers.filter((uid) => !beforeMembers.includes(uid))
 
     if (newUids.length > 0) {
       console.info(`[apna] onMemberJoin: group=${groupId} newMembers=${newUids.join(',')}`)
-      // TODO: Prompt 1.1
     }
+
+    // Sync updated members to RTDB
+    const db = admin.database()
+    const rtdbMembersRef = db.ref(`groups/${groupId}/members`)
+    const membersMap: Record<string, boolean> = {}
+    afterMembers.forEach((uid) => {
+      membersMap[uid] = true
+    })
+    await rtdbMembersRef.set(membersMap)
   },
+)
+
+export const syncGroupMembersToRTDBCreate = onDocumentCreated(
+  { document: 'groups/{groupId}', region: 'asia-south1' },
+  async (event) => {
+    const { groupId } = event.params
+    const docSnap = event.data
+    if (!docSnap || !docSnap.exists) return
+
+    const groupData = docSnap.data()
+    const memberIds = (groupData?.memberIds ?? []) as string[]
+
+    const db = admin.database()
+    const rtdbMembersRef = db.ref(`groups/${groupId}/members`)
+    const membersMap: Record<string, boolean> = {}
+    memberIds.forEach((uid) => {
+      membersMap[uid] = true
+    })
+    await rtdbMembersRef.set(membersMap)
+  }
+)
+
+export const syncGroupMembersToRTDBDelete = onDocumentDeleted(
+  { document: 'groups/{groupId}', region: 'asia-south1' },
+  async (event) => {
+    const { groupId } = event.params
+    const db = admin.database()
+    await db.ref(`groups/${groupId}`).remove()
+  }
 )
 
 // ── SOS Callable ─────────────────────────────────────────────────────────────
@@ -331,5 +368,10 @@ export { onGroupWriteNotify } from './triggers/onGroupWriteNotify'
 export { onGroupBudgetUpdated } from './triggers/onGroupBudgetUpdated'
 export { onMemoryReaction } from './triggers/onMemoryReaction'
 export { onThisDay } from './triggers/onThisDay'
+
+// ── Contact Sync ───────────────────────────────────────────────────────────
+export { matchContactsByHash } from './callable/matchContactsByHash'
+export { backfillPhoneHashes } from './callable/backfillPhoneHashes'
+
 
 

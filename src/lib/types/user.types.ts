@@ -3,6 +3,7 @@ import type { Timestamp } from 'firebase/firestore'
 export interface User {
   uid: string         // Firebase Auth UID — immutable primary key
   phone: string       // Stored as +91XXXXXXXXXX (E.164 format)
+  phoneHash?: string  // Client-side SHA-256 phone hash truncated to 16 hex chars
   name: string        // Display name, max 40 chars
   avatarColor: string // One hex from AVATAR_COLORS array
   avatarUrl?: string  // Phase 4+ only — not collected in onboarding v1

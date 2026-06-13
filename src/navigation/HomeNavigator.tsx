@@ -8,6 +8,7 @@ import type { HomeStackParamList } from './types'
 
 import { HomeScreen }        from '@screens/home/HomeScreen'
 import { CreateGroupScreen, JoinGroupScreen, GroupHomeScreen, GroupSettingsScreen, GroupMembersManageScreen, SettleUpScreen } from '@screens/group'
+import { AddMembersScreen } from '@screens/groups'
 import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 import { BalanceSummaryScreen } from '../screens/settlement'
 import { NotificationDebugScreen } from '../screens/debug/NotificationDebugScreen'
@@ -44,6 +45,7 @@ export function HomeNavigator() {
       <Stack.Screen name="BalanceSummary"     component={BalanceSummaryScreen} />
       <Stack.Screen name="GroupSettings"      component={GroupSettingsScreen} />
       <Stack.Screen name="GroupMembersManage" component={GroupMembersManageScreen} />
+      <Stack.Screen name="AddMembers"         component={AddMembersScreen} />
       <Stack.Screen name="SettleUp"           component={SettleUpScreen} />
       <Stack.Screen name="TripWrap"           component={TripWrapScreen} />
       <Stack.Screen name="PrivacySettings"    component={PrivacySettingsScreen} />

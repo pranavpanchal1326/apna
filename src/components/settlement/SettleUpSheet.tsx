@@ -8,8 +8,8 @@ import { useState, useCallback, useEffect } from 'react'
 import {
   View, Text, TextInput, StyleSheet,
 } from 'react-native'
-import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
+import { haptics } from '@lib/haptics'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { Button } from '@components/ui/Button'
 import { Avatar } from '@components/ui/Avatar'
@@ -66,10 +66,11 @@ export function SettleUpSheet({
     }
 
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
       await onConfirm(amount, note.trim())
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      onClose()
+      haptics.settleUp()
+      setTimeout(() => {
+        onClose()
+      }, 200)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not record settlement.')
     }

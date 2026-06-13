@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  map_widget_info.xml
+  AppWidgetProviderInfo metadata for the Map Widget.
+
+  2 × 2 cell default. Resizable so users can expand to 3 × 2 for more avatar space.
+-->
+<appwidget-provider
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:minWidth="180dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+
+    android:previewImage="@layout/map_widget_preview"
+    android:previewLayout="@layout/map_widget_preview"
+
+    android:initialLayout="@layout/map_widget_preview"
+    android:updatePeriodMillis="0"
+
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable"
+
+    android:description="@string/map_widget_description"
+    android:resizeMode="horizontal|vertical" />

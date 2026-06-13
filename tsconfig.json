@@ -1,6 +1,6 @@
 {
   "extends": "expo/tsconfig.base",
-  "exclude": ["functions", "node_modules", "src/**/__tests__"],
+  "exclude": ["functions", "node_modules", "src/**/__tests__", "src/tests"],
   "compilerOptions": {
     "strict": true,
     "noUnusedLocals": true,

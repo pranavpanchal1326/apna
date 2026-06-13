@@ -1,12 +1,14 @@
 // src/components/group/SettingsRow.tsx
 import React from 'react'
-import { Text, Pressable, View, StyleSheet } from 'react-native'
+import { Text, Pressable, View, StyleSheet, Switch, Platform } from 'react-native'
 import { useTheme } from '@theme'
 
 interface SettingsRowProps {
   label:               string
-  value?:              string
+  value?:              string | boolean
   onPress?:            () => void
+  onToggle?:           (val: boolean) => void
+  description?:        string
   danger?:             boolean
   disabled?:           boolean
   leftIcon?:           React.ReactNode
@@ -18,6 +20,8 @@ export function SettingsRow({
   label,
   value,
   onPress,
+  onToggle,
+  description,
   danger,
   disabled,
   leftIcon,
@@ -40,30 +44,50 @@ export function SettingsRow({
           paddingHorizontal: spacing.md,
           backgroundColor: colors.bgSecondary,
           borderRadius:    radius.md,
-          opacity:         disabled ? 0.4 : pressed ? 0.7 : 1,
+          opacity:         disabled ? 0.4 : (pressed && onPress) ? 0.7 : 1,
         },
       ]}
-      accessibilityRole={onPress ? 'button' : 'text'}
+      accessibilityRole={onToggle ? 'switch' : onPress ? 'button' : 'text'}
+      accessibilityState={onToggle ? { checked: typeof value === 'boolean' ? value : false } : undefined}
       accessibilityLabel={accessibilityLabel ?? label}
     >
-      <View style={styles.left}>
+      <View style={[styles.left, { flex: 1, marginRight: spacing.md }]}>
         {leftIcon && <View style={[styles.iconWrapper, { marginRight: spacing.sm }]}>{leftIcon}</View>}
-        <Text style={[text.body.md, { color: textColor }]}>{label}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[text.body.md, { color: textColor }]}>{label}</Text>
+          {description ? (
+            <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]}>
+              {description}
+            </Text>
+          ) : null}
+        </View>
       </View>
 
       <View style={styles.right}>
-        {value && (
-          <Text style={[text.body.sm, { color: colors.textSecondary, marginRight: spacing.xs }]}>
-            {value}
-          </Text>
-        )}
-        {rightMeta && (
-          <Text style={[text.label.sm, { color: colors.textMuted, marginRight: spacing.xs }]}>
-            {rightMeta}
-          </Text>
-        )}
-        {onPress && !disabled && (
-          <Text style={[text.heading.sm, { color: colors.textMuted, fontSize: 16 }]}>›</Text>
+        {onToggle ? (
+          <Switch
+            value={typeof value === 'boolean' ? value : false}
+            onValueChange={onToggle}
+            disabled={disabled}
+            thumbColor={Platform.OS === 'android' ? (value ? colors.accentPrimary : colors.textMuted) : undefined}
+            trackColor={{ false: colors.border, true: colors.accentPrimary + '50' }}
+          />
+        ) : (
+          <>
+            {value && typeof value === 'string' && (
+              <Text style={[text.body.sm, { color: colors.textSecondary, marginRight: spacing.xs }]}>
+                {value}
+              </Text>
+            )}
+            {rightMeta && (
+              <Text style={[text.label.sm, { color: colors.textMuted, marginRight: spacing.xs }]}>
+                {rightMeta}
+              </Text>
+            )}
+            {onPress && !disabled && (
+              <Text style={[text.heading.sm, { color: colors.textMuted, fontSize: 16 }]}>›</Text>
+            )}
+          </>
         )}
       </View>
     </Pressable>
