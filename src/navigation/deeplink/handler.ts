@@ -9,7 +9,8 @@
 
 import type { NavigationContainerRef } from '@react-navigation/native'
 import type { RootStackParamList } from '@navigation/types'
-import { parseDeepLink, type ParsedDeepLink } from './parser'
+import { parseDeepLink } from './parser'
+import { resolveRoute, type ResolvedRoute } from './resolver'
 import {
   setPendingNavigation,
   clearPendingNavigation,
@@ -22,6 +23,13 @@ import {
   trackDeepLinkResolved,
 } from './analytics'
 import { captureError } from '@lib/sentry'
+import { validateGroupInvite } from './inviteHandler'
+import { useGroupStore } from '@stores/group.store'
+import { useUIStore } from '@stores/ui.store'
+import { useAuthStore } from '@stores/auth.store'
+import { getDoc } from 'firebase/firestore'
+import { groupDoc, expenseDoc, memoryDoc } from '@lib/firebase/collections'
+import { DeepLinkError, handleDeepLinkError } from './errors'
 
 // Public routes — no auth needed
 const PUBLIC_LINK_TYPES = new Set(['recap', 'referral', 'unknown'])
@@ -33,6 +41,67 @@ interface HandleDeepLinkOptions {
   authStatus: AuthStatus
   /** 'cold_start' when app is launched from killed state, 'warm_start' otherwise */
   urlSource?: 'cold_start' | 'warm_start' | 'notification'
+}
+
+/**
+ * Validates existence of the group, expense, or memory, and confirms the user
+ * is a member before allowing navigation. Throws a DeepLinkError if invalid.
+ */
+async function validateRouteContent(resolved: ResolvedRoute, currentUid: string): Promise<any> {
+  const { type, params } = resolved
+
+  if (
+    type === 'group_direct' ||
+    type === 'group_settings' ||
+    type === 'group_members' ||
+    type === 'expense' ||
+    type === 'memory_detail' ||
+    type === 'on_this_day'
+  ) {
+    const { groupId } = params
+    if (!groupId) throw new DeepLinkError('group_not_found')
+
+    let groupSnap
+    try {
+      groupSnap = await getDoc(groupDoc(groupId))
+    } catch (err: any) {
+      if (err.code === 'unavailable' || err.message?.toLowerCase().includes('offline')) {
+        throw new DeepLinkError('offline')
+      }
+      throw err
+    }
+
+    if (!groupSnap.exists()) {
+      throw new DeepLinkError('group_not_found')
+    }
+
+    const groupData = groupSnap.data()
+    if (!groupData.memberIds || !groupData.memberIds.includes(currentUid)) {
+      throw new DeepLinkError('group_not_found')
+    }
+
+    if (type === 'expense') {
+      const { expenseId } = params
+      if (!expenseId) throw new DeepLinkError('content_deleted')
+
+      const expenseSnap = await getDoc(expenseDoc(groupId, expenseId))
+      if (!expenseSnap.exists()) {
+        throw new DeepLinkError('content_deleted')
+      }
+    } else if (type === 'memory_detail') {
+      const { memoryId } = params
+      if (!memoryId) throw new DeepLinkError('content_deleted')
+
+      const memorySnap = await getDoc(memoryDoc(groupId, memoryId))
+      if (!memorySnap.exists()) {
+        throw new DeepLinkError('content_deleted')
+      }
+    }
+
+    return groupData
+  }
+
+  return null
 }
 
 /**
@@ -48,25 +117,41 @@ export function handleDeepLink(
   const parsed = parseDeepLink(url)
   if (!parsed) return
 
-  const isAuthenticated = authStatus === 'authenticated'
-  const isPublic = PUBLIC_LINK_TYPES.has(parsed.type)
+  // Detect source from query params
+  let source = urlSource
+  const queryPart = url.split('?')[1]
+  if (queryPart) {
+    const searchParams = new URLSearchParams(queryPart)
+    if (searchParams.get('source') === 'notification') {
+      source = 'notification'
+    }
+  }
 
-  trackDeepLinkOpened(parsed.type, parsed.type, urlSource)
+  const resolved = resolveRoute(parsed)
+  if (!resolved) {
+    trackDeepLinkFailed(parsed.type, parsed.screen || 'unknown', 'invalid_parameters', source)
+    return
+  }
+
+  const isAuthenticated = authStatus === 'authenticated'
+  const isPublic = PUBLIC_LINK_TYPES.has(resolved.type)
+
+  trackDeepLinkOpened(resolved.type as any, resolved.screen, source)
 
   // Unauthenticated + protected → store for post-auth resume
   if (!isAuthenticated && !isPublic) {
     setPendingNavigation({
-      type: parsed.type,
-      params: parsed.params,
+      type: resolved.type,
+      params: resolved.params,
       raw_url: parsed.raw_url,
     })
-    trackDeepLinkAuthGated(parsed.type)
+    trackDeepLinkAuthGated(resolved.type as any)
     return
   }
 
   if (!navigationRef.isReady()) return
 
-  routeParsedLink(parsed, navigationRef)
+  void routeParsedLink(resolved, navigationRef, source)
 }
 
 /**
@@ -81,51 +166,81 @@ export function resumePendingNavigation(
 
   clearPendingNavigation()
 
-  const parsed: ParsedDeepLink = {
-    type: target.type as ParsedDeepLink['type'],
-    params: target.params,
-    raw_url: target.raw_url,
-    parsed_at: Date.now(),
-  }
+  const parsed = parseDeepLink(target.raw_url)
+  if (!parsed) return
 
-  routeParsedLink(parsed, navigationRef)
+  const resolved = resolveRoute(parsed)
+  if (!resolved) return
+
+  void routeParsedLink(resolved, navigationRef, 'warm_start')
 }
 
 /**
  * Core routing switch — translate a ParsedDeepLink to a navigation call.
  * All auth checks happen before this function is called.
  */
-function routeParsedLink(
-  parsed: ParsedDeepLink,
+async function routeParsedLink(
+  resolved: ResolvedRoute,
   navigationRef: NavigationContainerRef<RootStackParamList>,
-): void {
+  urlSource: 'cold_start' | 'warm_start' | 'notification',
+): Promise<void> {
+  const authUser = useAuthStore.getState().user
+  const uid = authUser?.uid ?? ''
+
+  useUIStore.getState().setGlobalLoading(true)
+
   try {
-    switch (parsed.type) {
-      case 'group_invite':
-        // Navigate into Home stack's JoinGroup with the code pre-filled
-        navigationRef.navigate('Main', undefined as any)
-        // Give navigator time to mount Main before pushing JoinGroup
-        setTimeout(() => {
+    // 1. Content validation and group invite handling
+    if (resolved.type === 'group_invite') {
+      if (!uid) {
+        throw new DeepLinkError('invalid_link')
+      }
+
+      const result = await validateGroupInvite(resolved.params.code, uid)
+      if (result.valid && result.group) {
+        await useGroupStore.getState().joinGroup(resolved.params.code, uid)
+        navigationRef.navigate('Main', {
+          screen: 'HomeTab',
+          params: {
+            screen: 'GroupHome',
+            params: { groupId: result.group.id, groupName: result.group.name },
+          },
+        } as any)
+        trackDeepLinkResolved(resolved.type as any, 'GroupHome')
+      } else {
+        if (result.error === 'You are already a member of this group.' && result.group) {
           navigationRef.navigate('Main', {
             screen: 'HomeTab',
             params: {
-              screen: 'JoinGroup',
-              params: undefined,
+              screen: 'GroupHome',
+              params: { groupId: result.group.id, groupName: result.group.name },
             },
           } as any)
-        }, 50)
-        trackDeepLinkResolved(parsed.type, 'JoinGroup')
-        break
+        } else {
+          const errorType = result.error?.includes('expired') ? 'expired_invite' : 'invalid_link'
+          throw new DeepLinkError(errorType, result.error)
+        }
+      }
+      useUIStore.getState().setGlobalLoading(false)
+      return
+    }
 
+    // Validate protected content existence and membership
+    if (uid) {
+      await validateRouteContent(resolved, uid)
+    }
+
+    // 2. Perform route navigation
+    switch (resolved.type) {
       case 'group_direct':
         navigationRef.navigate('Main', {
           screen: 'HomeTab',
           params: {
             screen: 'GroupHome',
-            params: { groupId: parsed.params.groupId, groupName: '' },
+            params: { groupId: resolved.params.groupId, groupName: '' },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'GroupHome')
+        trackDeepLinkResolved(resolved.type as any, 'GroupHome')
         break
 
       case 'expense':
@@ -133,10 +248,10 @@ function routeParsedLink(
           screen: 'HomeTab',
           params: {
             screen: 'ExpenseDetail',
-            params: { groupId: parsed.params.groupId, expenseId: parsed.params.expenseId },
+            params: { groupId: resolved.params.groupId, expenseId: resolved.params.expenseId },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'ExpenseDetail')
+        trackDeepLinkResolved(resolved.type as any, 'ExpenseDetail')
         break
 
       case 'group_settings':
@@ -144,10 +259,10 @@ function routeParsedLink(
           screen: 'HomeTab',
           params: {
             screen: 'GroupSettings',
-            params: { groupId: parsed.params.groupId },
+            params: { groupId: resolved.params.groupId },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'GroupSettings')
+        trackDeepLinkResolved(resolved.type as any, 'GroupSettings')
         break
 
       case 'group_members':
@@ -155,10 +270,10 @@ function routeParsedLink(
           screen: 'HomeTab',
           params: {
             screen: 'GroupMembersManage',
-            params: { groupId: parsed.params.groupId },
+            params: { groupId: resolved.params.groupId },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'GroupMembersManage')
+        trackDeepLinkResolved(resolved.type as any, 'GroupMembersManage')
         break
 
       case 'memory_detail':
@@ -166,10 +281,10 @@ function routeParsedLink(
           screen: 'Memories',
           params: {
             screen: 'MemoryDetail',
-            params: { groupId: parsed.params.groupId, memoryId: parsed.params.memoryId },
+            params: { groupId: resolved.params.groupId, memoryId: resolved.params.memoryId },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'MemoryDetail')
+        trackDeepLinkResolved(resolved.type as any, 'MemoryDetail')
         break
 
       case 'on_this_day':
@@ -177,34 +292,35 @@ function routeParsedLink(
           screen: 'Memories',
           params: {
             screen: 'OnThisDay',
-            params: { groupId: parsed.params.groupId },
+            params: { groupId: resolved.params.groupId },
           },
         } as any)
-        trackDeepLinkResolved(parsed.type, 'OnThisDay')
+        trackDeepLinkResolved(resolved.type as any, 'OnThisDay')
         break
 
       case 'recap':
-        navigationRef.navigate('PublicRecap', { slug: parsed.params.slug })
-        trackDeepLinkResolved(parsed.type, 'PublicRecap')
+        navigationRef.navigate('PublicRecap', { slug: resolved.params.slug })
+        trackDeepLinkResolved(resolved.type as any, 'PublicRecap')
         break
 
       case 'referral':
-        // Referral links are handled by initReferralCapture in App.tsx.
-        // RootNavigator does nothing extra here — just land on Home.
         navigationRef.navigate('Main', undefined as any)
-        trackDeepLinkResolved(parsed.type, 'HomeList')
+        trackDeepLinkResolved(resolved.type as any, 'HomeList')
         break
 
       case 'unknown':
       default:
-        // Unknown route — go Home with a toast via the error handler
-        navigationRef.navigate('Main', undefined as any)
-        trackDeepLinkFailed(parsed.type, 'unknown', 'unknown_route')
-        break
+        throw new DeepLinkError('invalid_link')
     }
-  } catch (err) {
-    captureError(err, { source: 'routeParsedLink', url: parsed.raw_url, type: parsed.type })
-    trackDeepLinkFailed(parsed.type, 'unknown', 'navigation_error')
+  } catch (err: any) {
+    const userFacing = handleDeepLinkError(err)
+    useUIStore.getState().showToast({ message: userFacing.message, type: 'error' })
+    navigationRef.navigate('Main', undefined as any)
+
+    trackDeepLinkFailed(resolved.type as any, resolved.screen, userFacing.type, urlSource)
+    captureError(err, { source: 'routeParsedLink', url: resolved.screen, type: resolved.type })
+  } finally {
+    useUIStore.getState().setGlobalLoading(false)
   }
 }
 

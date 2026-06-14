@@ -1,4 +1,4 @@
-import { calculateEqualSplit, calculateCustomSplit, calculatePercentageSplit, validateSplits } from '@/lib/budget/calculator'
+import { calculateEqualSplit, calculatePercentageSplit, validateSplits } from '@/lib/budget/calculator'
 
 describe('Equal Split', () => {
   test('₹300 ÷ 3 = ₹100 each', () => {

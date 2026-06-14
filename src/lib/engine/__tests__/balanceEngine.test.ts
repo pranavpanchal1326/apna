@@ -13,10 +13,10 @@ import {
   getMemberBalanceSummary,
   validateBalanceConservationStrict,
   formatBalanceHero,
-  type ExpenseInput,
   type RecordedSettlement,
   type ExpenseForBalance,
 } from '../balanceEngine'
+import type { ExpenseInput } from '@lib/schemas'
 
 // ── Helpers ───────────────────────────────────────────────────────────
 

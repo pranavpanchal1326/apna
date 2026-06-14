@@ -29,7 +29,7 @@ export type HomeStackParamList = {
   HomeList:           { skipped?: boolean } | undefined  // Groups list + FAB
   ChoosePath:         { inviteCode?: string }
   CreateGroup:        undefined                        // Multi-step create
-  JoinGroup:          undefined                        // Invite code entry
+  JoinGroup:          { code?: string } | undefined    // Invite code entry
   GroupHome:          { groupId: string; groupName: string }  // Group detail shell
   AddExpense:         { groupId: string }
   ExpenseDetail:      { groupId: string; expenseId: string }

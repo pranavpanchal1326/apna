@@ -5,8 +5,8 @@ describe('Settlement Engine — calculateNetBalances', () => {
     const result = calculateNetBalances([{
       amount: 300, paidBy: 'A',
       splits: { A: 100, B: 100, C: 100 },
-      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any, isSettled: false
-    }], ['A', 'B', 'C'])
+      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any
+    } as any], ['A', 'B', 'C'])
     expect(result['A']).toBe(200)   // paid 300, owed 100
     expect(result['B']).toBe(-100)
     expect(result['C']).toBe(-100)
@@ -66,8 +66,8 @@ describe('Settlement Engine — calculateNetBalances splits', () => {
     const balances = calculateNetBalances([{
       amount: 100, paidBy: 'A',
       splits: { A: 33.34, B: 33.33, C: 33.33 },  // remainder to payer
-      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any, isSettled: false
-    }], ['A', 'B', 'C'])
+      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any
+    } as any], ['A', 'B', 'C'])
     const total = Object.values(balances).reduce((a, b) => a + b, 0)
     expect(Math.abs(total)).toBeLessThan(0.01)  // must net to zero
   })
@@ -76,8 +76,8 @@ describe('Settlement Engine — calculateNetBalances splits', () => {
     const balances = calculateNetBalances([{
       amount: 100, paidBy: 'A',
       splits: { A: 50, B: 50 },
-      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any, isSettled: false
-    }], ['A', 'B'])
+      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any
+    } as any], ['A', 'B'])
     expect(balances['A']).toBe(50)  // paid 100, owed 50 → net +50
     expect(balances['B']).toBe(-50)
   })
@@ -89,8 +89,8 @@ describe('Settlement Engine — calculateNetBalances splits', () => {
       exchangeRateToBase: 83.5,   // stored at entry time
       paidBy: 'A',
       splits: { A: 4175, B: 4175 },  // in INR
-      description: '', category: 'food', date: '', createdBy: 'A', createdAt: {} as any, isSettled: false
-    }], ['A', 'B'])
+      description: '', category: 'food', date: '', createdBy: 'A', createdAt: {} as any
+    } as any], ['A', 'B'])
     // Exchange rate must not be recalculated
     expect(balances['A']).toBeCloseTo(4175)
   })
@@ -99,8 +99,8 @@ describe('Settlement Engine — calculateNetBalances splits', () => {
     // A settlement write must not be included in expense totals
     const expenses = [{
       amount: 1000, paidBy: 'A', splits: { A: 500, B: 500 },
-      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any, isSettled: false
-    }]
+      description: '', currency: 'INR', category: 'food', date: '', createdBy: 'A', createdAt: {} as any
+    } as any]
     const balances = calculateNetBalances(expenses, ['A', 'B'])
     // If settlement is mistakenly included as expense, balance will be wrong
     expect(balances['A']).toBe(500)

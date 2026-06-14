@@ -17,7 +17,7 @@ jest.mock('expo-file-system/legacy', () => ({
 }))
 
 jest.mock('expo-image-manipulator', () => ({
-  manipulateAsync: jest.fn().mockImplementation((uri: string, actions: any) => {
+  manipulateAsync: jest.fn().mockImplementation((_uri: string, _actions: any) => {
     return Promise.resolve({
       uri: 'file://cache/compressed.jpg',
       width: 1920,
@@ -33,7 +33,6 @@ describe('Photo Compression', () => {
   })
 
   test('file under 2MB with small dimensions — not compressed', async () => {
-    const FileSystem = require('expo-file-system/legacy')
     // We pass photo_small.jpg which returns 1MB
     const result = await compressPhoto({ uri: 'file://photo_small.jpg', maxSizeBytes: 2_000_000, maxDimension: 1920 })
     expect(result.compressionApplied).toBe(false)

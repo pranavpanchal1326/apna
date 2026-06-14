@@ -1,6 +1,7 @@
 // src/lib/notifications/handlers.ts
 import * as Notifications from 'expo-notifications'
-import { AppNotificationData, buildDeepLink } from './payloads'
+import { AppNotificationData } from './payloads'
+import { notificationToDeepLink } from '@navigation/deeplink/notificationRouter'
 import { track } from '@lib/analytics'
 import { captureError } from '@lib/sentry'
 
@@ -24,7 +25,7 @@ export async function getInitialNotificationLink(): Promise<string | null> {
       const data = response.notification.request.content.data as AppNotificationData | undefined
       if (data && data.type && data.groupId) {
         track('notification_opened', { type: data.type, groupId: data.groupId })
-        return buildDeepLink(data)
+        return notificationToDeepLink(data)
       }
     }
   } catch (err) {
@@ -64,7 +65,7 @@ export function registerNotificationHandlers(
         track('notification_opened_group', { type: data.type, groupId: data.groupId })
       }
 
-      const url = buildDeepLink(data)
+      const url = notificationToDeepLink(data)
       onOpenLink(url)
     }
   })

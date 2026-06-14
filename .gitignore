@@ -49,3 +49,7 @@ Thumbs.db
 # ── Emulator debug logs ───────────────────────────────────────────────────
 *-debug.log
 firebase-debug.log
+
+# ── Test coverage ─────────────────────────────────────────────────────────
+coverage/
+

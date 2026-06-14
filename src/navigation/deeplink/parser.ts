@@ -18,10 +18,13 @@ export type DeepLinkType =
 
 export interface ParsedDeepLink {
   type: DeepLinkType
+  screen: string
   params: Record<string, string>
   raw_url: string
   parsed_at: number
 }
+
+export type DeepLinkResult = ParsedDeepLink
 
 const PREFIXES = ['apna://', 'https://apna.app/', 'http://apna.app/']
 
@@ -77,50 +80,50 @@ export function parseDeepLink(url: string): ParsedDeepLink | null {
   if (path === 'join' || path === 'joingroup') {
     const raw = query.get('code') ?? query.get('c') ?? ''
     const code = validateInviteCode(raw)
-    if (!code) return { type: 'unknown', params: {}, ...base }
-    return { type: 'group_invite', params: { code }, ...base }
+    if (!code) return { type: 'unknown', screen: 'HomeList', params: {}, ...base }
+    return { type: 'group_invite', screen: 'JoinGroup', params: { code }, ...base }
   }
 
   // ── Expense: /group/:groupId/expense/:expenseId ───────────────
   let m = path.match(EXPENSE_RE)
   if (m) {
-    return { type: 'expense', params: { groupId: m[1], expenseId: m[2] }, ...base }
+    return { type: 'expense', screen: 'ExpenseDetail', params: { groupId: m[1], expenseId: m[2] }, ...base }
   }
 
   // ── Group settings ────────────────────────────────────────────
   m = path.match(SETTINGS_RE)
   if (m) {
-    return { type: 'group_settings', params: { groupId: m[1] }, ...base }
+    return { type: 'group_settings', screen: 'GroupSettings', params: { groupId: m[1] }, ...base }
   }
 
   // ── Group members ─────────────────────────────────────────────
   m = path.match(MEMBERS_RE)
   if (m) {
-    return { type: 'group_members', params: { groupId: m[1] }, ...base }
+    return { type: 'group_members', screen: 'GroupMembersManage', params: { groupId: m[1] }, ...base }
   }
 
   // ── Group direct: /group/:groupId ─────────────────────────────
   m = path.match(GROUP_RE)
   if (m) {
-    return { type: 'group_direct', params: { groupId: m[1] }, ...base }
+    return { type: 'group_direct', screen: 'GroupHome', params: { groupId: m[1] }, ...base }
   }
 
   // ── Memory detail: /memories/:groupId/detail/:memoryId ────────
   m = path.match(MEMORY_DETAIL_RE)
   if (m) {
-    return { type: 'memory_detail', params: { groupId: m[1], memoryId: m[2] }, ...base }
+    return { type: 'memory_detail', screen: 'MemoryDetail', params: { groupId: m[1], memoryId: m[2] }, ...base }
   }
 
   // ── On this day: /memories/:groupId/on-this-day ───────────────
   m = path.match(ON_THIS_DAY_RE)
   if (m) {
-    return { type: 'on_this_day', params: { groupId: m[1] }, ...base }
+    return { type: 'on_this_day', screen: 'OnThisDay', params: { groupId: m[1] }, ...base }
   }
 
   // ── Recap: /recap/:slug ───────────────────────────────────────
   m = path.match(RECAP_RE)
   if (m) {
-    return { type: 'recap', params: { slug: m[1].toLowerCase() }, ...base }
+    return { type: 'recap', screen: 'PublicRecap', params: { slug: m[1].toLowerCase() }, ...base }
   }
 
   // ── Referral: /r/:code ────────────────────────────────────────
@@ -130,6 +133,7 @@ export function parseDeepLink(url: string): ParsedDeepLink | null {
     const groupId    = query.get('g') ?? undefined
     return {
       type: 'referral',
+      screen: 'HomeList',
       params: {
         code: m[1].toUpperCase(),
         campaignId,
@@ -139,5 +143,5 @@ export function parseDeepLink(url: string): ParsedDeepLink | null {
     }
   }
 
-  return { type: 'unknown', params: {}, ...base }
+  return { type: 'unknown', screen: 'HomeList', params: {}, ...base }
 }

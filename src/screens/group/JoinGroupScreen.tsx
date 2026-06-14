@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
 import { haptics } from '@lib/haptics'
@@ -30,6 +31,7 @@ type Nav = NativeStackNavigationProp<HomeStackParamList>
 export function JoinGroupScreen() {
   const { colors, text, spacing, radius, shadows } = useTheme()
   const navigation = useNavigation<Nav>()
+  const route = useRoute<RouteProp<HomeStackParamList, 'JoinGroup'>>()
   const { user }   = useAuth()
   const { joinGroup, isJoining } = useGroupStore()
 
@@ -40,6 +42,16 @@ export function JoinGroupScreen() {
 
   // Auto-fill code if screen was opened via a deep link invite
   useEffect(() => {
+    const routeCode = route.params?.code
+    if (routeCode) {
+      const deepLinkCode = routeCode.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+      setCode(deepLinkCode)
+      if (deepLinkCode.length === 6) {
+        verifyInviteCode(deepLinkCode)
+      }
+      return
+    }
+
     const pending = getPendingNavigation()
     if (pending?.type === 'group_invite' && pending.params.code) {
       clearPendingNavigation()
@@ -50,7 +62,7 @@ export function JoinGroupScreen() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [route.params?.code])
 
   const handleTextChange = (val: string) => {
     setError(null)
