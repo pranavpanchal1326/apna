@@ -19,6 +19,7 @@
 //   5. Delete the Firebase Auth user (invalidates all sessions).
 
 import * as admin from 'firebase-admin'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { storagePathFromUrl } from '../utils/storageUrl'
 
@@ -37,7 +38,7 @@ async function deleteStorageUrl(url: string): Promise<void> {
 
 interface MemberEntry {
   role?: string
-  joinedAt?: admin.firestore.Timestamp
+  joinedAt?: Timestamp
 }
 
 /**
@@ -108,7 +109,7 @@ async function removeUserFromGroup(
   const remainingAdmins = adminIds.filter((id) => id !== uid)
   const updates: Record<string, unknown> = {
     memberIds: remaining,
-    [`members.${uid}`]: admin.firestore.FieldValue.delete(),
+    [`members.${uid}`]: FieldValue.delete(),
   }
   if (remainingAdmins.length === 0) {
     const promoted = pickNewAdmin(members, uid)
@@ -172,8 +173,8 @@ export const deleteAccount = onCall(
         avatarColor: '#B5B5FF',
         groups: [],
         deleted: true,
-        deletedAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        deletedAt: FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         phone: '',
       })
 

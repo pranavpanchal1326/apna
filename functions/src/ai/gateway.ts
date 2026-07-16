@@ -16,6 +16,7 @@
 
 import * as crypto from 'crypto'
 import * as admin from 'firebase-admin'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import { defineSecret } from 'firebase-functions/params'
 
 export const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
@@ -99,7 +100,7 @@ export async function consumeQuota(
     if (count >= limit) return false
     tx.set(
       ref,
-      { count: count + 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+      { count: count + 1, updatedAt: FieldValue.serverTimestamp() },
       { merge: true },
     )
     return true
@@ -111,7 +112,7 @@ export async function consumeQuota(
 async function readCache(cacheKey: string): Promise<string | null> {
   const snap = await admin.firestore().collection('aiCache').doc(hashCacheKey(cacheKey)).get()
   if (!snap.exists) return null
-  const data = snap.data() as { text?: string; expiresAt?: admin.firestore.Timestamp }
+  const data = snap.data() as { text?: string; expiresAt?: Timestamp }
   if (!data.text || !data.expiresAt || data.expiresAt.toMillis() < Date.now()) return null
   return data.text
 }
@@ -119,8 +120,8 @@ async function readCache(cacheKey: string): Promise<string | null> {
 async function writeCache(cacheKey: string, text: string): Promise<void> {
   await admin.firestore().collection('aiCache').doc(hashCacheKey(cacheKey)).set({
     text,
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + CACHE_TTL_MS),
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: Timestamp.fromMillis(Date.now() + CACHE_TTL_MS),
+    createdAt: FieldValue.serverTimestamp(),
   })
 }
 

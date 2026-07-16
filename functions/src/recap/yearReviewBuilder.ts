@@ -3,6 +3,7 @@
 // Pure helpers are exported for unit tests; buildYearInReview does the reads.
 
 import * as admin from 'firebase-admin'
+import { Timestamp } from 'firebase-admin/firestore'
 
 export interface YearInReviewDoc {
   year: number
@@ -16,7 +17,7 @@ export interface YearInReviewDoc {
   memoriesCount: number
   topPhotoUrls: string[]
   memberCount: number
-  generatedAt: admin.firestore.Timestamp
+  generatedAt: Timestamp
 }
 
 /** True when a doc's YYYY-MM-DD `date` field falls in `year`. */
@@ -124,6 +125,6 @@ export async function buildYearInReview(
     memoriesCount: yearMemories.length,
     topPhotoUrls: pickTopPhotos(yearMemories),
     memberCount: ((group.memberIds as string[]) ?? []).length,
-    generatedAt: admin.firestore.Timestamp.now(),
+    generatedAt: Timestamp.now(),
   }
 }

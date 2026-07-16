@@ -3,6 +3,7 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import { Timestamp } from 'firebase-admin/firestore'
 import { buildRecapSourceBundle } from '../recap/recapBuilder'
 import { buildPublicRecapDoc, type RecapVisibility } from '../recap/sanitize'
 import { buildShareSlug } from '../recap/slug'
@@ -97,7 +98,7 @@ export const generateTripRecap = onCall(
       topPhotos: signedUrls,
       coverPhotoUrl: signedUrls[0],
       topPhotoPaths,
-      photoUrlsExpireAt: admin.firestore.Timestamp.fromMillis(Date.now() + SIGNED_URL_TTL_MS),
+      photoUrlsExpireAt: Timestamp.fromMillis(Date.now() + SIGNED_URL_TTL_MS),
     }
 
     await db.collection('publicRecaps').doc(shareSlug).set(docWithSignedPhotos, { merge: false })
@@ -145,7 +146,7 @@ export const refreshRecapPhotos = onCall(
 
     // Still fresh for over an hour? Serve the stored URLs — keeps this
     // endpoint cheap under repeated public views.
-    const expiresAt = recap.photoUrlsExpireAt as admin.firestore.Timestamp | undefined
+    const expiresAt = recap.photoUrlsExpireAt as Timestamp | undefined
     if (expiresAt && expiresAt.toMillis() - Date.now() > 60 * 60 * 1000) {
       return { topPhotos: recap.topPhotos ?? [], coverPhotoUrl: recap.coverPhotoUrl }
     }
@@ -158,7 +159,7 @@ export const refreshRecapPhotos = onCall(
     await recapRef.update({
       topPhotos: signedUrls,
       coverPhotoUrl: signedUrls[0],
-      photoUrlsExpireAt: admin.firestore.Timestamp.fromMillis(Date.now() + SIGNED_URL_TTL_MS),
+      photoUrlsExpireAt: Timestamp.fromMillis(Date.now() + SIGNED_URL_TTL_MS),
     })
 
     return { topPhotos: signedUrls, coverPhotoUrl: signedUrls[0] }
@@ -201,7 +202,7 @@ export const updateRecapVisibility = onCall(
     await recapRef.update({
       visibility,
       isPublic: visibility === 'public',
-      updatedAt: admin.firestore.Timestamp.now(),
+      updatedAt: Timestamp.now(),
     })
 
     return { success: true }
