@@ -39,7 +39,9 @@ const result = spawnSync(
     'firestore',
     '--project',
     'demo-apna-rules',
-    'jest -c jest.rules.config.js',
+    // Extra quotes survive the Windows shell so firebase receives ONE script
+    // string — without them it runs bare `jest` (the full app suite).
+    '"jest -c jest.rules.config.js"',
   ],
   { stdio: 'inherit', env, shell: true, cwd: path.resolve(__dirname, '..') },
 )

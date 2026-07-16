@@ -1,5 +1,7 @@
 export * from './user.types'
-export * from './group.types'
+// NOTE: group shape lives in src/lib/schemas/group.schema.ts (memberIds/adminIds
+// arrays + nicknames map) — the old PRD-era group.types.ts (members role-map)
+// was dead code and has been removed.
 export * from './expense.types'
 export * from './memory.types'
 export * from './itinerary.types'
