@@ -2,7 +2,7 @@
 // Mapbox LineLayer rendering a dashed line connecting ordered itinerary stops.
 
 import { useMemo } from 'react'
-import MapboxGL from '@rnmapbox/maps'
+import { GeoJSONSource, Layer } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../../theme'
 
 interface RouteOverlayProps {
@@ -32,18 +32,21 @@ export function RouteOverlay({ coordinates }: RouteOverlayProps) {
   }), [coordinates])
 
   return (
-    <MapboxGL.ShapeSource id="route-overlay-source" shape={geojson}>
-      <MapboxGL.LineLayer
+    <GeoJSONSource id="route-overlay-source" data={geojson}>
+      <Layer
         id="route-overlay-layer"
-        style={{
-          lineColor: colors.accentPrimary,
-          lineWidth: 2.5,
-          lineOpacity: 0.8,
-          lineDasharray: [5, 4],    // Dashed thread line (Dhaga style)
-          lineCap: 'round',
-          lineJoin: 'round',
+        type="line"
+        paint={{
+          'line-color': colors.accentPrimary,
+          'line-width': 2.5,
+          'line-opacity': 0.8,
+          'line-dasharray': [5, 4],    // Dashed thread line (Dhaga style)
+        }}
+        layout={{
+          'line-cap': 'round',
+          'line-join': 'round',
         }}
       />
-    </MapboxGL.ShapeSource>
+    </GeoJSONSource>
   )
 }

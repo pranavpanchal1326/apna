@@ -36,7 +36,7 @@ import {
   Dimensions,
   StyleSheet,
 } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Map as MapLibreMap, Camera, type CameraRef } from '@maplibre/maplibre-react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets }      from 'react-native-safe-area-context'
 import { useNavigation }          from '@react-navigation/native'
@@ -58,9 +58,6 @@ import {
 import type { ItineraryItem }     from '../../lib/schemas'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-
-// Initialize Mapbox token
-MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '')
 
 // Compute bounding box from items with coordinates
 function getBounds(items: ItineraryItem[]): {
@@ -84,7 +81,7 @@ export function ItineraryMapScreen() {
   const navigation       = useNavigation<NativeStackNavigationProp<ItineraryStackParamList>>()
   const insets           = useSafeAreaInsets()
   const activeGroup      = useGroupStore(s => s.activeGroup)
-  const cameraRef        = useRef<MapboxGL.Camera>(null)
+  const cameraRef        = useRef<CameraRef>(null)
   const detailSheetRef   = useRef<ItemDetailSheetRef>(null)
 
   const {
@@ -156,15 +153,22 @@ export function ItineraryMapScreen() {
     // If single point — moveTo instead of fitBounds
     const { ne, sw } = bounds
     if (ne[0] === sw[0] && ne[1] === sw[1]) {
-      cameraRef.current?.setCamera({
-        centerCoordinate: ne,
-        zoomLevel:        14,
-        animationDuration: animated ? 600 : 0,
+      cameraRef.current?.easeTo({
+        center:   ne,
+        zoom:     14,
+        duration: animated ? 600 : 0,
       })
       return
     }
 
-    cameraRef.current?.fitBounds(ne, sw, [80, 60, 60, 60], animated ? 600 : 0)
+    // LngLatBounds: [west, south, east, north]
+    cameraRef.current?.fitBounds(
+      [sw[0], sw[1], ne[0], ne[1]],
+      {
+        padding: { top: 80, right: 60, bottom: 60, left: 60 },
+        duration: animated ? 600 : 0,
+      },
+    )
   }, [])
 
   // Fit on mount
@@ -187,10 +191,10 @@ export function ItineraryMapScreen() {
     setActiveItem(prev => prev?.id === item.id ? null : item)
     // Move camera to pin
     if (item.placeRef?.lat && item.placeRef?.lng) {
-      cameraRef.current?.setCamera({
-        centerCoordinate: [item.placeRef.lng, item.placeRef.lat],
-        zoomLevel:        15,
-        animationDuration: 400,
+      cameraRef.current?.easeTo({
+        center:   [item.placeRef.lng, item.placeRef.lat],
+        zoom:     15,
+        duration: 400,
       })
     }
     // Approximate screen X — center for now
@@ -225,20 +229,19 @@ export function ItineraryMapScreen() {
   return (
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       {/* Full-screen map — no header, edge-to-edge */}
-      <MapboxGL.MapView
+      <MapLibreMap
         style={StyleSheet.absoluteFill}
-        styleJSON={JSON.stringify({ version: 8, layers: mapStyle as any })}
-        logoEnabled={false}
-        attributionEnabled={false}
-        compassEnabled
-        compassViewPosition={3}  // Bottom-left
-        compassViewMargins={{
-          x: spacing.lg,
-          y: layout.tabBarHeight + insets.bottom + spacing.xl + 56,
+        mapStyle={mapStyle}
+        logo={false}
+        attribution={false}
+        compass
+        compassPosition={{
+          bottom: layout.tabBarHeight + insets.bottom + spacing.xl + 56,
+          left: spacing.lg,
         }}
         onPress={handleDismissCallout}  // Tap map to dismiss callout
       >
-        <MapboxGL.Camera ref={cameraRef} />
+        <Camera ref={cameraRef} />
 
         {/* Route polylines — one per visible day */}
         {polylineDays.map(dayId => {
@@ -270,7 +273,7 @@ export function ItineraryMapScreen() {
             />
           )
         })}
-      </MapboxGL.MapView>
+      </MapLibreMap>
 
       {/* Floating day filter bar */}
       <DayFilterBar

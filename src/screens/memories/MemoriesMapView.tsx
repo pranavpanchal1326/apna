@@ -5,9 +5,9 @@
 
 import { memo, useMemo, useRef, useEffect, useState } from 'react'
 import { View, Text, Image, Pressable, ScrollView, StyleSheet, Dimensions } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Map as MapLibreMap, Camera, Marker, type CameraRef } from '@maplibre/maplibre-react-native'
 import * as Haptics from 'expo-haptics'
-import { useTheme } from '../../theme'
+import { useTheme, DarkMapStyle } from '../../theme'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { getMemoryThumbUrl, getMemoryPhotos, type MemoryInput } from '../../lib/schemas/memory.schema'
 import {
@@ -30,11 +30,11 @@ const MemoryPin = memo(function MemoryPin({
   const thumb = getMemoryThumbUrl(group.memories[0])
 
   return (
-    <MapboxGL.PointAnnotation
+    <Marker
       id={`memory-pin-${group.key}`}
-      coordinate={[group.lng, group.lat]}
-      anchor={{ x: 0.5, y: 1 }}
-      onSelected={() => onPress(group)}
+      lngLat={[group.lng, group.lat]}
+      anchor="bottom"
+      onPress={() => onPress(group)}
     >
       <View style={styles.pinWrapper}>
         <View
@@ -60,7 +60,7 @@ const MemoryPin = memo(function MemoryPin({
         </View>
         <View style={[styles.pinTail, { borderTopColor: colors.accentPrimary }]} />
       </View>
-    </MapboxGL.PointAnnotation>
+    </Marker>
   )
 })
 
@@ -71,7 +71,7 @@ interface Props {
 
 export function MemoriesMapView({ memories, onOpenMemory }: Props) {
   const { colors, text, spacing, radius } = useTheme()
-  const cameraRef = useRef<MapboxGL.Camera>(null)
+  const cameraRef = useRef<CameraRef>(null)
   const [pickerGroup, setPickerGroup] = useState<LocationGroup | null>(null)
 
   const groups = useMemo(() => groupMemoriesByLocation(memories), [memories])
@@ -80,7 +80,11 @@ export function MemoriesMapView({ memories, onOpenMemory }: Props) {
   // Fit camera to all pins whenever the pin set changes
   useEffect(() => {
     if (bounds && cameraRef.current) {
-      cameraRef.current.fitBounds(bounds.ne, bounds.sw, 60, 400)
+      // LngLatBounds: [west, south, east, north]
+      cameraRef.current.fitBounds(
+        [bounds.sw[0], bounds.sw[1], bounds.ne[0], bounds.ne[1]],
+        { padding: { top: 60, right: 60, bottom: 60, left: 60 }, duration: 400 },
+      )
     }
   }, [bounds])
 
@@ -109,17 +113,17 @@ export function MemoriesMapView({ memories, onOpenMemory }: Props) {
 
   return (
     <View style={styles.container}>
-      <MapboxGL.MapView
+      <MapLibreMap
         style={styles.map}
-        styleURL={MapboxGL.StyleURL.Dark}
-        logoEnabled={false}
+        mapStyle={DarkMapStyle}
+        logo={false}
         attributionPosition={{ bottom: 8, right: 8 }}
       >
-        <MapboxGL.Camera ref={cameraRef} />
+        <Camera ref={cameraRef} />
         {groups.map((group) => (
           <MemoryPin key={group.key} group={group} onPress={handlePinPress} />
         ))}
-      </MapboxGL.MapView>
+      </MapLibreMap>
 
       {/* Multi-memory location picker */}
       <BottomSheet

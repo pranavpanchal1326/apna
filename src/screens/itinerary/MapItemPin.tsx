@@ -19,7 +19,7 @@
 
 import { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Marker } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../theme'
 import { CATEGORY_META } from '../../lib/schemas'
 import type { ItineraryItem } from '../../lib/schemas'
@@ -48,11 +48,11 @@ export const MapItemPin = memo(function MapItemPin({
   const coordinate: [number, number] = [item.placeRef.lng, item.placeRef.lat]
 
   return (
-    <MapboxGL.PointAnnotation
+    <Marker
       id={`pin-${item.id}`}
-      coordinate={coordinate}
-      anchor={{ x: 0.5, y: 1 }}   // Pin tip at coordinate
-      onSelected={() => onPress(item)}
+      lngLat={coordinate}
+      anchor="bottom"   // Pin tip at coordinate
+      onPress={() => onPress(item)}
     >
       <View style={styles.pinWrapper}>
         {/* Order badge */}
@@ -113,7 +113,7 @@ export const MapItemPin = memo(function MapItemPin({
           ]}
         />
       </View>
-    </MapboxGL.PointAnnotation>
+    </Marker>
   )
 })
 

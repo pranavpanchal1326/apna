@@ -12,13 +12,12 @@ import {
   TextInput,
   FlatList,
 } from 'react-native'
-import MapboxGL, { UserLocationRenderMode } from '@rnmapbox/maps'
+import { Map as MapLibreMap, Camera, UserLocation, type CameraRef } from '@maplibre/maplibre-react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import Constants from 'expo-constants'
 import { AppState, type AppStateStatus } from 'react-native'
 import { haptics } from '@lib/haptics'
 import type { MemberLocation } from '../../lib/types/location.types'
@@ -31,6 +30,7 @@ import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { useGroupLocations } from '../../hooks/useRealtime'
 import { useAuth } from '../../hooks/useAuth'
 import { useLocationStore } from '../../stores/location.store'
+import { searchPlaces, type PlaceSearchResult } from '../../lib/places/placeSearch'
 import { triggerSOSEvent } from '../../lib/firebase/realtime'
 
 import { ItineraryPins } from './components/ItineraryPins'
@@ -50,13 +50,6 @@ import {
 } from '../../lib/utils/mapNormalize'
 import { createCheckIn } from '../../lib/firebase/checkin'
 import type { ItineraryItem, PlaceRef } from '../../lib/schemas'
-
-MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '')
-
-function getMapboxToken(): string {
-  const extra = Constants.expoConfig?.extra as { mapboxToken?: string } | undefined
-  return process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? extra?.mapboxToken ?? ''
-}
 
 export function MapScreen() {
   const { colors, spacing, radius, text, mapStyle, shadows, layout } = useTheme()
@@ -94,7 +87,7 @@ export function MapScreen() {
   const [isSendingSOS, setIsSendingSOS] = useState(false)
 
   // 2. Map & Camera State
-  const cameraRef = useRef<MapboxGL.Camera>(null)
+  const cameraRef = useRef<CameraRef>(null)
   const detailSheetRef = useRef<PlaceDetailsSheetRef>(null)
 
   const [activeFilter, setActiveFilter] = useState<DayFilter>('all')
@@ -106,7 +99,7 @@ export function MapScreen() {
   const [showLegend, setShowLegend] = useState(false)
   const [showCheckInSearch, setShowCheckInSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
 
   // ── Subscriptions for all days ─────────────────────────────────────
@@ -119,28 +112,41 @@ export function MapScreen() {
     })
   }, [groupId, tripDateRange])
 
-  // ── GPS Acquisition ────────────────────────────────────────────────
+  // ── GPS Acquisition + live updates ────────────────────────────────
   useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null
+    let cancelled = false
+
     async function requestLocation() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync()
+        if (cancelled) return
         setPermissionStatus(status)
-        if (status === 'granted') {
-          const loc = await Location.getLastKnownPositionAsync({})
-          if (loc) {
-            setUserLocation([loc.coords.longitude, loc.coords.latitude])
-          } else {
-            const currentLoc = await Location.getCurrentPositionAsync({
-              accuracy: Location.Accuracy.Balanced,
-            })
-            setUserLocation([currentLoc.coords.longitude, currentLoc.coords.latitude])
-          }
+        if (status !== 'granted') return
+
+        const loc = await Location.getLastKnownPositionAsync({})
+        if (loc && !cancelled) {
+          setUserLocation([loc.coords.longitude, loc.coords.latitude])
         }
+
+        // Keep userLocation fresh — powers proximity alerts, recenter, search bias
+        subscription = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.Balanced, distanceInterval: 5 },
+          (update) => {
+            setUserLocation([update.coords.longitude, update.coords.latitude])
+          },
+        )
+        if (cancelled) subscription.remove()
       } catch (err) {
         console.warn('[MapScreen] Failed to acquire GPS position:', err)
       }
     }
     requestLocation()
+
+    return () => {
+      cancelled = true
+      subscription?.remove()
+    }
   }, [])
 
   // ── Session Expiry AppState Watcher ────────────────────────────────
@@ -210,10 +216,10 @@ export function MapScreen() {
       if (coordinates.length === 0) return
 
       if (coordinates.length === 1) {
-        cameraRef.current?.setCamera({
-          centerCoordinate: coordinates[0],
-          zoomLevel: 14,
-          animationDuration: animated ? 600 : 0,
+        cameraRef.current?.easeTo({
+          center: coordinates[0],
+          zoom: 14,
+          duration: animated ? 600 : 0,
         })
         return
       }
@@ -221,10 +227,14 @@ export function MapScreen() {
       const lngs = coordinates.map((c) => c[0])
       const lats = coordinates.map((c) => c[1])
 
-      const ne: [number, number] = [Math.max(...lngs), Math.max(...lats)]
-      const sw: [number, number] = [Math.min(...lngs), Math.min(...lats)]
-
-      cameraRef.current?.fitBounds(ne, sw, [80, 60, 80, 60], animated ? 600 : 0)
+      // LngLatBounds: [west, south, east, north]
+      cameraRef.current?.fitBounds(
+        [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)],
+        {
+          padding: { top: 80, right: 60, bottom: 80, left: 60 },
+          duration: animated ? 600 : 0,
+        },
+      )
     },
     [itineraryPins, memberPinsList, userLocation]
   )
@@ -242,10 +252,10 @@ export function MapScreen() {
     setSelectedPin(selection)
     detailSheetRef.current?.open(selection)
     if (item.placeRef) {
-      cameraRef.current?.setCamera({
-        centerCoordinate: [item.placeRef.lng, item.placeRef.lat],
-        zoomLevel: 15,
-        animationDuration: 400,
+      cameraRef.current?.easeTo({
+        center: [item.placeRef.lng, item.placeRef.lat],
+        zoom: 15,
+        duration: 400,
       })
     }
   }, [])
@@ -254,30 +264,29 @@ export function MapScreen() {
     const selection = { type: 'member' as const, location: loc }
     setSelectedPin(selection)
     detailSheetRef.current?.open(selection)
-    cameraRef.current?.setCamera({
-      centerCoordinate: [loc.lng, loc.lat],
-      zoomLevel: 15,
-      animationDuration: 400,
+    cameraRef.current?.easeTo({
+      center: [loc.lng, loc.lat],
+      zoom: 15,
+      duration: 400,
     })
   }, [])
 
   const handleRecenter = () => {
     if (userLocation) {
-      cameraRef.current?.setCamera({
-        centerCoordinate: userLocation,
-        zoomLevel: 15,
-        animationDuration: 500,
+      cameraRef.current?.easeTo({
+        center: userLocation,
+        zoom: 15,
+        duration: 500,
       })
     } else {
       fitCameraToBounds(true)
     }
   }
 
-  // ── Check-in search fetch ──────────────────────────────────────────
-  const token = useMemo(getMapboxToken, [])
+  // ── Check-in search fetch (keyless Photon/OSM search) ─────────────
   useEffect(() => {
     const trimmed = searchQuery.trim()
-    if (trimmed.length < 2 || !token) {
+    if (trimmed.length < 2) {
       setSearchResults([])
       return
     }
@@ -286,23 +295,15 @@ export function MapScreen() {
     setSearchLoading(true)
 
     const timer = setTimeout(async () => {
-      const params = new URLSearchParams({
-        q: trimmed,
-        access_token: token,
-        country: 'in',
-        language: 'en',
-        limit: '6',
-        types: 'poi,address,place',
-      })
-
       try {
-        const response = await fetch(
-          `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`,
-          { signal: controller.signal }
-        )
-        if (!response.ok) throw new Error()
-        const json = await response.json()
-        setSearchResults(json.features ?? [])
+        const results = await searchPlaces(trimmed, {
+          limit: 6,
+          signal: controller.signal,
+          proximity: userLocation
+            ? { lat: userLocation[1], lng: userLocation[0] }
+            : undefined,
+        })
+        setSearchResults(results)
       } catch (err) {
         // Ignored aborts
       } finally {
@@ -314,7 +315,7 @@ export function MapScreen() {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [searchQuery, token])
+  }, [searchQuery, userLocation])
 
   // ── Perform Check-in write ──────────────────────────────────────────
   const handlePerformCheckIn = async (selection: SelectedPin, message?: string) => {
@@ -453,31 +454,24 @@ export function MapScreen() {
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       <View style={StyleSheet.absoluteFill}>
         <LocationSharingBanner />
-        {/* edge-to-edge Mapbox View */}
-        <MapboxGL.MapView
+        {/* edge-to-edge map view */}
+        <MapLibreMap
           style={StyleSheet.absoluteFill}
-          styleJSON={JSON.stringify({ version: 8, layers: mapStyle as any })}
-          logoEnabled={false}
-          attributionEnabled={false}
-          compassEnabled
+          mapStyle={mapStyle}
+          logo={false}
+          attribution={false}
+          compass
           onPress={() => {
             setSelectedPin(null)
             detailSheetRef.current?.close()
           }}
         >
-          <MapboxGL.Camera ref={cameraRef} />
+          <Camera ref={cameraRef} />
 
           {/* User Blue Dot Location */}
-          <MapboxGL.UserLocation
-            renderMode={UserLocationRenderMode.Normal}
-            visible={permissionStatus === 'granted'}
-            onUpdate={(location) => {
-              if (location && location.coords) {
-                setUserLocation([location.coords.longitude, location.coords.latitude])
-              }
-            }}
-            minDisplacement={5}
-          />
+          {permissionStatus === 'granted' && (
+            <UserLocation accuracy minDisplacement={5} />
+          )}
 
           {/* Connect stops with thread polyline */}
           <RouteOverlay coordinates={routeOverlayCoords} />
@@ -496,7 +490,7 @@ export function MapScreen() {
             activeMemberId={selectedPin?.type === 'member' ? selectedPin.location.userId : null}
             onPressMember={handlePressMemberPin}
           />
-        </MapboxGL.MapView>
+        </MapLibreMap>
 
         {/* ── LOCATION PRIVACY HEADER ROW ─────────────────────────────── */}
         <View style={[styles.headerRow, { top: insets.top + spacing.sm }]}>
@@ -844,11 +838,7 @@ export function MapScreen() {
                   )
                 }}
                 renderItem={({ item }) => {
-                  const [lng, lat] = item.geometry.coordinates
-                  const address =
-                    item.properties.full_address ??
-                    item.properties.place_formatted ??
-                    'No address provided'
+                  const address = item.address || 'No address provided'
 
                   return (
                     <Pressable
@@ -857,11 +847,11 @@ export function MapScreen() {
                         const sel = {
                           type: 'place' as const,
                           place: {
-                            placeId: item.properties.mapbox_id ?? item.id,
-                            name: item.properties.name ?? searchQuery,
+                            placeId: item.id,
+                            name: item.name,
                             address,
-                            lat,
-                            lng,
+                            lat: item.lat,
+                            lng: item.lng,
                           },
                         }
                         setSelectedPin(sel)
@@ -873,7 +863,7 @@ export function MapScreen() {
                       ]}
                     >
                       <Text style={[text.body.md, { color: colors.textPrimary }]} numberOfLines={1}>
-                        {item.properties.name ?? 'Unnamed place'}
+                        {item.name}
                       </Text>
                       <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={1}>
                         {address}

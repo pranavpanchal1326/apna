@@ -46,6 +46,7 @@ const config: any = {
   // Expo Go does not include native FFmpeg — use: npx expo run:android or EAS Build.
   plugins: [
     'expo-font',
+    '@maplibre/maplibre-react-native',
     './plugins/withApnaWidgets',
     [
       'expo-contacts',
@@ -123,10 +124,6 @@ const config: any = {
     // Observability
     sentryDsn:  process.env.SENTRY_DSN,
     postHogKey: process.env.POSTHOG_API_KEY,
-
-    // Mapbox — Phase 3
-    mapboxToken: process.env.MAPBOX_ACCESS_TOKEN,
-    openWeatherApiKey: process.env.OPENWEATHER_API_KEY,
   },
 }
 

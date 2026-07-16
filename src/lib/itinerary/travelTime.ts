@@ -1,7 +1,7 @@
 // src/lib/itinerary/travelTime.ts
-// PRD §13 — buffer-time warnings: "20 min gap, but Mapbox says 35 min drive".
-// Pure gap math + a cached Mapbox Directions client. Degrades to silence:
-// no token, no coords, no times, or API failure → no warning, never an error.
+// PRD §13 — buffer-time warnings: "20 min gap, but routing says 35 min drive".
+// Pure gap math + a cached OSRM Directions client (free, keyless). Degrades to
+// silence: no coords, no times, or API failure → no warning, never an error.
 
 export interface LatLng {
   lat: number
@@ -58,18 +58,7 @@ export function shouldWarn(gap: number, driveMinutes: number): boolean {
   return driveMinutes > gap + 5
 }
 
-// ── Mapbox Directions ────────────────────────────────────────────────────────
-
-function getMapboxToken(): string {
-  // Lazy require keeps the pure helpers above importable in node-only tests.
-  // NOTE: deliberately no process.env.EXPO_PUBLIC_* here — babel-preset-expo
-  // rewrites that into an ESM import that breaks jest; app.config.ts already
-  // maps MAPBOX_ACCESS_TOKEN into extra.mapboxToken.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const Constants = require('expo-constants').default as typeof import('expo-constants').default
-  const extra = Constants.expoConfig?.extra as { mapboxToken?: string } | undefined
-  return extra?.mapboxToken ?? ''
-}
+// ── OSRM Directions (router.project-osrm.org — free demo server, no key) ────
 
 // Session cache — routes between fixed stops don't change while planning.
 // Coords rounded to ~100m so tiny GPS jitter doesn't bust the cache.
@@ -80,19 +69,16 @@ function cacheKey(from: LatLng, to: LatLng): string {
   return `${r(from.lat)},${r(from.lng)}→${r(to.lat)},${r(to.lng)}`
 }
 
-/** Driving minutes between two points via Mapbox Directions, or null. */
+/** Driving minutes between two points via OSRM, or null. */
 export async function fetchDrivingMinutes(from: LatLng, to: LatLng): Promise<number | null> {
-  const token = getMapboxToken()
-  if (!token) return null
-
   const key = cacheKey(from, to)
   if (driveCache.has(key)) return driveCache.get(key) ?? null
 
   try {
     const coords = `${from.lng},${from.lat};${to.lng},${to.lat}`
     const url =
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}` +
-      `?access_token=${token}&overview=false&alternatives=false`
+      `https://router.project-osrm.org/route/v1/driving/${coords}` +
+      `?overview=false&alternatives=false`
     const response = await fetch(url)
     if (!response.ok) {
       driveCache.set(key, null)

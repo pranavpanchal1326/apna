@@ -3,7 +3,7 @@
 
 import { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Marker } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../../theme'
 import type { MemberLocation } from '../../../lib/types/location.types'
 
@@ -43,12 +43,12 @@ export const LiveMemberPins = memo(function LiveMemberPins({
         }
 
         return (
-          <MapboxGL.PointAnnotation
+          <Marker
             key={loc.userId}
             id={`live-member-${loc.userId}`}
-            coordinate={coordinate}
-            anchor={{ x: 0.5, y: 0.5 }}
-            onSelected={() => onPressMember(loc)}
+            lngLat={coordinate}
+            anchor="center"
+            onPress={() => onPressMember(loc)}
           >
             <View style={styles.pinWrapper}>
               <View
@@ -85,7 +85,7 @@ export const LiveMemberPins = memo(function LiveMemberPins({
                 />
               )}
             </View>
-          </MapboxGL.PointAnnotation>
+          </Marker>
         )
       })}
     </>

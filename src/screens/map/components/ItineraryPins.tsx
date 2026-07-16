@@ -3,7 +3,7 @@
 
 import { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Marker } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../../theme'
 import { CATEGORY_META } from '../../../lib/schemas'
 import type { ItineraryItem } from '../../../lib/schemas'
@@ -38,12 +38,12 @@ export const ItineraryPins = memo(function ItineraryPins({
         const meta = CATEGORY_META[item.category]
 
         return (
-          <MapboxGL.PointAnnotation
+          <Marker
             key={item.id}
             id={`itinerary-pin-${item.id}`}
-            coordinate={coordinate}
-            anchor={{ x: 0.5, y: 1 }}
-            onSelected={() => onPressPin(item)}
+            lngLat={coordinate}
+            anchor="bottom"
+            onPress={() => onPressPin(item)}
           >
             <View
               style={[
@@ -115,7 +115,7 @@ export const ItineraryPins = memo(function ItineraryPins({
                 ]}
               />
             </View>
-          </MapboxGL.PointAnnotation>
+          </Marker>
         )
       })}
     </>

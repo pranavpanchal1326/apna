@@ -1,75 +1,29 @@
 // src/screens/itinerary/PlaceSearchTab.tsx
-// Mapbox Geocoding v6 search tab inside AddItemSheet.
+// Keyless place search tab inside AddItemSheet (Photon/OSM via lib/places).
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import Constants from 'expo-constants'
 import { useTheme } from '../../theme'
 import type { PlaceRef, ItineraryCategory } from '../../lib/schemas'
+import { searchPlaces, inferItineraryCategory, type PlaceSearchResult } from '../../lib/places/placeSearch'
 
 interface PlaceSearchTabProps {
   onPlaceSelected: (placeRef: PlaceRef, category: ItineraryCategory) => void
 }
 
-type MapboxFeature = {
-  id: string
-  type: 'Feature'
-  geometry: {
-    type: 'Point'
-    coordinates: [number, number]
-  }
-  properties: {
-    mapbox_id?: string
-    name?: string
-    full_address?: string
-    place_formatted?: string
-    feature_type?: string
-    poi_category?: string[]
-    context?: {
-      district?: { name?: string }
-      region?: { name?: string }
-      place?: { name?: string }
-    }
-  }
-}
-
-type MapboxGeocodeResponse = {
-  features?: MapboxFeature[]
-}
-
 type SearchState =
-  | { status: 'idle'; results: MapboxFeature[] }
-  | { status: 'loading'; results: MapboxFeature[] }
-  | { status: 'error'; results: MapboxFeature[] }
-
-function getMapboxToken(): string {
-  const extra = Constants.expoConfig?.extra as { mapboxToken?: string } | undefined
-  return process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? extra?.mapboxToken ?? ''
-}
-
-function inferCategory(feature: MapboxFeature): ItineraryCategory {
-  const labels = [
-    feature.properties.feature_type,
-    ...(feature.properties.poi_category ?? []),
-  ].map((label) => label?.toLowerCase() ?? '')
-
-  if (labels.some((label) => /restaurant|cafe|food|bar/.test(label))) return 'food'
-  if (labels.some((label) => /hotel|lodging|hostel|stay/.test(label))) return 'stay'
-  if (labels.some((label) => /airport|station|transit|bus|taxi|transport/.test(label))) return 'transport'
-  if (labels.some((label) => /shop|market|mall|store/.test(label))) return 'shopping'
-  if (labels.some((label) => /park|trail|activity|adventure|sport/.test(label))) return 'activity'
-  return 'attraction'
-}
+  | { status: 'idle'; results: PlaceSearchResult[] }
+  | { status: 'loading'; results: PlaceSearchResult[] }
+  | { status: 'error'; results: PlaceSearchResult[] }
 
 export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
   const { colors, text, spacing, radius } = useTheme()
-  const token = useMemo(getMapboxToken, [])
   const [query, setQuery] = useState('')
   const [state, setState] = useState<SearchState>({ status: 'idle', results: [] })
 
   useEffect(() => {
     const trimmed = query.trim()
-    if (trimmed.length < 2 || !token) {
+    if (trimmed.length < 2) {
       setState({ status: 'idle', results: [] })
       return
     }
@@ -77,22 +31,9 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
     const controller = new AbortController()
     const timeout = setTimeout(async () => {
       setState((current) => ({ status: 'loading', results: current.results }))
-      const params = new URLSearchParams({
-        q: trimmed,
-        access_token: token,
-        country: 'in',
-        language: 'en',
-        limit: '8',
-        types: 'poi,address,place,locality,neighborhood',
-      })
-
       try {
-        const response = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`, {
-          signal: controller.signal,
-        })
-        if (!response.ok) throw new Error(`Mapbox search failed: ${response.status}`)
-        const json = (await response.json()) as MapboxGeocodeResponse
-        setState({ status: 'idle', results: json.features ?? [] })
+        const results = await searchPlaces(trimmed, { limit: 8, signal: controller.signal })
+        setState({ status: 'idle', results })
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           setState((current) => ({ status: 'error', results: current.results }))
@@ -104,28 +45,19 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
       clearTimeout(timeout)
       controller.abort()
     }
-  }, [query, token])
+  }, [query])
 
-  function selectFeature(feature: MapboxFeature) {
-    const [lng, lat] = feature.geometry.coordinates
-    const context = feature.properties.context
-    const address = feature.properties.full_address
-      ?? feature.properties.place_formatted
-      ?? [context?.district?.name, context?.region?.name].filter(Boolean).join(', ')
-
+  function selectResult(result: PlaceSearchResult) {
     const placeRef: PlaceRef = {
-      placeId: feature.properties.mapbox_id ?? feature.id,
-      name: feature.properties.name ?? query.trim(),
-      address,
-      lat,
-      lng,
-      types: [
-        feature.properties.feature_type,
-        ...(feature.properties.poi_category ?? []),
-      ].filter((value): value is string => Boolean(value)),
+      placeId: result.id,
+      name: result.name,
+      address: result.address,
+      lat: result.lat,
+      lng: result.lng,
+      types: result.labels,
     }
 
-    onPlaceSelected(placeRef, inferCategory(feature))
+    onPlaceSelected(placeRef, inferItineraryCategory(result.labels))
   }
 
   return (
@@ -152,11 +84,6 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
       {state.status === 'loading' && (
         <ActivityIndicator color={colors.accentPrimary} style={{ marginTop: spacing.md }} />
       )}
-      {!token && (
-        <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.md }]}>
-          Mapbox token is not configured.
-        </Text>
-      )}
       {state.status === 'error' && (
         <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.md }]}>
           Could not load places. Try again.
@@ -164,41 +91,32 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
       )}
       <FlatList
         data={state.results}
-        keyExtractor={(item) => item.properties.mapbox_id ?? item.id}
+        keyExtractor={(item) => item.id}
         keyboardShouldPersistTaps="handled"
         style={{ marginTop: spacing.sm }}
-        renderItem={({ item }) => {
-          const context = item.properties.context
-          const secondary = item.properties.full_address
-            ?? item.properties.place_formatted
-            ?? [context?.place?.name, context?.district?.name, context?.region?.name]
-              .filter(Boolean)
-              .join(', ')
-
-          return (
-            <Pressable
-              onPress={() => selectFeature(item)}
-              style={[
-                styles.resultRow,
-                {
-                  borderBottomColor: colors.border,
-                  paddingVertical: spacing.md,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Select ${item.properties.name ?? 'place'}`}
-            >
-              <Text style={[text.body.md, { color: colors.textPrimary }]} numberOfLines={1}>
-                {item.properties.name ?? 'Unnamed place'}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => selectResult(item)}
+            style={[
+              styles.resultRow,
+              {
+                borderBottomColor: colors.border,
+                paddingVertical: spacing.md,
+              },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Select ${item.name}`}
+          >
+            <Text style={[text.body.md, { color: colors.textPrimary }]} numberOfLines={1}>
+              {item.name}
+            </Text>
+            {item.address ? (
+              <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={2}>
+                {item.address}
               </Text>
-              {secondary ? (
-                <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={2}>
-                  {secondary}
-                </Text>
-              ) : null}
-            </Pressable>
-          )
-        }}
+            ) : null}
+          </Pressable>
+        )}
       />
     </View>
   )

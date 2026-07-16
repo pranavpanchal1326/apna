@@ -224,20 +224,10 @@ const withWidgetPackage: ConfigPlugin = (config) =>
     return mod
   })
 
-// ── Step 6: Add Mapbox Maven repository and configure ffmpeg-kit dependency substitution ──────────────────
+// ── Step 6: Configure ffmpeg-kit dependency substitution ──────────────────
 const withCustomRepositories: ConfigPlugin = (config) =>
   withProjectBuildGradle(config, (mod) => {
     const gradle = mod.modResults.contents
-    const mapboxRepo = `        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username = "mapbox"
-                password = project.findProperty("MAPBOX_DOWNLOADS_TOKEN") ?: System.getenv("MAPBOX_DOWNLOADS_TOKEN") ?: System.getenv("MAPBOX_ACCESS_TOKEN") ?: ""
-            }
-        }`
 
     const substitutionBlock = `
 subprojects {
@@ -272,13 +262,6 @@ subprojects {
     // Remove maven.arthenica.com repository if present
     if (updated.includes('maven.arthenica.com')) {
       updated = updated.replace(/maven\s*\{\s*url\s*['"]https:\/\/maven\.arthenica\.com\/public\/['"]\s*\}/g, '')
-    }
-
-    if (!gradle.includes('api.mapbox.com')) {
-      updated = updated.replace(
-        /allprojects\s*\{\s*repositories\s*\{/,
-        `allprojects {\n    repositories {\n${mapboxRepo}`
-      )
     }
 
     if (!updated.includes('dependencySubstitution')) {

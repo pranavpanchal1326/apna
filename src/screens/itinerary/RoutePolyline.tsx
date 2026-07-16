@@ -16,7 +16,7 @@
 // GeoJSON LineString — Mapbox renders this natively on the GL thread (60fps)
 
 import { useMemo } from 'react'
-import MapboxGL from '@rnmapbox/maps'
+import { GeoJSONSource, Layer } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../theme'
 
 interface RoutePolylineProps {
@@ -51,18 +51,21 @@ export function RoutePolyline({ coordinates, dayId }: RoutePolylineProps) {
   const layerId  = `route-layer-${dayId}`
 
   return (
-    <MapboxGL.ShapeSource id={sourceId} shape={geojson}>
-      <MapboxGL.LineLayer
+    <GeoJSONSource id={sourceId} data={geojson}>
+      <Layer
         id={layerId}
-        style={{
-          lineColor:       colors.accentPrimary,
-          lineWidth:       2,
-          lineOpacity:     0.7,
-          lineDasharray:   [4, 3],    // Dashed Dhaga thread
-          lineCap:         'round',
-          lineJoin:        'round',
+        type="line"
+        paint={{
+          'line-color':     colors.accentPrimary,
+          'line-width':     2,
+          'line-opacity':   0.7,
+          'line-dasharray': [4, 3],    // Dashed Dhaga thread
+        }}
+        layout={{
+          'line-cap':  'round',
+          'line-join': 'round',
         }}
       />
-    </MapboxGL.ShapeSource>
+    </GeoJSONSource>
   )
 }

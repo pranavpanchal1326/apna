@@ -13,14 +13,11 @@
 // FALLBACK: if placeRef is null → render a muted placeholder with location emoji
 // PERFORMANCE: camera is static — no animation, no pan/zoom
 
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import MapboxGL from '@rnmapbox/maps'
+import { Map as MapLibreMap, Camera, Marker } from '@maplibre/maplibre-react-native'
 import { useTheme } from '../../theme'
 import type { PlaceRef } from '../../lib/schemas'
-
-// Initialize Mapbox — only once (idempotent)
-MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '')
 
 interface MapPinViewProps {
   placeRef:    PlaceRef
@@ -67,11 +64,9 @@ export function MapPinView({ placeRef, height = 200 }: MapPinViewProps) {
   const { colors, radius, mapStyle } = useTheme()
 
   const coordinate: [number, number] = useMemo(
-    () => [placeRef.lng, placeRef.lat],  // Mapbox: [lng, lat]
+    () => [placeRef.lng, placeRef.lat],  // [lng, lat]
     [placeRef.lat, placeRef.lng],
   )
-
-  const cameraRef = useRef<MapboxGL.Camera>(null)
 
   if (!placeRef.lat || !placeRef.lng) {
     return (
@@ -104,32 +99,29 @@ export function MapPinView({ placeRef, height = 200 }: MapPinViewProps) {
         },
       ]}
     >
-      <MapboxGL.MapView
+      <MapLibreMap
         style={StyleSheet.absoluteFill}
-        styleJSON={JSON.stringify({ version: 8, layers: mapStyle as any })}
-        scrollEnabled={false}
-        zoomEnabled={false}
-        rotateEnabled={false}
-        pitchEnabled={false}
-        logoEnabled={false}
-        attributionEnabled={false}
-        compassEnabled={false}
+        mapStyle={mapStyle}
+        dragPan={false}
+        touchZoom={false}
+        doubleTapZoom={false}
+        doubleTapHoldZoom={false}
+        touchRotate={false}
+        touchPitch={false}
+        logo={false}
+        attribution={false}
+        compass={false}
       >
-        <MapboxGL.Camera
-          ref={cameraRef}
-          zoomLevel={14}
-          centerCoordinate={coordinate}
-          animationMode="none"    // Static — no animation
-        />
+        <Camera initialViewState={{ center: coordinate, zoom: 14 }} />
 
-        <MapboxGL.PointAnnotation
+        <Marker
           id={`pin-${placeRef.placeId}`}
-          coordinate={coordinate}
-          anchor={{ x: 0.5, y: 1 }}  // Pin tip at coordinate
+          lngLat={coordinate}
+          anchor="bottom"  // Pin tip at coordinate
         >
           <TealPin />
-        </MapboxGL.PointAnnotation>
-      </MapboxGL.MapView>
+        </Marker>
+      </MapLibreMap>
 
       {/* Place name overlay — bottom left of map */}
       <View
