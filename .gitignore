@@ -62,3 +62,8 @@ logcat*.txt
 screen*.png
 sc_*.png
 emulator_screen_loaded.png
+
+# ── Local secrets for the Functions emulator — NEVER commit ────────────────
+functions/.secret.local
+functions/.env.local
+functions/.env.*.local
