@@ -38,9 +38,17 @@ export type HomeStackParamList = {
   GroupMembersManage: { groupId: string }
   AddMembers:         { groupId: string }
   SettleUp:           { groupId: string; withUid?: string }
+  RecurringExpenses:  { groupId: string }
   NotificationDebug:  undefined
   TripWrap:           { groupId: string }
+  YearInReview:       { groupId: string; year: number }
   PrivacySettings:    { groupId?: string }
+}
+
+// ── Profile Stack ─────────────────────────────────────────────────
+export type ProfileStackParamList = {
+  ProfileHome:          undefined
+  NotificationSettings: undefined
 }
 
 // ── Itinerary Stack (inside Trip tab) ─────────────────────────────

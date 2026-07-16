@@ -46,7 +46,7 @@ export const onGroupWriteNotify = onDocumentUpdated(
             actorUid: newUid,
           })
 
-          const tokens = await getGroupRecipientTokens(groupId, [newUid])
+          const tokens = await getGroupRecipientTokens(groupId, [newUid], message.data.type)
           if (tokens.length > 0) {
             await sendPushToTokens({
               tokens,
@@ -79,7 +79,7 @@ export const onGroupWriteNotify = onDocumentUpdated(
             targetUid: removedUid,
           })
 
-          const tokens = await getGroupRecipientTokens(groupId, [removedUid])
+          const tokens = await getGroupRecipientTokens(groupId, [removedUid], message.data.type)
           if (tokens.length > 0) {
             await sendPushToTokens({
               tokens,
@@ -104,7 +104,7 @@ export const onGroupWriteNotify = onDocumentUpdated(
           actorUid: primaryAdminUid,
         })
 
-        const tokens = await getGroupRecipientTokens(groupId)
+        const tokens = await getGroupRecipientTokens(groupId, undefined, message.data.type)
         if (tokens.length > 0) {
           await sendPushToTokens({
             tokens,
@@ -128,7 +128,7 @@ export const onGroupWriteNotify = onDocumentUpdated(
           actorUid: primaryAdminUid,
         })
 
-        const tokens = await getGroupRecipientTokens(groupId, [primaryAdminUid])
+        const tokens = await getGroupRecipientTokens(groupId, [primaryAdminUid], message.data.type)
         if (tokens.length > 0) {
           await sendPushToTokens({
             tokens,
@@ -160,7 +160,7 @@ export const onGroupWriteNotify = onDocumentUpdated(
             targetUid: newAdminUid,
           })
 
-          const tokens = await getGroupRecipientTokens(groupId, [primaryAdminUid])
+          const tokens = await getGroupRecipientTokens(groupId, [primaryAdminUid], message.data.type)
           if (tokens.length > 0) {
             await sendPushToTokens({
               tokens,

@@ -22,6 +22,9 @@ export const PublicRecapSchema = z.object({
   updatedAt: z.unknown().optional(),
   coverPhotoUrl: z.string().url().optional(),
   topPhotos: z.array(z.string().url()).max(6),
+  // PRD §23 — storage paths behind topPhotos; server re-signs 24h URLs on demand
+  topPhotoPaths: z.array(z.string()).max(6).optional(),
+  photoUrlsExpireAt: z.unknown().optional(), // Firestore Timestamp
   coverEmoji: z.string().max(8).optional(),
   totalSpend: z.number().positive().optional(),
   currency: z.string().length(3).default('INR'),

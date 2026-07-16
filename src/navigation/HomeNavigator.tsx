@@ -7,12 +7,13 @@ import { useTheme } from '@theme'
 import type { HomeStackParamList } from './types'
 
 import { HomeScreen }        from '@screens/home/HomeScreen'
-import { CreateGroupScreen, JoinGroupScreen, GroupHomeScreen, GroupSettingsScreen, GroupMembersManageScreen, SettleUpScreen } from '@screens/group'
+import { CreateGroupScreen, JoinGroupScreen, GroupHomeScreen, GroupSettingsScreen, GroupMembersManageScreen, SettleUpScreen, RecurringExpensesScreen } from '@screens/group'
 import { AddMembersScreen } from '@screens/groups'
 import { AddExpenseScreen, ExpenseDetailScreen } from '@screens/expense'
 import { BalanceSummaryScreen } from '../screens/settlement'
 import { NotificationDebugScreen } from '../screens/debug/NotificationDebugScreen'
 import { TripWrapScreen } from '@screens/tripWrap/TripWrapScreen'
+import { YearInReviewScreen } from '@screens/group/YearInReviewScreen'
 import { PrivacySettingsScreen } from '../screens/profile/PrivacySettingsScreen'
 import { ChoosePathScreen } from '../screens/profile/ChoosePathScreen'
 
@@ -47,7 +48,9 @@ export function HomeNavigator() {
       <Stack.Screen name="GroupMembersManage" component={GroupMembersManageScreen} />
       <Stack.Screen name="AddMembers"         component={AddMembersScreen} />
       <Stack.Screen name="SettleUp"           component={SettleUpScreen} />
+      <Stack.Screen name="RecurringExpenses"  component={RecurringExpensesScreen} />
       <Stack.Screen name="TripWrap"           component={TripWrapScreen} />
+      <Stack.Screen name="YearInReview"       component={YearInReviewScreen} />
       <Stack.Screen name="PrivacySettings"    component={PrivacySettingsScreen} />
       {__DEV__ && (
         <Stack.Screen name="NotificationDebug" component={NotificationDebugScreen} />

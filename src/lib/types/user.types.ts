@@ -9,6 +9,8 @@ export interface User {
   avatarUrl?: string  // Phase 4+ only — not collected in onboarding v1
   createdAt: Timestamp
   groups: string[]    // Array of group document IDs the user belongs to
+  upiId?: string      // Payment prefs — VPA for one-tap settle up (name@bank)
+  notificationPrefs?: import('../schemas/user.schema').NotificationPrefs // Per-type toggles + silent hours
 }
 
 // 8 curated colors shown in onboarding color picker — order is fixed and

@@ -28,6 +28,9 @@ export const GroupSchema = z.object({
   totalBudget:  z.number().positive().optional(),
   description:  z.string().max(200).optional(),
   balances:     z.array(SettlementBalanceSchema).default([]),
+  // uid → in-group nickname (max 30 chars). Overrides the user's display
+  // name inside this group only. Absent key = no nickname set.
+  nicknames:    z.record(z.string(), z.string().min(1).max(30)).optional(),
 })
 
 export const GroupCreateSchema = GroupSchema.omit({ id: true })

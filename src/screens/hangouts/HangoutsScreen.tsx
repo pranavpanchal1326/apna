@@ -20,6 +20,7 @@ import { useHangoutStore } from '../../stores/hangout.store'
 import { useAuthStore } from '../../stores/auth.store'
 import { useGroupStore } from '../../stores/group.store'
 import { ProposeSheet } from './components/ProposeSheet'
+import { DietarySuggestSheet } from './components/DietarySuggestSheet'
 import { HangoutCard } from './components/HangoutCard'
 import { hangoutDisplayState } from '../../lib/utils/hangout'
 import type { Hangout, HangoutCreate } from '../../lib/schemas/hangout.schema'
@@ -42,6 +43,7 @@ export function HangoutsScreen() {
 
   const [filter,     setFilter]     = useState<FilterKey>('active')
   const [showCreate, setShowCreate] = useState(false)
+  const [showFoodIdeas, setShowFoodIdeas] = useState(false) // 7.5 dietary suggestions
 
   useEffect(() => {
     if (activeGroup?.id) subscribeToGroup(activeGroup.id)
@@ -122,6 +124,27 @@ export function HangoutsScreen() {
             </Pressable>
           )
         })}
+
+        {/* 7.5 Dietary food ideas — needs a destination for context */}
+        {activeGroup?.destination ? (
+          <Pressable
+            onPress={() => { Haptics.selectionAsync(); setShowFoodIdeas(true) }}
+            style={[styles.chip, {
+              backgroundColor: colors.bgSecondary,
+              borderColor:     colors.border,
+              borderRadius:    radius.full,
+              borderWidth:     1,
+              paddingHorizontal: 12,
+              paddingVertical:  6,
+            }]}
+            accessibilityRole="button"
+            accessibilityLabel="Get dietary-friendly food ideas"
+          >
+            <Text style={[text.label.sm, { color: colors.textSecondary, fontFamily: 'Outfit-Medium' }]}>
+              🥗 Food ideas
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
 
       {isLoading ? (
@@ -154,6 +177,15 @@ export function HangoutsScreen() {
       >
         <Text style={{ color: colors.bgPrimary, fontSize: 24, fontWeight: '600', lineHeight: 28 }}>+</Text>
       </Pressable>
+
+      {activeGroup?.destination ? (
+        <DietarySuggestSheet
+          visible={showFoodIdeas}
+          onClose={() => setShowFoodIdeas(false)}
+          groupId={activeGroup.id}
+          destination={activeGroup.destination}
+        />
+      ) : null}
 
       <ProposeSheet
         visible={showCreate}

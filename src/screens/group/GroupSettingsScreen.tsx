@@ -405,6 +405,15 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           />
         </View>
 
+        {/* ── 4b. Recurring Expenses Row ──────────────────────────────────── */}
+        <View style={{ marginBottom: spacing.xl }}>
+          <SettingsRow
+            label="Recurring Expenses"
+            rightMeta="🔁"
+            onPress={() => navigation.navigate('RecurringExpenses', { groupId })}
+          />
+        </View>
+
         {/* ── 5. Trip Wrap Row ────────────────────────────────────────────── */}
         {(group.status === 'completed' || isTripOver) && (
           <View style={{ marginBottom: spacing.xl }}>
@@ -415,6 +424,20 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
             />
           </View>
         )}
+
+        {/* ── 5b. Year in Review Row ──────────────────────────────────────── */}
+        <View style={{ marginBottom: spacing.xl }}>
+          <SettingsRow
+            label="Year in Review"
+            rightMeta="✨"
+            onPress={() => {
+              // Generated every December — before then, show last year's.
+              const now = new Date()
+              const year = now.getMonth() === 11 ? now.getFullYear() : now.getFullYear() - 1
+              navigation.navigate('YearInReview', { groupId, year })
+            }}
+          />
+        </View>
 
         {/* ── 6. Danger Zone ───────────────────────────────────────────────── */}
         <DangerZoneCard>

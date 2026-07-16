@@ -6,8 +6,9 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import {
-  View, Text, TextInput, StyleSheet,
+  View, Text, TextInput, StyleSheet, Alert,
 } from 'react-native'
+import { openUpiPayment } from '@lib/utils/upi'
 import { useTheme } from '@theme'
 import { haptics } from '@lib/haptics'
 import { BottomSheet } from '@components/ui/BottomSheet'
@@ -76,6 +77,21 @@ export function SettleUpSheet({
     }
   }, [canConfirm, debt, amount, maxAmount, note, onConfirm, onClose])
 
+  // Open the receiver's UPI app pre-filled — user records the settlement
+  // in apna after completing payment (apna never moves money).
+  const handlePayViaUpi = useCallback(async () => {
+    if (!toUser?.upiId || amount <= 0) return
+    const opened = await openUpiPayment({
+      payeeVpa: toUser.upiId,
+      payeeName: toUser.name,
+      amountRupees: amount,
+      note: note.trim() || 'apna settle up',
+    })
+    if (!opened) {
+      Alert.alert('No UPI app found', 'Install GPay, PhonePe, or any UPI app to pay directly.')
+    }
+  }, [toUser?.upiId, toUser?.name, amount, note])
+
   if (!debt || !toUser) return null
 
   return (
@@ -83,7 +99,7 @@ export function SettleUpSheet({
       visible={visible}
       onClose={onClose}
       title="Settle up"
-      snapHeight={460}
+      snapHeight={520}
     >
       <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
         {/* Who → Who */}
@@ -189,6 +205,23 @@ export function SettleUpSheet({
         {error && (
           <Text style={[text.label.sm, { color: colors.accentDanger, marginBottom: spacing.md, textAlign: 'center' }]}>
             {error}
+          </Text>
+        )}
+
+        {/* Pay via UPI — deeplinks into GPay/PhonePe with amount pre-filled */}
+        {toUser.upiId ? (
+          <Button
+            label={`Pay ₹${amount > 0 ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0'} via UPI`}
+            variant="secondary"
+            size="lg"
+            fullWidth
+            disabled={amount <= 0}
+            onPress={handlePayViaUpi}
+            style={{ marginBottom: spacing.sm }}
+          />
+        ) : (
+          <Text style={[text.label.sm, { color: colors.textMuted, textAlign: 'center', marginBottom: spacing.sm }]}>
+            💡 {toUser.name.split(' ')[0]} hasn't added a UPI ID yet — ask them to set it in Profile for one-tap payment.
           </Text>
         )}
 

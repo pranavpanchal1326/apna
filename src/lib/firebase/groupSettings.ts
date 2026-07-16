@@ -8,12 +8,14 @@ import {
   arrayUnion,
   arrayRemove,
   serverTimestamp,
+  deleteField,
   doc,
   getDoc,
   Timestamp,
 } from 'firebase/firestore'
 import { db } from './config'
 import { groupsCol, inviteDoc, userDoc } from './collections'
+import { INVITE_TTL_MS } from './groups'
 import { captureError } from '@lib/sentry'
 import { track } from '@lib/analytics'
 import { generateDayPlans } from '@lib/utils/generateDayPlans'
@@ -130,6 +132,85 @@ export async function transferPrimaryAdmin(params: TransferAdminParams): Promise
     track('group_admin_transferred', { groupId })
   } catch (err) {
     captureError(err, { source: 'transferPrimaryAdmin', groupId, targetUid })
+    throw err
+  }
+}
+
+// ── Demote Co-Admin ──────────────────────────────────────────────────────────
+// Only the group creator can demote admins. Co-admins can promote (see
+// transferPrimaryAdmin) and remove themselves, but never demote others —
+// mirrored in firestore.rules.
+export async function demoteAdmin(params: TransferAdminParams): Promise<void> {
+  const { groupId, actorUid, targetUid } = params
+  try {
+    const ref = doc(groupsCol(), groupId)
+
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref)
+      if (!snap.exists()) throw new Error('Group not found.')
+
+      const group = snap.data() as any
+      if (group.createdBy !== actorUid) {
+        throw new Error('Only the group creator can remove admin access.')
+      }
+      if (targetUid === group.createdBy) {
+        throw new Error('The group creator cannot be demoted.')
+      }
+      if (!group.adminIds?.includes(targetUid)) {
+        throw new Error('This member is not an admin.')
+      }
+
+      tx.update(ref, {
+        adminIds:  arrayRemove(targetUid),
+        updatedAt: serverTimestamp(),
+      })
+    })
+
+    track('group_admin_demoted', { groupId })
+  } catch (err) {
+    captureError(err, { source: 'demoteAdmin', groupId, targetUid })
+    throw err
+  }
+}
+
+// ── Set Member Nickname ──────────────────────────────────────────────────────
+// Any member can set an in-group nickname for any member (PRD §21).
+// Empty/whitespace nickname clears it.
+export interface SetNicknameParams {
+  groupId:   string
+  actorUid:  string
+  targetUid: string
+  nickname:  string
+}
+
+export async function setMemberNickname(params: SetNicknameParams): Promise<void> {
+  const { groupId, actorUid, targetUid, nickname } = params
+  try {
+    const ref = doc(groupsCol(), groupId)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) throw new Error('Group not found.')
+
+    const group = snap.data() as any
+    if (!group.memberIds?.includes(actorUid)) {
+      throw new Error('You must be a group member to do that.')
+    }
+    if (!group.memberIds?.includes(targetUid)) {
+      throw new Error('This person is not a member of the group.')
+    }
+
+    const trimmed = nickname.trim()
+    if (trimmed.length > 30) {
+      throw new Error('Nickname must be 30 characters or fewer.')
+    }
+
+    await updateDoc(ref, {
+      [`nicknames.${targetUid}`]: trimmed.length > 0 ? trimmed : deleteField(),
+      updatedAt: serverTimestamp(),
+    })
+
+    track('group_nickname_set', { groupId, cleared: trimmed.length === 0 })
+  } catch (err) {
+    captureError(err, { source: 'setMemberNickname', groupId, targetUid })
     throw err
   }
 }
@@ -267,7 +348,7 @@ export async function regenerateInviteForGroup(
         groupId,
         createdBy: actorUid,
         createdAt: serverTimestamp(),
-        expiresAt: Timestamp.fromDate(new Date(Date.now() + 72 * 60 * 60 * 1000)), // 72 hours
+        expiresAt: Timestamp.fromDate(new Date(Date.now() + INVITE_TTL_MS)), // 30-day TTL (PRD §15)
         maxUses:   50,
         useCount:  0,
       })

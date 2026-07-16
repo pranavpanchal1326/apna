@@ -19,6 +19,8 @@ import {
   useState,
   useCallback,
   useMemo,
+  useEffect,
+  useRef,
 } from 'react'
 import {
   View,
@@ -52,6 +54,12 @@ import {
   type SplitParticipant,
 } from '@lib/engine/splitEngine'
 import { useExpenseStore } from '@stores/expense.store'
+import { suggestExpenseCategory } from '@lib/firebase/ai'
+import { suggestNextPayer } from '@lib/engine/splitSuggestions'
+import type { Timestamp } from 'firebase/firestore'
+import { addRecurringExpense } from '@lib/firebase/recurringExpenses'
+import { computeNextRunDate, describeRecurrence } from '@lib/utils/recurrence'
+import type { RecurrenceFrequency } from '@lib/schemas'
 import { useGroupStore } from '@stores/group.store'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useAuth } from '@hooks/useAuth'
@@ -85,6 +93,7 @@ export function AddExpenseScreen({ route }: Props) {
   const [paidByUid, setPaidByUid]       = useState(user?.uid ?? '')
   const [splitMethod, setSplitMethod]   = useState<SplitMethod>('equal')
   const [notes, setNotes]               = useState('')
+  const [repeat, setRepeat]             = useState<'none' | RecurrenceFrequency>('none')
   const [expenseId]                     = useState(() => nanoid())
   const [receiptUri, setReceiptUri]     = useState<string | null>(null)
   const [error, setError]               = useState<string | null>(null)
@@ -103,6 +112,43 @@ export function AddExpenseScreen({ route }: Props) {
 
   // For exact / percentage splits — per-person values
   const [splitValues, setSplitValues] = useState<Record<string, number>>({})
+
+  // ── 7.2 Smart categorization — auto-suggest while category is untouched ──
+  // Once the user picks a category manually, we never override it.
+  const categoryTouchedRef = useRef(false)
+  const handleCategorySelect = useCallback((next: ExpenseCategory) => {
+    categoryTouchedRef.current = true
+    setCategory(next)
+  }, [])
+
+  useEffect(() => {
+    const trimmed = title.trim()
+    if (categoryTouchedRef.current || trimmed.length < 3) return
+    // Debounce: wait for a typing pause before asking the server
+    const timer = setTimeout(async () => {
+      const suggested = await suggestExpenseCategory(trimmed)
+      if (suggested && !categoryTouchedRef.current) {
+        setCategory(suggested)
+      }
+    }, 700)
+    return () => clearTimeout(timer)
+  }, [title])
+
+  // ── 7.3 Best-split suggestion — "X paid the last N times" (pure, local) ──
+  const groupExpenses = useExpenseStore(
+    (s) => s.expensesByGroup[groupId] ?? [],
+  )
+  const payerSuggestion = useMemo(() => {
+    const history = groupExpenses.map((e) => ({
+      paidBy: e.paidBy,
+      amount: e.amount,
+      createdAtMillis:
+        (e.createdAt as Timestamp | undefined)?.toMillis?.() ??
+        Date.parse(e.date) ??
+        0,
+    }))
+    return suggestNextPayer(history, memberIds)
+  }, [groupExpenses, memberIds])
 
   // ── Derived values ─────────────────────────────────────────────
   const amount = parseFloat(amountStr) || 0
@@ -300,6 +346,32 @@ export function AddExpenseScreen({ route }: Props) {
         uploadPending: !hasUploaded && receiptUri ? true : undefined,
       })
 
+      // Recurring: create a template — the daily Cloud Function generates
+      // future occurrences (today's expense was just saved above).
+      if (repeat !== 'none') {
+        const dayOfMonth = repeat === 'monthly' ? Number(date.split('-')[2]) : undefined
+        try {
+          await addRecurringExpense(groupId, {
+            description: title.trim(),
+            amount,
+            currency: 'INR',
+            category,
+            paidBy: paidByUid,
+            splitType: splitMethod,
+            splits: finalSplits,
+            frequency: repeat,
+            ...(dayOfMonth ? { dayOfMonth } : {}),
+            nextRunDate: computeNextRunDate(date, repeat, dayOfMonth),
+            active: true,
+            createdBy: user?.uid ?? '',
+          })
+        } catch (recErr) {
+          // Expense itself saved fine — surface but don't block
+          console.error('[AddExpense] failed to create recurring template:', recErr)
+          Alert.alert('Heads up', 'Expense saved, but the repeat schedule could not be created.')
+        }
+      }
+
       haptics.expenseAdded()
       navigation.goBack()
     } catch (err) {
@@ -388,7 +460,7 @@ export function AddExpenseScreen({ route }: Props) {
             <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
               CATEGORY
             </Text>
-            <CategoryPicker selected={category} onSelect={setCategory} />
+            <CategoryPicker selected={category} onSelect={handleCategorySelect} />
           </View>
 
           {/* Paid By Selector */}
@@ -423,6 +495,29 @@ export function AddExpenseScreen({ route }: Props) {
               </View>
               <Text style={{ color: colors.textSecondary, fontSize: 16 }}>▾</Text>
             </Pressable>
+
+            {/* 7.3 Best-split hint — tap to apply */}
+            {payerSuggestion && payerSuggestion.suggestedPayerUid !== paidByUid && (
+              <Pressable
+                onPress={() => {
+                  Haptics.selectionAsync()
+                  setPaidByUid(payerSuggestion.suggestedPayerUid)
+                }}
+                style={{ marginTop: spacing.xs }}
+                accessibilityRole="button"
+                accessibilityLabel="Apply suggested payer"
+              >
+                <Text style={[text.body.sm, { color: colors.accentPrimary }]}>
+                  💡 {members.get(payerSuggestion.suggestedPayerUid)?.name ?? 'Someone else'}
+                  {"'"}s turn?
+                  {payerSuggestion.reason === 'streak' && payerSuggestion.streakPayerUid
+                    ? ` ${members.get(payerSuggestion.streakPayerUid)?.name ?? 'One person'} paid the last ${payerSuggestion.streakCount} times.`
+                    : payerSuggestion.reason === 'never_paid'
+                      ? " They haven't paid yet this trip."
+                      : ' They have paid the least so far.'}
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           {/* Participants selector */}
@@ -505,6 +600,52 @@ export function AddExpenseScreen({ route }: Props) {
                 style={{ flex: 1, color: colors.textPrimary, fontSize: 15, minHeight: 40 }}
               />
             </View>
+          </View>
+
+          {/* Repeat (recurring expense — rent, subscriptions) */}
+          <View style={{ marginTop: spacing.xl }}>
+            <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
+              REPEAT
+            </Text>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              {([
+                { key: 'none', label: 'None' },
+                { key: 'weekly', label: 'Weekly' },
+                { key: 'monthly', label: 'Monthly' },
+              ] as const).map((opt) => {
+                const isActive = repeat === opt.key
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => {
+                      Haptics.selectionAsync()
+                      setRepeat(opt.key)
+                    }}
+                    style={[
+                      styles.repeatChip,
+                      {
+                        backgroundColor: isActive ? `${colors.accentPrimary}20` : colors.bgSecondary,
+                        borderColor: isActive ? colors.accentPrimary : colors.border,
+                        borderRadius: radius.full,
+                        paddingHorizontal: spacing.md,
+                        paddingVertical: spacing.sm,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Repeat ${opt.label}`}
+                  >
+                    <Text style={[text.label.md, { color: isActive ? colors.accentPrimary : colors.textPrimary }]}>
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </View>
+            {repeat !== 'none' && (
+              <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.xs }]}>
+                🔁 {describeRecurrence(repeat, repeat === 'monthly' ? Number(date.split('-')[2]) : undefined)} — auto-added by apna
+              </Text>
+            )}
           </View>
 
           {/* Receipt attachment control */}
@@ -784,6 +925,9 @@ const styles = StyleSheet.create({
     height: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  repeatChip: {
+    borderWidth: 1,
   },
   sheetOptionRow: {
     flexDirection: 'row',

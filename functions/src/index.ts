@@ -14,6 +14,7 @@ import {
   writeExpenseCreatedActivity,
   writeExpenseDeletedActivity,
 } from './triggers/onExpenseWrite'
+import { resolvePrefs, allowsNotification } from './notifications/prefs'
 
 
 // =============================================================================
@@ -320,9 +321,11 @@ async function getGroupRecipientTokensForReminder(groupId: string): Promise<stri
   const memberIds = group?.memberIds ?? []
   if (memberIds.length === 0) return []
 
+  const istHour = new Date(Date.now() + 5.5 * 60 * 60 * 1000).getUTCHours()
   const userSnaps = await db.getAll(...memberIds.map((uid) => db.collection('users').doc(uid)))
   const tokens = userSnaps
-    .map((snap) => snap.data() as { fcmToken?: string } | undefined)
+    .map((snap) => snap.data() as { fcmToken?: string; notificationPrefs?: unknown } | undefined)
+    .filter((user) => allowsNotification(resolvePrefs(user?.notificationPrefs), 'ITINERARY_REMINDER', istHour))
     .map((user) => user?.fcmToken)
     .filter((token): token is string => Boolean(token))
 
@@ -358,7 +361,7 @@ export {
   captureReferralAttribution,
   processReferralQualification,
 } from './callable/referralCallables'
-export { generateTripRecap, updateRecapVisibility } from './callable/tripRecapCallables'
+export { generateTripRecap, updateRecapVisibility, refreshRecapPhotos } from './callable/tripRecapCallables'
 export { computeSettlements } from './computeSettlements'
 
 // ── Notification Triggers ──────────────────────────────────────────────────
@@ -369,9 +372,29 @@ export { onGroupBudgetUpdated } from './triggers/onGroupBudgetUpdated'
 export { onMemoryReaction } from './triggers/onMemoryReaction'
 export { onThisDay } from './triggers/onThisDay'
 
+// ── Recurring Expenses (roommate mode: rent, subscriptions) ────────────────
+export { generateRecurringExpenses } from './triggers/generateRecurringExpenses'
+
 // ── Contact Sync ───────────────────────────────────────────────────────────
 export { matchContactsByHash } from './callable/matchContactsByHash'
 export { backfillPhoneHashes } from './callable/backfillPhoneHashes'
+
+// ── Account Deletion (GDPR / Play Store requirement) ───────────────────────
+export { deleteAccount } from './callable/deleteAccount'
+
+// ── Hangout + Task Deadline Reminders (PRD §14) ─────────────────────────────
+export { sendHangoutReminders, sendTaskDeadlineReminders } from './triggers/sendEventReminders'
+
+// ── Year in Review (PRD §17) ────────────────────────────────────────────────
+export { generateYearInReview } from './triggers/generateYearInReview'
+
+// ── Phase 7 AI (zero-cost gateway: Gemini → Groq → rules) ───────────────────
+export {
+  categorizeExpense,
+  generateAiItinerary,
+  getDietarySuggestions,
+  generateWrapCaption,
+} from './callable/aiCallables'
 
 
 

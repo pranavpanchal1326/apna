@@ -1,7 +1,10 @@
 // src/screens/itinerary/ItineraryScreen.tsx
 // Root Screen for Itinerary — integrates DayTabBar, DayPlannerView, AddItemSheet.
 
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
+import * as Haptics from 'expo-haptics'
+import { draftItineraryWithAi } from '@lib/itinerary/aiDraft'
+import { useBufferWarnings } from '../../hooks/useBufferWarnings'
 import {
   ActivityIndicator,
   Alert,
@@ -225,6 +228,52 @@ export function ItineraryScreen({ route, navigation }: Props) {
     addSheetRef.current?.open(suggestion)
   }
 
+  // PRD §13 — buffer-time warnings for the active day's legs
+  const bufferWarnings = useBufferWarnings(activeDayItems)
+
+  // ── 7.4 AI itinerary draft — fills empty days with unconfirmed proposals ──
+  const [isAiDrafting, setIsAiDrafting] = useState(false)
+  const canAiDraft = Boolean(activeGroup?.destination) && dayPlans.length > 0
+
+  const handleAiDraft = useCallback(() => {
+    if (!groupId || !myUid || !activeGroup?.destination || isAiDrafting) return
+    Alert.alert(
+      'Draft with AI?',
+      `We'll sketch a ${dayPlans.length}-day plan for ${activeGroup.destination}. Everything is added as proposals your group can vote on or delete.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Draft it',
+          onPress: async () => {
+            setIsAiDrafting(true)
+            try {
+              const result = await draftItineraryWithAi({
+                groupId,
+                uid: myUid,
+                destination: activeGroup.destination!,
+                dayIds: dayPlans.map((d) => d.id),
+              })
+              if (result) {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+                Alert.alert(
+                  'Draft ready ✨',
+                  `Added ${result.itemsAdded} ideas across ${result.daysFilled} days — review and confirm the keepers.`
+                )
+              } else {
+                Alert.alert(
+                  'AI unavailable',
+                  'Could not generate a draft right now. Try again later — or build it stop by stop.'
+                )
+              }
+            } finally {
+              setIsAiDrafting(false)
+            }
+          },
+        },
+      ]
+    )
+  }, [groupId, myUid, activeGroup?.destination, dayPlans, isAiDrafting])
+
   return (
     <Screen style={styles.container}>
       {/* Day Selector Tab Bar */}
@@ -261,7 +310,10 @@ export function ItineraryScreen({ route, navigation }: Props) {
             onPressItem={handlePressItem}
             onSelectSuggestion={handleSelectSuggestion}
             onAddFirstStop={() => addSheetRef.current?.open()}
+            onAiDraft={canAiDraft ? handleAiDraft : undefined}
+            isAiDrafting={isAiDrafting}
             weatherDay={activeWeatherDay}
+            bufferWarnings={bufferWarnings}
           />
         ) : (
           <View style={styles.centered}>

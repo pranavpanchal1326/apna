@@ -1,7 +1,7 @@
 // src/lib/recap/sanitize.ts
 // Centralized privacy filtering — public recap must never leak private internals.
 
-import type { GroupInput } from '@lib/schemas'
+import { getMemoryThumbUrl, type GroupInput } from '@lib/schemas'
 import type {
   PublicRecap,
   RecapGenerationOptions,
@@ -101,7 +101,7 @@ export function buildSanitizedPublicRecap(params: {
   )
 
   const topPhotos = topMemories
-    .map((m) => m.photoThumb || m.photoUrl)
+    .map((m) => getMemoryThumbUrl(m))
     .filter((url): url is string => Boolean(url))
     .slice(0, 6)
 

@@ -15,6 +15,9 @@ GoogleService-Info.plist
 *.keystore
 *.jks
 
+# ── Play Store submit credentials (EAS submit) ────────────────────────────
+play-store-service-account.json
+
 # ── Native build directories (managed workflow — not committed) ───────────
 /android
 /ios
@@ -53,3 +56,9 @@ firebase-debug.log
 # ── Test coverage ─────────────────────────────────────────────────────────
 coverage/
 
+
+# ── Debug screenshots / device logs (local scratch, not source) ───────────
+logcat*.txt
+screen*.png
+sc_*.png
+emulator_screen_loaded.png

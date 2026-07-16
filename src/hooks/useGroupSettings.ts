@@ -8,6 +8,8 @@ import { useAuth } from '@hooks/useAuth'
 import {
   updateGroupMeta,
   transferPrimaryAdmin,
+  demoteAdmin,
+  setMemberNickname,
   removeMemberFromGroup,
   leaveGroupSafely,
   regenerateInviteForGroup,
@@ -39,6 +41,20 @@ export function useGroupSettings(groupId: string) {
   const onTransferAdmin = useCallback(
     async (targetUid: string) => {
       return transferPrimaryAdmin({ groupId, actorUid: myUid, targetUid })
+    },
+    [groupId, myUid]
+  )
+
+  const onDemoteAdmin = useCallback(
+    async (targetUid: string) => {
+      return demoteAdmin({ groupId, actorUid: myUid, targetUid })
+    },
+    [groupId, myUid]
+  )
+
+  const onSetNickname = useCallback(
+    async (targetUid: string, nickname: string) => {
+      return setMemberNickname({ groupId, actorUid: myUid, targetUid, nickname })
     },
     [groupId, myUid]
   )
@@ -78,6 +94,8 @@ export function useGroupSettings(groupId: string) {
     inviteCode,
     onUpdateMeta,
     onTransferAdmin,
+    onDemoteAdmin,
+    onSetNickname,
     onRemoveMember,
     onLeaveGroup,
     onRegenerateInvite,

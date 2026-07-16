@@ -13,6 +13,7 @@
 import {
   ConfigPlugin,
   withAppBuildGradle,
+  withProjectBuildGradle,
   withAndroidManifest,
   withMainApplication,
   withDangerousMod,
@@ -223,6 +224,71 @@ const withWidgetPackage: ConfigPlugin = (config) =>
     return mod
   })
 
+// ── Step 6: Add Mapbox Maven repository and configure ffmpeg-kit dependency substitution ──────────────────
+const withCustomRepositories: ConfigPlugin = (config) =>
+  withProjectBuildGradle(config, (mod) => {
+    const gradle = mod.modResults.contents
+    const mapboxRepo = `        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = "mapbox"
+                password = project.findProperty("MAPBOX_DOWNLOADS_TOKEN") ?: System.getenv("MAPBOX_DOWNLOADS_TOKEN") ?: System.getenv("MAPBOX_ACCESS_TOKEN") ?: ""
+            }
+        }`
+
+    const substitutionBlock = `
+subprojects {
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute module("com.arthenica:ffmpeg-kit-https") using module("com.moizhassan.ffmpeg:ffmpeg-kit-16kb:6.1.1")
+            }
+        }
+    }
+    def configureCmake = { proj ->
+        if (proj.hasProperty('android')) {
+            try {
+                proj.android.defaultConfig.externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
+            } catch (Exception e) {
+                // Ignore projects that do not use CMake
+            }
+        }
+    }
+    if (project.state.executed) {
+        configureCmake(project)
+    } else {
+        project.afterEvaluate {
+            configureCmake(project)
+        }
+    }
+}
+`
+
+    let updated = gradle
+    
+    // Remove maven.arthenica.com repository if present
+    if (updated.includes('maven.arthenica.com')) {
+      updated = updated.replace(/maven\s*\{\s*url\s*['"]https:\/\/maven\.arthenica\.com\/public\/['"]\s*\}/g, '')
+    }
+
+    if (!gradle.includes('api.mapbox.com')) {
+      updated = updated.replace(
+        /allprojects\s*\{\s*repositories\s*\{/,
+        `allprojects {\n    repositories {\n${mapboxRepo}`
+      )
+    }
+
+    if (!updated.includes('dependencySubstitution')) {
+      updated = updated + substitutionBlock
+    }
+
+    mod.modResults.contents = updated
+    return mod
+  })
+
 // ── Compose all sub-plugins ────────────────────────────────────────────
 
 const withApnaWidgets: ConfigPlugin = (config) => {
@@ -231,6 +297,7 @@ const withApnaWidgets: ConfigPlugin = (config) => {
   config = withXmlResources(config)
   config = withWidgetManifest(config)
   config = withWidgetPackage(config)
+  config = withCustomRepositories(config)
   return config
 }
 

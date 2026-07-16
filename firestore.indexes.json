@@ -131,6 +131,30 @@
       ]
     },
     {
+      "collectionGroup": "hangouts",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduledDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "deadlineDate", "order": "ASCENDING" },
+        { "fieldPath": "checked", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recurringExpenses",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "nextRunDate", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "referralAttributions",
       "queryScope": "COLLECTION",
       "fields": [

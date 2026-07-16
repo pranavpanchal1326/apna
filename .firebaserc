@@ -1,6 +1,5 @@
 {
   "projects": {
-    "default": "REPLACE_WITH_YOUR_PROD_PROJECT_ID",
-    "staging": "REPLACE_WITH_YOUR_STAGING_PROJECT_ID"
+    "default": "apna-app"
   }
 }

@@ -166,7 +166,7 @@ async function seed() {
     groupId:   GROUP_IDS.goa,
     createdBy: 'uid_arjun',
     createdAt: admin.firestore.Timestamp.now(),
-    expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 72 * 60 * 60 * 1000)),
+    expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)), // 30-day TTL (PRD §15)
     maxUses:   20,
     useCount:  3,
   })

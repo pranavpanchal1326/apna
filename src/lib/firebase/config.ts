@@ -92,7 +92,7 @@ export const functions = getFunctions(app, 'asia-south1')
 //
 // Switch to production: set appEnv: "production" in app.json extra
 // ---------------------------------------------------------------------------
-const IS_DEV = (extra.appEnv as string) === 'development'
+const IS_DEV = (extra.appEnv as string) === 'development' || __DEV__
 
 if (IS_DEV) {
   const {

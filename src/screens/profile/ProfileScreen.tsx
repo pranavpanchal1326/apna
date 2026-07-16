@@ -1,6 +1,12 @@
 // src/screens/profile/ProfileScreen.tsx
-import { useCallback } from 'react'
-import { View, Text, StyleSheet, Alert } from 'react-native'
+import { useCallback, useState } from 'react'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { ProfileStackParamList } from '@navigation/types'
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native'
+import { updateDoc, deleteField } from 'firebase/firestore'
+import { userDoc } from '@lib/firebase/collections'
+import { isValidUpiId } from '@lib/utils/upi'
 import * as Haptics from 'expo-haptics'
 import { Screen, Avatar, Button } from '@components'
 import { useTheme } from '@theme'
@@ -11,12 +17,84 @@ import { SettingsRow } from '@components/group'
 import { useHaptics } from '@hooks/useHaptics'
 
 import { removePushToken } from '@lib/notifications'
+import { deleteAccount } from '@lib/firebase/accountDeletion'
 import { ReferralDashboard } from '@components/referral'
 
 export function ProfileScreen() {
   const { colors, text, spacing, radius } = useTheme()
   const { user, logout, isLoading } = useAuth()
   const { isEnabled, setEnabled, hasHaptics } = useHaptics()
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>()
+
+  // Payment preferences — UPI ID for one-tap settle up
+  const [upiIdInput, setUpiIdInput] = useState(user?.upiId ?? '')
+  const [isSavingUpi, setIsSavingUpi] = useState(false)
+  const upiDirty = upiIdInput.trim() !== (user?.upiId ?? '')
+
+  const handleSaveUpiId = useCallback(async () => {
+    if (!user?.uid) return
+    const trimmed = upiIdInput.trim()
+    if (trimmed && !isValidUpiId(trimmed)) {
+      Alert.alert('Invalid UPI ID', 'Enter it like name@bank, e.g. riya@okhdfcbank')
+      return
+    }
+    setIsSavingUpi(true)
+    try {
+      await updateDoc(userDoc(user.uid), { upiId: trimmed || deleteField() } as never)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      track('upi_id_updated')
+    } catch {
+      Alert.alert('Error', 'Could not save your UPI ID. Please try again.')
+    } finally {
+      setIsSavingUpi(false)
+    }
+  }, [user?.uid, upiIdInput])
+
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(
+      'Delete account?',
+      'This permanently deletes your account, removes you from all groups, and deletes the memories you posted. Expenses stay visible to your groups as "Deleted User". This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            // Second confirmation — deletion is irreversible.
+            Alert.alert(
+              'Are you absolutely sure?',
+              'Your phone number, profile, and photos will be permanently erased.',
+              [
+                { text: 'Keep my account', style: 'cancel' },
+                {
+                  text: 'Delete forever',
+                  style: 'destructive',
+                  onPress: async () => {
+                    setIsDeleting(true)
+                    try {
+                      track('account_deletion_started')
+                      await deleteAccount()
+                      clearSentryUser()
+                      resetAnalyticsUser()
+                      await logout()
+                    } catch {
+                      setIsDeleting(false)
+                      Alert.alert(
+                        'Deletion failed',
+                        'Something went wrong. Please check your connection and try again.'
+                      )
+                    }
+                  },
+                },
+              ]
+            )
+          },
+        },
+      ]
+    )
+  }, [logout])
 
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -65,19 +143,77 @@ export function ProfileScreen() {
       <ReferralDashboard />
 
       {/* Preferences Section */}
-      {hasHaptics && (
-        <View style={{ marginBottom: spacing.xl }}>
-          <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
-            PREFERENCES
-          </Text>
+      <View style={{ marginBottom: spacing.xl }}>
+        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
+          PREFERENCES
+        </Text>
+        {hasHaptics && (
           <SettingsRow
             label="Haptic feedback"
             value={isEnabled}
             onToggle={setEnabled}
             description="Feel physical feedback on key actions"
           />
+        )}
+        <SettingsRow
+          label="Notifications"
+          description="Per-type alerts and silent hours"
+          onPress={() => navigation.navigate('NotificationSettings')}
+        />
+      </View>
+
+      {/* Payments Section — UPI ID for one-tap settle up */}
+      <View style={{ marginBottom: spacing.xl }}>
+        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
+          PAYMENTS
+        </Text>
+        <View
+          style={[
+            styles.infoCard,
+            {
+              backgroundColor: colors.bgSecondary,
+              borderRadius: radius.lg,
+              borderColor: colors.border,
+              padding: spacing.lg,
+            },
+          ]}
+        >
+          <Text style={[text.body.sm, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
+            UPI ID — friends can pay you in one tap when settling up
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <TextInput
+              value={upiIdInput}
+              onChangeText={setUpiIdInput}
+              placeholder="e.g. yourname@okhdfcbank"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              style={{
+                flex: 1,
+                color: colors.textPrimary,
+                backgroundColor: colors.bgTertiary,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: radius.md,
+                padding: spacing.md,
+                fontSize: 15,
+              }}
+              accessibilityLabel="Your UPI ID"
+            />
+            {upiDirty && (
+              <Button
+                variant="primary"
+                size="sm"
+                label={isSavingUpi ? '…' : 'Save'}
+                onPress={handleSaveUpiId}
+                disabled={isSavingUpi}
+              />
+            )}
+          </View>
         </View>
-      )}
+      </View>
 
       {/* Version info */}
       <View
@@ -110,6 +246,26 @@ export function ProfileScreen() {
         loading={isLoading}
         onPress={handleLogout}
       />
+
+      {/* Danger zone — permanent account deletion (GDPR / Play Store) */}
+      <View style={{ marginTop: spacing.xl, marginBottom: spacing.xl }}>
+        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
+          DANGER ZONE
+        </Text>
+        <Text style={[text.body.sm, { color: colors.textMuted, marginBottom: spacing.md }]}>
+          Permanently delete your account, photos, and personal data. Group expenses you were part
+          of stay visible to others as “Deleted User”.
+        </Text>
+        <Button
+          variant="secondary"
+          size="md"
+          label={isDeleting ? 'Deleting…' : 'Delete my account'}
+          fullWidth
+          disabled={isDeleting}
+          loading={isDeleting}
+          onPress={handleDeleteAccount}
+        />
+      </View>
     </Screen>
   )
 }

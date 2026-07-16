@@ -4,7 +4,7 @@
 // and the EmptyDayState for empty days.
 
 import { useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
@@ -17,6 +17,7 @@ import { SuggestionsCarousel } from './SuggestionsCarousel'
 import { EmptyDayState } from './EmptyDayState'
 import type { ItineraryItem, SmartSuggestion } from '../../lib/schemas'
 import type { WeatherDay } from '../../lib/types/weather.types'
+import type { BufferWarning } from '../../lib/itinerary/travelTime'
 
 interface DayPlannerViewProps {
   groupId:      string
@@ -30,7 +31,11 @@ interface DayPlannerViewProps {
   onPressItem:  (item: ItineraryItem) => void
   onSelectSuggestion: (suggestion: SmartSuggestion) => void
   onAddFirstStop: () => void
+  onAiDraft?:    () => void
+  isAiDrafting?: boolean
   weatherDay?: WeatherDay
+  /** PRD §13 — itemId → travel-time warning for the leg INTO that item. */
+  bufferWarnings?: Record<string, BufferWarning>
 }
 
 export function DayPlannerView({
@@ -45,9 +50,12 @@ export function DayPlannerView({
   onPressItem,
   onSelectSuggestion,
   onAddFirstStop,
+  onAiDraft,
+  isAiDrafting,
   weatherDay,
+  bufferWarnings,
 }: DayPlannerViewProps) {
-  const { spacing } = useTheme()
+  const { spacing, colors, text, radius } = useTheme()
   const [contentHeight, setContentHeight] = useState(0)
 
   const handleDragStart = () => {
@@ -61,8 +69,32 @@ export function DayPlannerView({
   }
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<ItineraryItem>) => {
+    const warning = bufferWarnings?.[item.id]
     return (
       <ScaleDecorator>
+        {/* Buffer-time warning for the drive INTO this stop (PRD §13) */}
+        {warning && !isActive && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              alignSelf: 'center',
+              backgroundColor: `${colors.accentGold}18`,
+              borderColor: colors.accentGold,
+              borderWidth: 1,
+              borderRadius: radius.full,
+              paddingHorizontal: spacing.md,
+              paddingVertical: 4,
+              marginVertical: spacing.xs,
+            }}
+            accessibilityRole="alert"
+            accessibilityLabel={`Tight timing: ${warning.gapMinutes} minute gap but about ${warning.driveMinutes} minutes of driving`}
+          >
+            <Text style={[text.label.sm, { color: colors.accentGold }]}>
+              ⚠️ {warning.gapMinutes} min gap — ~{warning.driveMinutes} min drive
+            </Text>
+          </View>
+        )}
         <ItineraryItemCard
           item={item}
           drag={drag}
@@ -107,6 +139,8 @@ export function DayPlannerView({
           <EmptyDayState
             dayNumber={dayNumber}
             onAdd={onAddFirstStop}
+            onAiDraft={onAiDraft}
+            isAiDrafting={isAiDrafting}
           />
         }
         ListFooterComponent={

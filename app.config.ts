@@ -6,6 +6,7 @@ const config: any = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',     // Default dark — matches PRD §7
+  newArchEnabled: false,          // Disable New Architecture for stable Windows compile
   splash: {
     backgroundColor: '#080C14',   // DarkColors.bgPrimary — no flash
     resizeMode: 'contain',
@@ -65,8 +66,9 @@ const config: any = {
       {
         android: {
           minSdkVersion: 26,      // Android 8.0 — 99%+ of 2026 Indian devices
-          targetSdkVersion: 35,   // Android 15
-          compileSdkVersion: 35,
+          targetSdkVersion: 36,   // Android 16
+          compileSdkVersion: 36,
+          newArchEnabled: false,
         },
       },
     ],
@@ -116,6 +118,7 @@ const config: any = {
     firebaseStorageBucket:    process.env.FIREBASE_STORAGE_BUCKET,
     firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     firebaseAppId:            process.env.FIREBASE_APP_ID,
+    firebaseDatabaseUrl:      process.env.FIREBASE_DATABASE_URL,
 
     // Observability
     sentryDsn:  process.env.SENTRY_DSN,

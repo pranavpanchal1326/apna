@@ -40,6 +40,10 @@ import {
 // 6 chars, uppercase alphanumeric, excluding ambiguous chars (0, O, I, 1)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
+// Invite codes expire 30 days after generation (PRD §15).
+// Enforced in firestore.rules via invites/{code}.expiresAt > request.time.
+export const INVITE_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
 export function generateInviteCode(): string {
   let code = ''
   for (let i = 0; i < 6; i++) {
@@ -140,7 +144,7 @@ export async function createGroup(
     createdBy: creatorUid,
     createdAt: serverTimestamp(),
     expiresAt: Timestamp.fromDate(
-      new Date(Date.now() + 72 * 60 * 60 * 1000)   // 72-hour TTL
+      new Date(Date.now() + INVITE_TTL_MS)   // 30-day TTL (PRD §15)
     ),
     maxUses:  50,
     useCount: 0,
@@ -325,7 +329,7 @@ export async function regenerateInviteCode(
     groupId,
     createdBy: adminUid,
     createdAt: serverTimestamp(),
-    expiresAt: Timestamp.fromDate(new Date(Date.now() + 72 * 60 * 60 * 1000)),
+    expiresAt: Timestamp.fromDate(new Date(Date.now() + INVITE_TTL_MS)),
     maxUses:   50,
     useCount:  0,
   })

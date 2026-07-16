@@ -30,6 +30,11 @@ const updateRecapVisibilityFn = httpsCallable<
   { success: boolean }
 >(functions, 'updateRecapVisibility')
 
+const refreshRecapPhotosFn = httpsCallable<
+  { shareSlug: string },
+  { topPhotos: string[]; coverPhotoUrl?: string }
+>(functions, 'refreshRecapPhotos')
+
 export async function generateTripRecap(
   groupId: string,
   options?: RecapGenerationOptions,
@@ -63,9 +68,32 @@ export async function fetchPublicRecapBySlug(
 ): Promise<PublicRecap | null> {
   const snap = await getDoc(publicRecapDoc(shareSlug))
   if (!snap.exists()) return null
-  const recap = snap.data() as PublicRecap
+  let recap = snap.data() as PublicRecap
 
   if (recap.visibility === 'private') return null
+
+  // PRD §23 — photo URLs are signed with a 24h expiry. Refresh when stale
+  // (or within the last hour) so shared links keep rendering photos.
+  const expiresAtMillis = (
+    recap.photoUrlsExpireAt as { toMillis?: () => number } | undefined
+  )?.toMillis?.()
+  if (
+    recap.topPhotoPaths?.length &&
+    expiresAtMillis !== undefined &&
+    expiresAtMillis - Date.now() < 60 * 60 * 1000
+  ) {
+    try {
+      const result = await refreshRecapPhotosFn({ shareSlug })
+      recap = {
+        ...recap,
+        topPhotos: result.data.topPhotos,
+        coverPhotoUrl: result.data.coverPhotoUrl ?? recap.coverPhotoUrl,
+      }
+    } catch {
+      // Stale URLs may still render (grace on GCS side is none, but the doc
+      // read must not fail because re-signing did)
+    }
+  }
 
   track('trip_recap_public_viewed', {
     share_slug: shareSlug,

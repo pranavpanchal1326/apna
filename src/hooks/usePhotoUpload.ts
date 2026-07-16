@@ -9,7 +9,7 @@ import {
   UploadPhotoResult,
 } from '../lib/firebase/storage'
 import { captureError } from '../lib/sentry'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase/config'
 
 export interface PhotoUploadState {
@@ -79,10 +79,32 @@ export function usePhotoUpload(): UsePhotoUploadResult {
         // Success: Patch Firestore document
         if (item.context === 'memory' && item.memoryId) {
           const docRef = doc(db, `groups/${item.groupId}/memories`, item.memoryId)
-          await updateDoc(docRef, {
-            photoUrl: result.downloadUrl,
-            uploadPending: false,
-          })
+
+          if (item.photoIndex != null) {
+            // Multi-photo post: fill in the pending slot in photos[]
+            const snap = await getDoc(docRef)
+            const data = snap.data() as
+              | { photos?: { url: string; thumb?: string }[]; photoUrl?: string }
+              | undefined
+            const photos = [...(data?.photos ?? [])]
+            if (photos[item.photoIndex]) {
+              photos[item.photoIndex] = { ...photos[item.photoIndex], url: result.downloadUrl }
+            }
+            const stillPending = photos.some((p) => p.url === '')
+            const firstUploaded = photos.find((p) => p.url !== '')
+            await updateDoc(docRef, {
+              photos,
+              uploadPending: stillPending,
+              // Keep legacy cover field in sync for old readers
+              ...(firstUploaded && !data?.photoUrl ? { photoUrl: firstUploaded.url } : {}),
+            })
+          } else {
+            // Legacy single-photo doc
+            await updateDoc(docRef, {
+              photoUrl: result.downloadUrl,
+              uploadPending: false,
+            })
+          }
         } else if (item.context === 'receipt' && item.expenseId) {
           const docRef = doc(db, `groups/${item.groupId}/expenses`, item.expenseId)
           await updateDoc(docRef, {
@@ -180,17 +202,16 @@ export function usePhotoUpload(): UsePhotoUploadResult {
 
           captureError(err as Error, { source: 'usePhotoUpload.uploadPhotos', localUri })
 
-          // On network failure or similar, enqueue offline
-          // We can construct the document sub-ID for memory context
-          const docIdForQueue = context === 'memory' ? `${referenceId}_${i}` : referenceId
-
+          // On network failure or similar, enqueue offline.
+          // Memory posts are a single doc; photoIndex targets the photos[] slot.
           uploadQueue.add({
             groupId,
-            userId: referenceId, // Or actual auth user id? Let's check: queue expects userId.
+            userId: referenceId,
             localUri,
             destinationPath: storagePath,
             context,
-            memoryId: context === 'memory' ? docIdForQueue : undefined,
+            memoryId: context === 'memory' ? referenceId : undefined,
+            photoIndex: context === 'memory' ? i : undefined,
             expenseId: context === 'receipt' ? referenceId : undefined,
           })
 

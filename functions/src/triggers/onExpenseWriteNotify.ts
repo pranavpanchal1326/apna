@@ -46,7 +46,7 @@ export const onExpenseWriteNotify = onDocumentWritten(
           amount: afterData.amount || 0,
         })
 
-        const tokens = await getGroupRecipientTokens(groupId, [paidByUid])
+        const tokens = await getGroupRecipientTokens(groupId, [paidByUid], message.data.type)
         if (tokens.length > 0) {
           await sendPushToTokens({
             tokens,
@@ -82,7 +82,7 @@ export const onExpenseWriteNotify = onDocumentWritten(
           amount: afterData.amount || 0,
         })
 
-        const tokens = await getGroupRecipientTokens(groupId, [paidByUid])
+        const tokens = await getGroupRecipientTokens(groupId, [paidByUid], message.data.type)
         if (tokens.length > 0) {
           await sendPushToTokens({
             tokens,

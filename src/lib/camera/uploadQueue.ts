@@ -8,6 +8,7 @@ export interface QueuedPhoto {
   destinationPath: string // Firebase Storage path
   context: 'memory' | 'receipt' | 'cover'
   memoryId?: string       // for memory context
+  photoIndex?: number     // index in the memory's photos[] array (multi-photo posts)
   expenseId?: string      // for receipt context
   queuedAt: number        // unix ms
   attempts: number

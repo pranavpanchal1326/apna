@@ -11,9 +11,12 @@ import { Button } from '../../components'
 interface EmptyDayStateProps {
   dayNumber: number
   onAdd:     () => void
+  /** Optional — shown only when the whole-trip AI draft is available. */
+  onAiDraft?: () => void
+  isAiDrafting?: boolean
 }
 
-export function EmptyDayState({ dayNumber, onAdd }: EmptyDayStateProps) {
+export function EmptyDayState({ dayNumber, onAdd, onAiDraft, isAiDrafting = false }: EmptyDayStateProps) {
   const { colors, text, spacing } = useTheme()
   const floatAnim = useRef(new Animated.Value(0)).current
   const fadeAnim  = useRef(new Animated.Value(0)).current
@@ -99,6 +102,18 @@ export function EmptyDayState({ dayNumber, onAdd }: EmptyDayStateProps) {
         onPress={onAdd}
         leftIcon="plus"
       />
+
+      {onAiDraft && (
+        <Animated.View style={{ marginTop: spacing.md, opacity: fadeAnim }}>
+          <Button
+            variant="secondary"
+            label={isAiDrafting ? 'Drafting your trip…' : '✨ Draft my trip with AI'}
+            onPress={onAiDraft}
+            disabled={isAiDrafting}
+            loading={isAiDrafting}
+          />
+        </Animated.View>
+      )}
     </Animated.View>
   )
 }

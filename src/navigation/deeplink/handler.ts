@@ -114,6 +114,9 @@ export function handleDeepLink(
 ): void {
   if (!url) return
 
+  // Ignore Expo Dev Client bootstrap URLs — they are not user deep links
+  if (url.includes('expo-development-client') || url.includes('expo-go')) return
+
   const parsed = parseDeepLink(url)
   if (!parsed) return
 
@@ -315,7 +318,11 @@ async function routeParsedLink(
   } catch (err: any) {
     const userFacing = handleDeepLinkError(err)
     useUIStore.getState().showToast({ message: userFacing.message, type: 'error' })
-    navigationRef.navigate('Main', undefined as any)
+    // Only navigate to Main if it is actually mounted (user is authenticated)
+    const currentAuth = useAuthStore.getState()
+    if (currentAuth.user && navigationRef.isReady()) {
+      navigationRef.navigate('Main', undefined as any)
+    }
 
     trackDeepLinkFailed(resolved.type as any, resolved.screen, userFacing.type, urlSource)
     captureError(err, { source: 'routeParsedLink', url: resolved.screen, type: resolved.type })

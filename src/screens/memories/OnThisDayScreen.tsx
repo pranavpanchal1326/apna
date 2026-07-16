@@ -21,7 +21,7 @@ import { useGroupStore } from '../../stores/group.store'
 import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { Header, Avatar } from '@components'
 import type { MemoriesStackParamList } from '../../navigation/types'
-import type { MemoryInput } from '../../lib/schemas/memory.schema'
+import { getMemoryCoverUrl, type MemoryInput } from '../../lib/schemas/memory.schema'
 
 type Nav = NativeStackNavigationProp<MemoriesStackParamList>
 type Route = RouteProp<MemoriesStackParamList, 'OnThisDay'>
@@ -128,7 +128,7 @@ export function OnThisDayScreen() {
         </View>
 
         {/* Memory Photo */}
-        <Image source={{ uri: item.photoUrl }} style={[styles.photo, { borderRadius: radius.lg, marginTop: spacing.sm }]} />
+        <Image source={{ uri: getMemoryCoverUrl(item) }} style={[styles.photo, { borderRadius: radius.lg, marginTop: spacing.sm }]} />
 
         {/* Location / Caption */}
         {item.location?.name && (

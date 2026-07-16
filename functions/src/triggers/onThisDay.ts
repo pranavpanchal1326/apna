@@ -60,7 +60,7 @@ export const onThisDay = onSchedule(
           const groupName = groupSnap.data()?.name ?? 'apna trip'
 
           // Get all recipient tokens in the group
-          const tokens = await getGroupRecipientTokens(groupId)
+          const tokens = await getGroupRecipientTokens(groupId, undefined, 'on_this_day')
           if (tokens.length === 0) {
             console.info(`[OnThisDay] No FCM tokens found for group=${groupId}`)
             continue

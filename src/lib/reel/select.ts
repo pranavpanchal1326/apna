@@ -1,7 +1,7 @@
 // src/lib/reel/select.ts
 // Deterministic reel selection — reacted memories, day diversity, visual spread.
 
-import type { MemoryInput } from '@lib/schemas'
+import { memoryHasPhoto, getMemoryThumbUrl, type MemoryInput } from '@lib/schemas'
 import type { GroupInput } from '@lib/schemas'
 import { getTripDayNumber } from '@lib/utils/tripWrapData'
 import { getReelTiming } from './config'
@@ -11,7 +11,7 @@ function scoreMemory(memory: MemoryInput): number {
   let score = 0
   if (memory.reactions) score += Object.keys(memory.reactions).length * 2
   if (memory.caption?.trim()) score += 2
-  if (memory.photoUrl || memory.photoThumb) score += 5
+  if (memoryHasPhoto(memory)) score += 5
   return score
 }
 
@@ -34,7 +34,7 @@ export function selectReelMemories(
   _startDate: string | undefined,
   maxClips: number,
 ): MemoryInput[] {
-  const withPhotos = memories.filter((m) => m.photoUrl || m.photoThumb)
+  const withPhotos = memories.filter(memoryHasPhoto)
   if (withPhotos.length === 0) return []
 
   const scored = withPhotos.map((m) => ({ memory: m, score: scoreMemory(m) }))
@@ -95,7 +95,7 @@ export function buildReelPlan(params: {
     return {
       id: `memory-${memory.id}`,
       type: 'memory',
-      remoteUrl: memory.photoThumb || memory.photoUrl,
+      remoteUrl: getMemoryThumbUrl(memory),
       durationMs: clipDurationFromCaption(caption, timing),
       day,
       caption,

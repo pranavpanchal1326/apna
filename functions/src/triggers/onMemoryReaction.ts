@@ -2,6 +2,7 @@
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import * as admin from 'firebase-admin'
 import { sendPushToTokens } from '../notifications/send'
+import { resolvePrefs, allowsNotification } from '../notifications/prefs'
 
 const db = admin.firestore()
 
@@ -45,13 +46,8 @@ export const onMemoryReaction = onDocumentUpdated(
     }
 
     try {
-      // 2. Enforce Quiet Hours (11 PM - 8 AM IST)
-      const dateStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-      const istHour = new Date(dateStr).getHours()
-      if (istHour >= 23 || istHour < 8) {
-        console.info(`[Notify] Quiet hours (11pm-8am IST) active (istHour=${istHour}). Skipping push notification.`)
-        return
-      }
+      // 2. Quiet hours are enforced per-user via notificationPrefs below
+      //    (default window 11pm–8am IST, user-configurable).
 
       // 3. Fetch reactor user details
       const reactorSnap = await db.collection('users').doc(reactorUid).get()
@@ -61,11 +57,13 @@ export const onMemoryReaction = onDocumentUpdated(
       const groupSnap = await db.collection('groups').doc(groupId).get()
       const groupName = groupSnap.data()?.name ?? 'apna trip'
 
-      // 5. Fetch photographer's token
+      // 5. Fetch photographer's token — honoring their notification prefs
       const photographerSnap = await db.collection('users').doc(photographerUid).get()
       const photographerToken = photographerSnap.data()?.fcmToken as string | undefined
+      const prefs = resolvePrefs(photographerSnap.data()?.notificationPrefs)
+      const istHour = new Date(Date.now() + 5.5 * 60 * 60 * 1000).getUTCHours()
 
-      if (photographerToken) {
+      if (photographerToken && allowsNotification(prefs, 'memory_reaction', istHour)) {
         await sendPushToTokens({
           tokens: [photographerToken],
           title: groupName,

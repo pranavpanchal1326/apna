@@ -1,5 +1,6 @@
 // src/lib/utils/tripWrapData.ts
 import { createMMKV } from 'react-native-mmkv'
+import { memoryHasPhoto, getMemoryCoverUrl } from '../schemas'
 import type { GroupInput, UserInput, ExpenseInput, MemoryInput, ItineraryItem } from '../schemas'
 import { calculateNetBalances, calculateSettlements } from './settlement'
 
@@ -109,7 +110,7 @@ export function selectTopTripMemories(memories: MemoryInput[]): MemoryInput[] {
     if (m.caption && m.caption.trim().length > 0) {
       score += 2
     }
-    if (m.photoUrl) {
+    if (memoryHasPhoto(m)) {
       score += 5
     }
     return { memory: m, score }
@@ -164,7 +165,7 @@ export function selectTopTripMemories(memories: MemoryInput[]): MemoryInput[] {
  * Prepares the memory reel clips ordered chronologically (up to 10 clips).
  */
 export function buildTripReelPlan(memories: MemoryInput[], startDate?: string): TripWrapClip[] {
-  const photoMemories = memories.filter((m) => m.photoUrl)
+  const photoMemories = memories.filter(memoryHasPhoto)
 
   const scored = photoMemories.map((m) => {
     let score = 0
@@ -186,7 +187,7 @@ export function buildTripReelPlan(memories: MemoryInput[], startDate?: string): 
 
     return {
       memoryId: m.id,
-      photoUrl: m.photoUrl!,
+      photoUrl: getMemoryCoverUrl(m)!,
       caption: m.caption,
       durationMs,
       day,

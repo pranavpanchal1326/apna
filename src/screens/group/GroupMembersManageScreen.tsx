@@ -1,8 +1,8 @@
-import { useCallback, useMemo } from 'react'
-import { View, Text, FlatList, StyleSheet, Alert, Pressable } from 'react-native'
+import { useCallback, useMemo, useState } from 'react'
+import { View, Text, FlatList, StyleSheet, Alert, Pressable, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
-import { Screen, Header } from '@components'
+import { Screen, Header, Button } from '@components'
 import { MemberRoleRow } from '@components/group/MemberRoleRow'
 import { useGroupSettings } from '@hooks/useGroupSettings'
 import { useAuth } from '@hooks/useAuth'
@@ -12,7 +12,7 @@ type Props = HomeStackScreenProps<'GroupMembersManage'>
 
 export function GroupMembersManageScreen({ route, navigation }: Props) {
   const { groupId } = route.params
-  const { colors, spacing, text } = useTheme()
+  const { colors, spacing, text, radius } = useTheme()
   const { user } = useAuth()
   const myUid = user?.uid ?? ''
 
@@ -21,11 +21,66 @@ export function GroupMembersManageScreen({ route, navigation }: Props) {
     members,
     isAdmin: viewerIsAdmin,
     onTransferAdmin,
+    onDemoteAdmin,
+    onSetNickname,
     onRemoveMember,
   } = useGroupSettings(groupId)
 
   const adminIds = useMemo(() => group?.adminIds ?? [], [group?.adminIds])
   const creatorUid = group?.createdBy ?? ''
+  const viewerIsCreator = creatorUid === myUid
+
+  // Nickname editor modal state
+  const [nicknameTarget, setNicknameTarget] = useState<{ uid: string; name: string } | null>(null)
+  const [nicknameInput, setNicknameInput] = useState('')
+  const [isSavingNickname, setIsSavingNickname] = useState(false)
+
+  const openNicknameEditor = useCallback(
+    (targetUid: string, targetName: string) => {
+      setNicknameInput(group?.nicknames?.[targetUid] ?? '')
+      setNicknameTarget({ uid: targetUid, name: targetName })
+    },
+    [group?.nicknames]
+  )
+
+  const handleSaveNickname = useCallback(async () => {
+    if (!nicknameTarget) return
+    setIsSavingNickname(true)
+    try {
+      await onSetNickname(nicknameTarget.uid, nicknameInput)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      setNicknameTarget(null)
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to save nickname.')
+    } finally {
+      setIsSavingNickname(false)
+    }
+  }, [nicknameTarget, nicknameInput, onSetNickname])
+
+  const handleDemote = useCallback(
+    async (targetUid: string, targetName: string) => {
+      Alert.alert(
+        'Remove admin access?',
+        `${targetName} will become a regular member.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Remove Admin',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await onDemoteAdmin(targetUid)
+                Alert.alert('Done', `${targetName} is no longer an admin.`)
+              } catch (err: any) {
+                Alert.alert('Error', err.message ?? 'Failed to remove admin access.')
+              }
+            },
+          },
+        ]
+      )
+    },
+    [onDemoteAdmin]
+  )
 
   const handleTransfer = useCallback(
     async (targetUid: string, targetName: string) => {
@@ -128,6 +183,7 @@ export function GroupMembersManageScreen({ route, navigation }: Props) {
             <MemberRoleRow
               uid={memberUid}
               name={member.name}
+              nickname={group.nicknames?.[memberUid]}
               phone={member.phone}
               avatarColor={member.avatarColor}
               photoURL={member.photoUrl}
@@ -135,16 +191,99 @@ export function GroupMembersManageScreen({ route, navigation }: Props) {
               isSelf={memberUid === myUid}
               isCreator={isCreator}
               canManage={viewerIsAdmin}
+              canDemote={viewerIsCreator}
               onTransferAdmin={() => handleTransfer(memberUid, member.name)}
+              onDemoteAdmin={() => handleDemote(memberUid, member.name)}
+              onEditNickname={() => openNicknameEditor(memberUid, member.name)}
               onRemove={() => handleRemove(memberUid, member.name)}
             />
           )
         }}
       />
+
+      {/* Nickname editor */}
+      <Modal
+        visible={nicknameTarget !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setNicknameTarget(null)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setNicknameTarget(null)} />
+          <View
+            style={{
+              backgroundColor: colors.bgSecondary,
+              borderRadius: radius.lg,
+              borderColor: colors.border,
+              borderWidth: 1,
+              padding: spacing.lg,
+              marginHorizontal: spacing.xl,
+              width: '85%',
+            }}
+          >
+            <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.xs }]}>
+              Nickname for {nicknameTarget?.name}
+            </Text>
+            <Text style={[text.body.sm, { color: colors.textMuted, marginBottom: spacing.md }]}>
+              Only visible inside this group. Leave empty to remove.
+            </Text>
+            <TextInput
+              value={nicknameInput}
+              onChangeText={setNicknameInput}
+              placeholder="e.g. Chotu"
+              placeholderTextColor={colors.textMuted}
+              maxLength={30}
+              autoFocus
+              style={{
+                color: colors.textPrimary,
+                backgroundColor: colors.bgTertiary,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: radius.md,
+                padding: spacing.md,
+                fontSize: 15,
+                marginBottom: spacing.lg,
+              }}
+              accessibilityLabel={`Nickname for ${nicknameTarget?.name ?? 'member'}`}
+            />
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <View style={{ flex: 1 }}>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  label="Cancel"
+                  fullWidth
+                  onPress={() => setNicknameTarget(null)}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  variant="primary"
+                  size="md"
+                  label="Save"
+                  fullWidth
+                  loading={isSavingNickname}
+                  disabled={isSavingNickname}
+                  onPress={handleSaveNickname}
+                />
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  modalOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
 })

@@ -47,6 +47,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
       const balance = getBalance(uid)
       const isSelf  = uid === myUid
       const isGroupAdmin = group.adminIds?.includes(uid)
+      const displayName  = group.nicknames?.[uid] ?? user?.name
 
       if (!user) return null
 
@@ -78,7 +79,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
                 style={[text.body.md, { color: colors.textPrimary }]}
                 numberOfLines={1}
               >
-                {user.name}
+                {displayName}
                 {isSelf ? ' (you)' : ''}
               </Text>
               {isGroupAdmin && (
@@ -145,7 +146,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
         </View>
       )
     },
-    [members, colors, text, spacing, radius, shadows, myUid, getBalance, onSettle, group.adminIds]
+    [members, colors, text, spacing, radius, shadows, myUid, getBalance, onSettle, group.adminIds, group.nicknames]
   )
 
   return (

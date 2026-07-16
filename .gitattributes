@@ -15,3 +15,9 @@
 *.jpeg binary
 *.gif  binary
 *.ico  binary
+*.ttf  binary
+*.otf  binary
+*.webp binary
+*.mp4  binary
+*.keystore binary
+*.jks  binary

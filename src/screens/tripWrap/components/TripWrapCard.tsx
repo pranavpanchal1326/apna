@@ -1,6 +1,7 @@
 // src/screens/tripWrap/components/TripWrapCard.tsx
 import { StyleSheet, View, Text, Image } from 'react-native'
 import type { TripWrapBundle } from '../../../lib/utils/tripWrapData'
+import { getMemoryCoverUrl } from '../../../lib/schemas/memory.schema'
 import { useTheme } from '@theme'
 
 interface TripWrapCardProps {
@@ -12,7 +13,7 @@ export function TripWrapCard({ data }: TripWrapCardProps) {
 
   // Extract up to 4 photos from the top memories
   const photos = data.topMemories
-    .map((m) => m.photoUrl)
+    .map((m) => getMemoryCoverUrl(m))
     .filter((url): url is string => typeof url === 'string')
     .slice(0, 4)
 

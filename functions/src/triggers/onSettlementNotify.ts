@@ -40,7 +40,7 @@ export const onSettlementNotify = onDocumentCreated(
         withUid: settlement.toUid,
       })
 
-      const tokens = await getGroupRecipientTokens(groupId, [settlement.fromUid])
+      const tokens = await getGroupRecipientTokens(groupId, [settlement.fromUid], message.data.type)
       if (tokens.length > 0) {
         await sendPushToTokens({
           tokens,

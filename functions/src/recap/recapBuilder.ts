@@ -35,13 +35,23 @@ function tripDaysFromDates(startDate?: string, endDate?: string): number {
   }
 }
 
+// Multi-photo memories carry photos[]; legacy docs carry photoUrl/photoThumb.
+function firstPhotoUrl(data: Record<string, unknown>): string | undefined {
+  const photos = data.photos as { url?: string; thumb?: string }[] | undefined
+  if (Array.isArray(photos)) {
+    const first = photos.find((p) => p?.url)
+    if (first) return first.thumb || first.url
+  }
+  return (data.photoThumb as string) || (data.photoUrl as string) || undefined
+}
+
 function scoreMemory(data: Record<string, unknown>): number {
   let score = 0
   const reactions = data.reactions as Record<string, string> | undefined
   if (reactions) score += Object.keys(reactions).length
   const caption = data.caption as string | undefined
   if (caption?.trim()) score += 2
-  if (data.photoUrl) score += 5
+  if (firstPhotoUrl(data)) score += 5
   return score
 }
 
@@ -71,10 +81,7 @@ export async function buildRecapSourceBundle(groupId: string): Promise<RecapSour
     .sort((a, b) => b.score - a.score)
 
   const topPhotoUrls = scored
-    .map((item) => {
-      const m = item.memory as Record<string, unknown>
-      return (m.photoThumb as string) || (m.photoUrl as string)
-    })
+    .map((item) => firstPhotoUrl(item.memory as Record<string, unknown>))
     .filter((url): url is string => typeof url === 'string')
     .slice(0, 6)
 

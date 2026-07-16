@@ -20,7 +20,7 @@ import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useExpenses } from '@hooks/useExpenses'
 import { fetchMemories } from '@lib/firebase/memories'
 import { fetchDayPlans, fetchDayItems } from '@lib/firebase/itinerary'
-import type { MemoryInput, ItineraryItem } from '@lib/schemas'
+import { getMemoryCoverUrl, getMemoryThumbUrl, type MemoryInput, type ItineraryItem } from '@lib/schemas'
 import {
   buildTripWrapData,
   getCachedTripWrap,
@@ -33,6 +33,8 @@ import { ReelOverlayFrame, MemoryReelExportPanel } from '@components/reel'
 import { useTripRecap } from '@hooks/useTripRecap'
 import { useMemoryReelExport } from '@hooks/useMemoryReelExport'
 import { shareRecapCard } from '@lib/recap/share'
+import { fetchWrapCaption } from '@lib/firebase/ai'
+import * as Clipboard from 'expo-clipboard'
 import type { RecapVisibility } from '@lib/schemas/publicRecap.schema'
 import { HomeStackParamList } from '../../navigation/types'
 
@@ -189,6 +191,34 @@ export function TripWrapScreen() {
     }
   }
 
+  // 6b. AI caption (Phase 7.5) — server gateway with rule-based fallback
+  const [aiCaption, setAiCaption] = useState<string | null>(null)
+  const [isCaptionLoading, setIsCaptionLoading] = useState(false)
+  const [captionCopied, setCaptionCopied] = useState(false)
+
+  const handleGenerateCaption = useCallback(async () => {
+    setIsCaptionLoading(true)
+    setCaptionCopied(false)
+    try {
+      const caption = await fetchWrapCaption(groupId)
+      if (caption) {
+        Haptics.selectionAsync()
+        setAiCaption(caption)
+      } else {
+        Alert.alert('Not right now', 'Could not write a caption — try again in a bit.')
+      }
+    } finally {
+      setIsCaptionLoading(false)
+    }
+  }, [groupId])
+
+  const handleCopyCaption = useCallback(async () => {
+    if (!aiCaption) return
+    await Clipboard.setStringAsync(aiCaption)
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    setCaptionCopied(true)
+  }, [aiCaption])
+
   // 7. Manual Regeneration
   const handleRegenerate = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
@@ -278,8 +308,8 @@ export function TripWrapScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }}>
               {wrapData.topMemories.map((m) => (
                 <View key={m.id} style={[styles.memoryCard, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, ...shadows.card }]}>
-                  {m.photoUrl ? (
-                    <Image source={{ uri: m.photoUrl }} style={styles.memoryImg} resizeMode="cover" />
+                  {getMemoryCoverUrl(m) ? (
+                    <Image source={{ uri: getMemoryCoverUrl(m) }} style={styles.memoryImg} resizeMode="cover" />
                   ) : (
                     <View style={[styles.memoryImg, { backgroundColor: colors.bgTertiary, alignItems: 'center', justifyContent: 'center' }]}>
                       <Text style={{ fontSize: 32 }}>📝</Text>
@@ -503,7 +533,7 @@ export function TripWrapScreen() {
                       createdAt: Date.now(),
                       createdBy: '',
                       topPhotos: wrapData.topMemories
-                        .map((m) => m.photoThumb || m.photoUrl)
+                        .map((m) => getMemoryThumbUrl(m))
                         .filter((u): u is string => Boolean(u))
                         .slice(0, 6),
                       coverEmoji: group?.coverEmoji,
@@ -562,6 +592,36 @@ export function TripWrapScreen() {
             disabled={isGenerating}
             style={{ width: '100%', marginTop: spacing.sm }}
           />
+
+          {/* 7.5 AI caption — tap to generate, tap the result to copy */}
+          <Button
+            variant="secondary"
+            label={isCaptionLoading ? 'Writing…' : '✨ AI caption for your share'}
+            onPress={handleGenerateCaption}
+            disabled={isCaptionLoading}
+            style={{ width: '100%', marginTop: spacing.sm }}
+          />
+          {aiCaption ? (
+            <Pressable
+              onPress={handleCopyCaption}
+              accessibilityRole="button"
+              accessibilityLabel="Copy caption"
+              style={{
+                marginTop: spacing.sm,
+                padding: spacing.md,
+                backgroundColor: colors.bgTertiary,
+                borderRadius: radius.md,
+                width: '100%',
+              }}
+            >
+              <Text style={[text.body.md, { color: colors.textPrimary, textAlign: 'center' }]}>
+                {aiCaption}
+              </Text>
+              <Text style={[text.label.sm, { color: colors.textMuted, textAlign: 'center', marginTop: 4 }]}>
+                {captionCopied ? 'Copied!' : 'Tap to copy'}
+              </Text>
+            </Pressable>
+          ) : null}
 
           <Pressable onPress={handleRegenerate} style={{ marginTop: spacing.lg }}>
             <Text style={[text.body.sm, { color: colors.textMuted, textDecorationLine: 'underline' }]}>

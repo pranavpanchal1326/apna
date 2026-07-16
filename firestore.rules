@@ -180,7 +180,18 @@ service cloud.firestore {
               request.resource.data.adminIds == resource.data.adminIds
             )
             ||
-            isGroupAdmin(groupId)
+            (
+              isGroupAdmin(groupId) &&
+              // Co-admin restriction: only the creator may demote other admins.
+              // Non-creator admins may add admins or remove only themselves.
+              (
+                request.resource.data.adminIds == resource.data.adminIds ||
+                request.auth.uid == resource.data.createdBy ||
+                resource.data.adminIds.toSet()
+                  .difference(request.resource.data.adminIds.toSet())
+                  .hasOnly([request.auth.uid])
+              )
+            )
           )
         ) || (
           // Join group
@@ -250,6 +261,51 @@ service cloud.firestore {
             isGroupAdmin(groupId)
           ) &&
           resource.data.isSettled == false;  // Cannot delete settled expenses
+      }
+
+      // ── /groups/{groupId}/recurringExpenses/{templateId} ────────
+      // Recurring templates (rent, subscriptions). Generated expense docs
+      // are written server-side by the generateRecurringExpenses scheduler.
+      match /recurringExpenses/{templateId} {
+
+        allow read: if isGroupMember(groupId);
+
+        allow create: if isGroupMember(groupId) &&
+          hasRequiredFields([
+            'description', 'amount', 'currency', 'category',
+            'paidBy', 'splitType', 'splits',
+            'frequency', 'nextRunDate', 'active',
+            'createdBy', 'createdAt'
+          ]) &&
+          isValidString(request.resource.data.description, 100) &&
+          request.resource.data.amount is number &&
+          request.resource.data.amount > 0 &&
+          request.resource.data.amount <= 1000000 &&
+          isValidCategory(request.resource.data.category) &&
+          request.resource.data.paidBy is string &&
+          isValidSplitType(request.resource.data.splitType) &&
+          request.resource.data.splits is map &&
+          request.resource.data.frequency in ['weekly', 'monthly'] &&
+          request.resource.data.nextRunDate is string &&
+          request.resource.data.active is bool &&
+          request.resource.data.createdBy == request.auth.uid &&
+          isTimestamp(request.resource.data.createdAt);
+
+        // Creator or admin can pause/edit templates
+        allow update: if isGroupMember(groupId) &&
+          fieldUnchanged('createdBy') &&
+          fieldUnchanged('createdAt') &&
+          (
+            resource.data.createdBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          );
+
+        // Creator or admin can delete
+        allow delete: if isGroupMember(groupId) &&
+          (
+            resource.data.createdBy == request.auth.uid ||
+            isGroupAdmin(groupId)
+          );
       }
 
       // ── /groups/{groupId}/activity/{activityId} ─────────────────
@@ -336,12 +392,27 @@ service cloud.firestore {
           fieldUnchanged('createdAt') &&
           fieldUnchanged('type');
 
+        // Any member can cast/remove their OWN reaction on any memory:
+        // only the reactions map may change, and only their own uid key within it
+        allow update: if isGroupMember(groupId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']) &&
+          request.resource.data.get('reactions', {})
+            .diff(resource.data.get('reactions', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+
         // Creator or admin can delete
         allow delete: if isGroupMember(groupId) &&
           (
             resource.data.createdBy == request.auth.uid ||
             isGroupAdmin(groupId)
           );
+      }
+
+      // ── /groups/{groupId}/yearInReview/{year} ────────────────────
+      // Auto-generated December recap — written server-side only.
+      match /yearInReview/{year} {
+        allow read: if isGroupMember(groupId);
+        allow write: if false;
       }
 
       // ── /groups/{groupId}/settlements/{settlementId} ────────────

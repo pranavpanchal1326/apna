@@ -35,9 +35,15 @@ import {
   UploadProgressChip,
 } from '@components'
 import { usePhotoUpload } from '../../hooks/usePhotoUpload'
+import { MemoriesMapView } from './MemoriesMapView'
 import { nanoid } from 'nanoid/non-secure'
 import type { MemoriesStackParamList } from '../../navigation/types'
-import type { MemoryInput } from '../../lib/schemas/memory.schema'
+import {
+  MEMORY_MAX_PHOTOS,
+  getMemoryPhotos,
+  getMemoryThumbUrl,
+  type MemoryInput,
+} from '../../lib/schemas/memory.schema'
 
 type Nav = NativeStackNavigationProp<MemoriesStackParamList>
 type Route = RouteProp<MemoriesStackParamList, 'MemoriesHome'>
@@ -66,6 +72,7 @@ export function MemoriesScreen() {
   const { memories, isLoading, subscribeToGroup, unsubscribe } = useMemoryStore()
 
   // UI state
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
   const [pickerVisible, setPickerVisible] = useState(false)
   const [captionModalVisible, setCaptionModalVisible] = useState(false)
   const [cameraVisible, setCameraVisible] = useState(false)
@@ -166,6 +173,21 @@ export function MemoriesScreen() {
     setStagedUris((prev) => prev.filter((u) => u !== uri))
   }
 
+  // Merge newly picked URIs into the staged set, deduped, capped at 10 per post
+  const stagePhotos = (uris: string[]) => {
+    setStagedUris((prev) => {
+      const merged = [...prev]
+      for (const uri of uris) {
+        if (!merged.includes(uri)) merged.push(uri)
+      }
+      if (merged.length > MEMORY_MAX_PHOTOS) {
+        Alert.alert('Photo limit', `A memory can have up to ${MEMORY_MAX_PHOTOS} photos.`)
+      }
+      return merged.slice(0, MEMORY_MAX_PHOTOS)
+    })
+    setCaptionModalVisible(true)
+  }
+
   // Close caption modal if staged URIs become empty
   useEffect(() => {
     if (captionModalVisible && stagedUris.length === 0 && !uploadState.isUploading) {
@@ -192,29 +214,34 @@ export function MemoriesScreen() {
       const { memoriesCol } = require('../../lib/firebase/collections')
       const { buildMemoryPhotoPath } = require('../../lib/firebase/storage')
 
-      for (let i = 0; i < stagedUris.length; i++) {
-        const memoryId = `${basePostId}_${i}`
+      // Single memory post carrying 1–10 photos. Photos that failed to
+      // upload keep url: '' and get patched by the offline upload queue.
+      const photos = stagedUris.map((_, i) => {
         const storagePath = buildMemoryPhotoPath({ groupId, memoryId: basePostId, index: i })
         const match = uploadResults.find((r: { storagePath: string }) => r.storagePath === storagePath)
-        const photoUrl = match ? match.downloadUrl : ''
-        const hasUploaded = !!match
+        return { url: match ? match.downloadUrl : '' }
+      })
+      const firstUploaded = photos.find((p) => p.url !== '')
 
-        const ref = doc(memoriesCol(groupId), memoryId)
+      const ref = doc(memoriesCol(groupId), basePostId)
 
-        await setDoc(ref, {
-          id: memoryId,
-          groupId,
-          type: 'photo',
-          date: dateStr,
-          photoUrl,
-          uploadPending: !hasUploaded,
-          caption: captionText.trim() || undefined,
-          takenBy: myUid,
-          createdBy: myUid,
-          reactions: {},
-          createdAt: serverTimestamp(),
-        })
-      }
+      const caption = captionText.trim()
+      await setDoc(ref, {
+        id: basePostId,
+        groupId,
+        type: 'photo',
+        date: dateStr,
+        photos,
+        // Legacy field kept in sync so older readers still render the cover.
+        // Firestore rejects `undefined` values, so optional fields are spread in.
+        ...(firstUploaded ? { photoUrl: firstUploaded.url } : {}),
+        uploadPending: photos.some((p) => p.url === ''),
+        ...(caption ? { caption } : {}),
+        takenBy: myUid,
+        createdBy: myUid,
+        reactions: {},
+        createdAt: serverTimestamp(),
+      })
 
       haptics.memoryPosted()
       setCaptionModalVisible(false)
@@ -234,21 +261,29 @@ export function MemoriesScreen() {
 
       return (
         <View style={styles.gridRow}>
-          {item.map((memory) => (
-            <Pressable
-              key={memory.id}
-              onPress={() => {
-                Haptics.selectionAsync()
-                navigation.navigate('MemoryDetail', { memoryId: memory.id, groupId })
-              }}
-              style={({ pressed }) => [
-                styles.gridImageBtn,
-                { width: imgWidth, height: imgWidth, borderRadius: radius.md, opacity: pressed ? 0.9 : 1 },
-              ]}
-            >
-              <Image source={{ uri: memory.photoUrl }} style={[styles.gridImage, { borderRadius: radius.md }]} />
-            </Pressable>
-          ))}
+          {item.map((memory) => {
+            const photoCount = getMemoryPhotos(memory).length
+            return (
+              <Pressable
+                key={memory.id}
+                onPress={() => {
+                  Haptics.selectionAsync()
+                  navigation.navigate('MemoryDetail', { memoryId: memory.id, groupId })
+                }}
+                style={({ pressed }) => [
+                  styles.gridImageBtn,
+                  { width: imgWidth, height: imgWidth, borderRadius: radius.md, opacity: pressed ? 0.9 : 1 },
+                ]}
+              >
+                <Image source={{ uri: getMemoryThumbUrl(memory) }} style={[styles.gridImage, { borderRadius: radius.md }]} />
+                {photoCount > 1 && (
+                  <View style={styles.multiBadge}>
+                    <Text style={styles.multiBadgeText}>⧉ {photoCount}</Text>
+                  </View>
+                )}
+              </Pressable>
+            )
+          })}
           {/* Pad empty elements if last row is incomplete */}
           {item.length < 3 &&
             Array.from({ length: 3 - item.length }).map((_, idx) => (
@@ -321,10 +356,49 @@ export function MemoriesScreen() {
         onBack={showBack ? () => navigation.goBack() : undefined}
       />
 
+      {/* Grid / Map view toggle */}
+      {!isLoading && memories.length > 0 && (
+        <View style={[styles.toggleRow, { paddingHorizontal: spacing.lg, marginTop: spacing.sm, gap: spacing.sm }]}>
+          {(['grid', 'map'] as const).map((mode) => {
+            const isActive = viewMode === mode
+            return (
+              <Pressable
+                key={mode}
+                onPress={() => {
+                  Haptics.selectionAsync()
+                  setViewMode(mode)
+                }}
+                style={[
+                  styles.toggleChip,
+                  {
+                    backgroundColor: isActive ? colors.accentPrimary + '20' : colors.bgSecondary,
+                    borderColor: isActive ? colors.accentPrimary : colors.border,
+                    borderRadius: radius.full,
+                    paddingHorizontal: spacing.md,
+                    paddingVertical: 6,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={mode === 'grid' ? 'Grid view' : 'Map view'}
+              >
+                <Text style={[text.label.md, { color: isActive ? colors.accentPrimary : colors.textPrimary }]}>
+                  {mode === 'grid' ? '▦ Grid' : '🗺️ Map'}
+                </Text>
+              </Pressable>
+            )
+          })}
+        </View>
+      )}
+
       {isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.accentPrimary} size="large" />
         </View>
+      ) : viewMode === 'map' ? (
+        <MemoriesMapView
+          memories={memories}
+          onOpenMemory={(memoryId) => navigation.navigate('MemoryDetail', { memoryId, groupId })}
+        />
       ) : (
         <SectionList
           sections={sectionedData}
@@ -398,8 +472,7 @@ export function MemoriesScreen() {
         visible={cameraVisible}
         onClose={() => setCameraVisible(false)}
         onCapture={(uris) => {
-          setStagedUris(uris)
-          setCaptionModalVisible(true)
+          stagePhotos(uris)
         }}
       />
 
@@ -408,8 +481,7 @@ export function MemoriesScreen() {
         visible={galleryVisible}
         onClose={() => setGalleryVisible(false)}
         onSelect={(uris) => {
-          setStagedUris(uris)
-          setCaptionModalVisible(true)
+          stagePhotos(uris)
         }}
       />
 
@@ -523,6 +595,12 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingVertical: 12,
   },
+  toggleRow: {
+    flexDirection: 'row',
+  },
+  toggleChip: {
+    borderWidth: 1,
+  },
   gridRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
@@ -536,6 +614,20 @@ const styles = StyleSheet.create({
   gridImage: {
     width: '100%',
     height: '100%',
+  },
+  multiBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  multiBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   fab: {
     position: 'absolute',

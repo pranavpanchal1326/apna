@@ -20,6 +20,7 @@ import {
 } from 'firebase/firestore'
 import { db } from './config'
 import { groupsCol, inviteDoc, userDoc } from './collections'
+import { INVITE_TTL_MS } from './groups'
 import { captureError } from '../sentry'
 import { track } from '../analytics'
 import { generateDayPlans } from '../utils/generateDayPlans'
@@ -150,7 +151,7 @@ export async function regenerateInviteCode(
         createdBy: adminUid,
         createdAt: serverTimestamp(),
         expiresAt: Timestamp.fromDate(
-          new Date(Date.now() + 72 * 60 * 60 * 1000) // 72-hour TTL
+          new Date(Date.now() + INVITE_TTL_MS) // 30-day TTL (PRD §15)
         ),
         maxUses: 50,
         useCount: 0,

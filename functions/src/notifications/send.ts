@@ -1,7 +1,13 @@
 // functions/src/notifications/send.ts
 import * as admin from 'firebase-admin'
+import { resolvePrefs, allowsNotification } from './prefs'
 
 const db = admin.firestore()
+
+// Current hour in IST (UTC+5:30) — apna's launch market
+function istHour(): number {
+  return new Date(Date.now() + 5.5 * 60 * 60 * 1000).getUTCHours()
+}
 
 export interface SendPushParams {
   tokens: string[]
@@ -81,7 +87,10 @@ async function cleanupTokens(tokens: string[]): Promise<void> {
 
 export async function getGroupRecipientTokens(
   groupId: string,
-  excludeUids?: string[]
+  excludeUids?: string[],
+  // FCM data.type — when given, each member's notificationPrefs
+  // (per-category toggles + silent hours) filter delivery. SOS bypasses all.
+  notifType?: string
 ): Promise<string[]> {
   try {
     const groupSnap = await db.collection('groups').doc(groupId).get()
@@ -105,13 +114,17 @@ export async function getGroupRecipientTokens(
     const docRefs = uidsToFetch.map((uid) => db.collection('users').doc(uid))
     
     // getAll can take max 1000 items, groups will be much smaller
+    const hour = istHour()
     const userSnaps = await db.getAll(...docRefs)
     userSnaps.forEach((snap) => {
       if (snap.exists) {
         const userData = snap.data()
-        if (userData?.fcmToken) {
-          tokens.push(userData.fcmToken)
+        if (!userData?.fcmToken) return
+        if (notifType) {
+          const prefs = resolvePrefs(userData.notificationPrefs)
+          if (!allowsNotification(prefs, notifType, hour)) return
         }
+        tokens.push(userData.fcmToken)
       }
     })
 

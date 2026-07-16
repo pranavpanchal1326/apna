@@ -6,6 +6,7 @@ import { Avatar } from '@components/ui/Avatar'
 interface MemberRoleRowProps {
   uid:              string
   name:             string
+  nickname?:        string // In-group nickname — shown instead of name when set
   phone?:           string
   avatarColor:      string
   photoURL?:        string
@@ -13,12 +14,16 @@ interface MemberRoleRowProps {
   isSelf:           boolean
   isCreator:        boolean
   canManage:        boolean
+  canDemote?:       boolean // Viewer is the creator — may remove admin access
   onTransferAdmin?: () => void
+  onDemoteAdmin?:   () => void
+  onEditNickname?:  () => void
   onRemove?:        () => void
 }
 
 export function MemberRoleRow({
   name,
+  nickname,
   phone,
   avatarColor,
   photoURL,
@@ -26,7 +31,10 @@ export function MemberRoleRow({
   isSelf,
   isCreator,
   canManage,
+  canDemote = false,
   onTransferAdmin,
+  onDemoteAdmin,
+  onEditNickname,
   onRemove,
 }: MemberRoleRowProps) {
   const { colors, spacing, radius, text } = useTheme()
@@ -47,7 +55,7 @@ export function MemberRoleRow({
         <View style={[styles.info, { marginLeft: spacing.sm }]}>
           <View style={styles.nameRow}>
             <Text style={[text.body.md, { color: colors.textPrimary, fontWeight: '600' }]} numberOfLines={1}>
-              {name} {isSelf && '(you)'}
+              {nickname ?? name} {isSelf && '(you)'}
             </Text>
             {isCreator && (
               <View style={[styles.badge, { backgroundColor: colors.accentGold + '22', borderColor: colors.accentGold }]}>
@@ -60,13 +68,59 @@ export function MemberRoleRow({
               </View>
             )}
           </View>
+          {nickname && (
+            <Text style={[text.label.sm, { color: colors.textMuted }]} numberOfLines={1}>
+              {name}
+            </Text>
+          )}
           {phone && <Text style={[text.label.sm, { color: colors.textMuted }]}>{phone}</Text>}
         </View>
       </View>
 
+      {/* Nickname — any member can edit */}
+      {onEditNickname && (
+        <Pressable
+          onPress={onEditNickname}
+          style={[
+            styles.actionBtn,
+            {
+              backgroundColor: colors.bgTertiary,
+              borderColor:     colors.border,
+              borderRadius:    radius.sm,
+              paddingHorizontal: spacing.sm,
+              paddingVertical:   4,
+              marginRight:       8,
+            },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={`Edit nickname for ${name}`}
+        >
+          <Text style={[text.label.sm, { color: colors.textSecondary, fontSize: 11 }]}>Nickname</Text>
+        </Pressable>
+      )}
+
       {/* Admin Actions */}
       {canManage && !isSelf && (
         <View style={styles.actions}>
+          {isAdmin && !isCreator && canDemote && onDemoteAdmin && (
+            <Pressable
+              onPress={onDemoteAdmin}
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: colors.bgTertiary,
+                  borderColor:     colors.border,
+                  borderRadius:    radius.sm,
+                  paddingHorizontal: spacing.sm,
+                  paddingVertical:   4,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove admin access for ${name}`}
+            >
+              <Text style={[text.label.sm, { color: colors.textPrimary, fontSize: 11 }]}>Remove Admin</Text>
+            </Pressable>
+          )}
           {!isAdmin && onTransferAdmin && (
             <Pressable
               onPress={onTransferAdmin}

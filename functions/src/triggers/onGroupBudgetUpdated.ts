@@ -115,7 +115,7 @@ export const onGroupBudgetUpdated = onDocumentUpdated(
       // Send notifications if applicable
       if (shouldNotify) {
         const recipientUids = (afterData.memberIds ?? []).filter((uid: string) => uid !== actorUid)
-        const tokens = await getGroupRecipientTokens(groupId, [actorUid])
+        const tokens = await getGroupRecipientTokens(groupId, [actorUid], 'budget_alert')
 
         // A. Record notification job document
         await db.collection(`groups/${groupId}/notificationJobs`).add({

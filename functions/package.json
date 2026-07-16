@@ -1,20 +1,26 @@
 {
   "name": "apna-functions",
   "scripts": {
-    "build":  "tsc",
+    "build": "tsc",
+    "test": "jest",
     "deploy": "firebase deploy --only functions",
-    "logs":   "firebase functions:log"
+    "logs": "firebase functions:log"
   },
-  "engines": { "node": "20" },
+  "engines": {
+    "node": "20"
+  },
   "main": "lib/functions/src/index.js",
   "dependencies": {
-    "axios":              "^1.7.2",
-    "firebase-admin":     "^12.0.0",
+    "axios": "^1.7.2",
+    "firebase-admin": "^12.0.0",
     "firebase-functions": "^6.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "@types/node": "^20.0.0"
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "^5.5.0"
   },
   "private": true
 }

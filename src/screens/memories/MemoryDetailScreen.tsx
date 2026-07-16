@@ -9,8 +9,12 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  FlatList,
   Pressable,
   Dimensions,
+  Alert,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
@@ -25,6 +29,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 import { haptics } from '@lib/haptics'
+import { savePhotoToGallery } from '@lib/memories/saveToGallery'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -32,6 +37,7 @@ import { useAuthStore } from '../../stores/auth.store'
 import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { Header, BottomSheet, Avatar } from '@components'
 import { REACTION_EMOJIS, type ReactionEmoji } from '../../lib/types/memory.types'
+import { getMemoryPhotos } from '../../lib/schemas/memory.schema'
 import type { MemoriesStackParamList } from '../../navigation/types'
 
 type Nav = NativeStackNavigationProp<MemoriesStackParamList>
@@ -61,6 +67,37 @@ export function MemoryDetailScreen() {
 
   // BottomSheet State
   const [showReactorsSheet, setShowReactorsSheet] = useState(false)
+
+  // Save-to-gallery state
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSavePhoto = async () => {
+    const url = photos[photoIndex]?.url
+    if (!url || isSaving) return
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setIsSaving(true)
+    const result = await savePhotoToGallery(url)
+    setIsSaving(false)
+    if (result === 'saved') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    } else if (result === 'permission_denied') {
+      Alert.alert('Permission needed', 'Allow photo library access in Settings to save photos.')
+    } else {
+      Alert.alert('Could not save', 'Something went wrong. Please try again.')
+    }
+  }
+
+  // Multi-photo carousel state
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const photos = useMemo(() => (memory ? getMemoryPhotos(memory) : []), [memory])
+
+  const handleCarouselScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH)
+    if (idx !== photoIndex) {
+      setPhotoIndex(idx)
+      Haptics.selectionAsync()
+    }
+  }
 
   // ── Heart Animation Overlay Shared Values ────────────────────────
   const heartScale = useSharedValue(0)
@@ -142,17 +179,71 @@ export function MemoryDetailScreen() {
       <Header title="Memory Detail" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
-        {/* Immersive Photo Viewer */}
+        {/* Immersive Photo Viewer — swipeable carousel for multi-photo posts */}
         <GestureDetector gesture={doubleTapGesture}>
           <View style={[styles.photoContainer, { backgroundColor: colors.bgSecondary }]}>
-            <Image source={{ uri: memory.photoUrl }} style={styles.photo} resizeMode="contain" />
-            
+            {photos.length > 1 ? (
+              <FlatList
+                data={photos}
+                keyExtractor={(_, idx) => String(idx)}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={handleCarouselScroll}
+                renderItem={({ item }) => (
+                  <Image
+                    source={{ uri: item.url }}
+                    style={[styles.photo, { width: SCREEN_WIDTH }]}
+                    resizeMode="contain"
+                  />
+                )}
+              />
+            ) : (
+              <Image source={{ uri: photos[0]?.url }} style={styles.photo} resizeMode="contain" />
+            )}
+
+            {/* Photo counter pill */}
+            {photos.length > 1 && (
+              <View style={styles.counterPill}>
+                <Text style={styles.counterText}>{photoIndex + 1}/{photos.length}</Text>
+              </View>
+            )}
+
+            {/* Save to camera roll */}
+            <Pressable
+              onPress={handleSavePhoto}
+              disabled={isSaving}
+              style={styles.savePill}
+              accessibilityRole="button"
+              accessibilityLabel="Save photo to camera roll"
+            >
+              <Text style={styles.counterText}>{isSaving ? 'Saving…' : '⬇ Save'}</Text>
+            </Pressable>
+
             {/* Heart Animation Overlay */}
-            <Animated.View style={[styles.heartOverlay, heartStyle]}>
+            <Animated.View style={[styles.heartOverlay, heartStyle]} pointerEvents="none">
               <Text style={{ fontSize: 90 }}>❤️</Text>
             </Animated.View>
           </View>
         </GestureDetector>
+
+        {/* Dot indicators */}
+        {photos.length > 1 && (
+          <View style={styles.dotsRow}>
+            {photos.map((_, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.dot,
+                  {
+                    backgroundColor: idx === photoIndex ? colors.accentPrimary : colors.border,
+                    width: idx === photoIndex ? 18 : 6,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Content details */}
         <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.md }}>
@@ -299,6 +390,40 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
+  },
+  counterPill: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  savePill: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  counterText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 10,
+  },
+  dot: {
+    height: 6,
+    borderRadius: 3,
   },
   heartOverlay: {
     position: 'absolute',

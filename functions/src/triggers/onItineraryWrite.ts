@@ -203,7 +203,7 @@ export const onItineraryItemUpdated = onDocumentUpdated(
           
           if (newState === 'confirmed') {
             // Notify proposer + optionally notify group
-            const recipientTokens = await getGroupRecipientTokens(groupId, [voterUid])
+            const recipientTokens = await getGroupRecipientTokens(groupId, [voterUid], 'trip_event')
             if (recipientTokens.length > 0) {
               await sendPushToTokens({
                 tokens: recipientTokens,
