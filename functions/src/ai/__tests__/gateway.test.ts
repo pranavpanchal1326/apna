@@ -6,6 +6,7 @@ import {
   parseGeminiResponse,
   parseGroqResponse,
   stripCodeFences,
+  extractJsonPayload,
 } from '../gateway'
 
 describe('hashCacheKey', () => {
@@ -62,5 +63,33 @@ describe('stripCodeFences', () => {
 
   it('leaves plain text untouched', () => {
     expect(stripCodeFences('[{"day":1}]')).toBe('[{"day":1}]')
+  })
+})
+
+describe('extractJsonPayload', () => {
+  it('passes clean JSON through', () => {
+    expect(extractJsonPayload('[{"day":1}]')).toBe('[{"day":1}]')
+    expect(extractJsonPayload('{"a":1}')).toBe('{"a":1}')
+  })
+
+  it('strips prose preamble and suffix (small-model habit)', () => {
+    expect(
+      extractJsonPayload('Here is your itinerary:\n[{"day":1}]\nEnjoy your trip!'),
+    ).toBe('[{"day":1}]')
+  })
+
+  it('handles fences embedded mid-prose', () => {
+    expect(
+      extractJsonPayload('Sure!\n```json\n[{"day":1}]\n```\nHave fun.'),
+    ).toBe('[{"day":1}]')
+  })
+
+  it('picks arrays containing objects without truncating', () => {
+    const payload = '[{"items":[{"a":"[weird] text"}]}]'
+    expect(extractJsonPayload(`prefix ${payload}`)).toBe(payload)
+  })
+
+  it('returns trimmed text when there is no JSON at all', () => {
+    expect(extractJsonPayload('  no json here  ')).toBe('no json here')
   })
 })

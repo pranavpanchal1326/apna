@@ -2,6 +2,7 @@
 // Server-side referral validation, attribution, and reward granting.
 
 import * as admin from 'firebase-admin'
+import { Timestamp } from 'firebase-admin/firestore'
 import {
   DEFAULT_CAMPAIGN_ID,
   REFERRAL_CODE_CHARS,
@@ -18,8 +19,8 @@ export interface ReferralLinkDoc {
   code: string
   campaignId?: string
   groupId?: string
-  createdAt: admin.firestore.Timestamp
-  expiresAt?: admin.firestore.Timestamp
+  createdAt: Timestamp
+  expiresAt?: Timestamp
   active: boolean
 }
 
@@ -34,9 +35,9 @@ export interface ReferralAttributionDoc {
   status: 'captured' | 'qualified' | 'rewarded' | 'rejected'
   rejectionReason?: string
   rewardType?: ReferralRewardType
-  capturedAt: admin.firestore.Timestamp
-  qualifiedAt?: admin.firestore.Timestamp
-  rewardedAt?: admin.firestore.Timestamp
+  capturedAt: Timestamp
+  qualifiedAt?: Timestamp
+  rewardedAt?: Timestamp
 }
 
 function generateReferralCode(): string {
@@ -97,8 +98,8 @@ export async function ensureReferralLinkForUser(
     attempts++
   }
 
-  const now = admin.firestore.Timestamp.now()
-  const expiresAt = admin.firestore.Timestamp.fromMillis(
+  const now = Timestamp.now()
+  const expiresAt = Timestamp.fromMillis(
     now.toMillis() + campaign.linkTtlDays * 24 * 60 * 60 * 1000,
   )
 
@@ -180,7 +181,7 @@ export async function captureReferralForUser(params: {
     groupId: groupId ?? link.groupId,
     source,
     status: 'captured',
-    capturedAt: admin.firestore.Timestamp.now(),
+    capturedAt: Timestamp.now(),
   }
 
   await db.collection('referralAttributions').doc(attrId).set(attribution)
@@ -228,7 +229,7 @@ export async function qualifyReferralForUser(
     }
   }
 
-  const now = admin.firestore.Timestamp.now()
+  const now = Timestamp.now()
 
   await db.runTransaction(async (tx) => {
     const fresh = await tx.get(attrRef)
@@ -271,7 +272,7 @@ async function grantReferralReward(
       return { granted: false, message: 'not_eligible' }
     }
 
-    const now = admin.firestore.Timestamp.now()
+    const now = Timestamp.now()
 
     if (rewardType === 'none') {
       tx.update(attrRef, { status: 'qualified', qualifiedAt: attr.qualifiedAt ?? now })

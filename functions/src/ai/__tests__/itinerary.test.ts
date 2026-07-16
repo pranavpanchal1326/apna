@@ -30,6 +30,22 @@ describe('parseItineraryJson', () => {
     })
   })
 
+  it('accepts a bare day object (small-model habit)', () => {
+    const raw = '{"day":1,"theme":"Old City","items":[{"title":"Fort","category":"attraction"}]}'
+    const plans = parseItineraryJson(raw, 2)
+    expect(plans).toHaveLength(1)
+    expect(plans![0].items[0].title).toBe('Fort')
+  })
+
+  it('accepts a newline-separated object sequence', () => {
+    const raw =
+      '{"day":1,"theme":"A","items":[{"title":"X","category":"food"}]}\n' +
+      '{"day":2,"theme":"B","items":[{"title":"Y","category":"activity"}]}'
+    const plans = parseItineraryJson(raw, 2)
+    expect(plans).toHaveLength(2)
+    expect(plans![1].theme).toBe('B')
+  })
+
   it('rejects non-JSON and empty arrays', () => {
     expect(parseItineraryJson('sure! here is your itinerary…', 3)).toBeNull()
     expect(parseItineraryJson('[]', 3)).toBeNull()

@@ -5,6 +5,7 @@
 
 import { onDocumentCreated, onDocumentDeleted, onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import * as admin from 'firebase-admin'
+import { FieldValue } from 'firebase-admin/firestore'
 import type { ItineraryItem } from '../../../src/lib/schemas/itinerary.schema'
 import { getGroupRecipientTokens, sendPushToTokens } from '../notifications/send'
 
@@ -23,11 +24,11 @@ export const onItineraryItemCreated = onDocumentCreated(
     // 1. Increment DayPlan itemCount + totalEstimatedCost
     const dayRef = db.doc(`groups/${groupId}/days/${dayId}`)
     batch.update(dayRef, {
-      itemCount:          admin.firestore.FieldValue.increment(1),
-      totalEstimatedCost: admin.firestore.FieldValue.increment(
+      itemCount:          FieldValue.increment(1),
+      totalEstimatedCost: FieldValue.increment(
         item.estimatedCost ?? 0
       ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     })
 
     // Fetch day info for feed
@@ -60,7 +61,7 @@ export const onItineraryItemCreated = onDocumentCreated(
         placeId:    item.placeRef?.placeId ?? null,
         placeName:  item.placeRef?.name    ?? null,
       },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     })
 
     await batch.commit()
@@ -77,11 +78,11 @@ export const onItineraryItemDeleted = onDocumentDeleted(
 
     const dayRef = db.doc(`groups/${groupId}/days/${dayId}`)
     await dayRef.update({
-      itemCount:          admin.firestore.FieldValue.increment(-1),
-      totalEstimatedCost: admin.firestore.FieldValue.increment(
+      itemCount:          FieldValue.increment(-1),
+      totalEstimatedCost: FieldValue.increment(
         -(item.estimatedCost ?? 0)
       ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     })
   }
 )
@@ -155,13 +156,13 @@ export const onItineraryItemUpdated = onDocumentUpdated(
           maybeCount,
           noCount,
           state: newState,
-          ...(isConfirmed ? { confirmedAt: admin.firestore.FieldValue.serverTimestamp(), confirmedBy: voterUid } : {}),
+          ...(isConfirmed ? { confirmedAt: FieldValue.serverTimestamp(), confirmedBy: voterUid } : {}),
         }
         
         const updatePayload: any = {
           proposalMeta,
           isConfirmed,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }
         
         const itemRef = db.doc(`groups/${groupId}/days/${dayId}/items/${itemId}`)
@@ -191,7 +192,7 @@ export const onItineraryItemUpdated = onDocumentUpdated(
                 itemId,
                 dayId,
               },
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              createdAt: FieldValue.serverTimestamp(),
             })
             await batch.commit()
           }
@@ -248,7 +249,7 @@ export const onItineraryItemUpdated = onDocumentUpdated(
               itemId,
               dayId,
             },
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
           })
         }
       }

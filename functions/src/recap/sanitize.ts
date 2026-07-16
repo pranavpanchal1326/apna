@@ -1,7 +1,7 @@
 // functions/src/recap/sanitize.ts
 // Server-side privacy filtering for public recaps.
 
-import * as admin from 'firebase-admin'
+import { Timestamp } from 'firebase-admin/firestore'
 import type { RecapSourceBundle } from './recapBuilder'
 
 export type RecapVisibility = 'private' | 'unlisted' | 'public'
@@ -14,9 +14,9 @@ export interface PublicRecapDoc {
   startDate?: string
   endDate?: string
   dateRangeLabel: string
-  createdAt: admin.firestore.Timestamp
+  createdAt: Timestamp
   createdBy: string
-  updatedAt: admin.firestore.Timestamp
+  updatedAt: Timestamp
   coverPhotoUrl?: string
   topPhotos: string[]
   coverEmoji?: string
@@ -79,9 +79,12 @@ export function buildPublicRecapDoc(params: {
 
   const resolvedVisibility = visibility ?? defaultVisibility(bundle.status)
   const spendAllowed = Boolean(includeSpend) && bundle.totalSpend > 0
-  const now = admin.firestore.Timestamp.now()
+  const now = Timestamp.now()
 
-  return {
+  // Firestore rejects `undefined` values in admin writes — a group without
+  // coverEmoji/destination/dates would crash generateTripRecap. Build the
+  // doc, then strip every undefined key before it reaches Firestore.
+  return pruneUndefined({
     id: shareSlug,
     groupId: bundle.groupId,
     tripName: bundle.groupName,
@@ -108,5 +111,12 @@ export function buildPublicRecapDoc(params: {
     tagline: pickTagline(bundle),
     includeSpend: spendAllowed,
     version: (existingVersion ?? 0) + 1,
-  }
+  })
+}
+
+/** Removes keys whose value is undefined — Firestore admin writes reject them. */
+export function pruneUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined),
+  ) as T
 }

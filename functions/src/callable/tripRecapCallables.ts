@@ -5,7 +5,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 import { Timestamp } from 'firebase-admin/firestore'
 import { buildRecapSourceBundle } from '../recap/recapBuilder'
-import { buildPublicRecapDoc, type RecapVisibility } from '../recap/sanitize'
+import { buildPublicRecapDoc, pruneUndefined, type RecapVisibility } from '../recap/sanitize'
 import { buildShareSlug } from '../recap/slug'
 import { storagePathFromUrl, signPhotoPaths, SIGNED_URL_TTL_MS } from '../utils/storageUrl'
 
@@ -93,13 +93,13 @@ export const generateTripRecap = onCall(
       .map((url) => storagePathFromUrl(url))
       .filter((path): path is string => Boolean(path))
     const signedUrls = await signPhotoPaths(topPhotoPaths, bundle.topPhotoUrls)
-    const docWithSignedPhotos = {
+    const docWithSignedPhotos = pruneUndefined({
       ...recapDoc,
       topPhotos: signedUrls,
-      coverPhotoUrl: signedUrls[0],
+      coverPhotoUrl: signedUrls[0], // undefined when the group has no photos — pruned
       topPhotoPaths,
       photoUrlsExpireAt: Timestamp.fromMillis(Date.now() + SIGNED_URL_TTL_MS),
-    }
+    })
 
     await db.collection('publicRecaps').doc(shareSlug).set(docWithSignedPhotos, { merge: false })
 

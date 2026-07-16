@@ -17,6 +17,26 @@ export interface GeneratedDayPlan {
 
 const VALID_CATEGORIES = ['food', 'attraction', 'activity', 'shopping', 'transport', 'stay']
 
+/**
+ * Small models routinely ignore "return an array" and emit a bare object or
+ * a sequence of objects ("{day1}\n{day2}"). Try, in order:
+ *   1. as-is  2. wrapped in [ ]  3. object-sequence joined with commas
+ * A single parsed object is promoted to a one-element array.
+ */
+function parseLenient(raw: string): unknown {
+  const attempts = [raw, `[${raw}]`, `[${raw.replace(/}\s*,?\s*{/g, '},{')}]`]
+  for (const attempt of attempts) {
+    try {
+      const parsed = JSON.parse(attempt)
+      if (Array.isArray(parsed)) return parsed
+      if (parsed && typeof parsed === 'object') return [parsed]
+    } catch {
+      // try next shape
+    }
+  }
+  return null
+}
+
 export function buildItineraryPrompt(
   destination: string,
   days: number,
@@ -28,7 +48,8 @@ export function buildItineraryPrompt(
   return (
     `Create a ${days}-day trip itinerary for a group of friends visiting ${destination}, India-friendly budget.\n` +
     interestLine +
-    `Respond with ONLY valid JSON (no markdown) matching:\n` +
+    `Respond with ONLY a single valid JSON array (no markdown, no prose). ` +
+    `Your entire response must start with [ and end with ], matching exactly:\n` +
     `[{"day":1,"theme":"...","items":[{"title":"...","category":"food|attraction|activity|shopping|transport|stay","startTime":"HH:MM","note":"..."}]}]\n` +
     `Rules: 3-5 items per day, realistic timings, note under 90 chars, title under 60 chars.`
   )
@@ -40,12 +61,7 @@ export function buildItineraryPrompt(
  * writes garbage to Firestore).
  */
 export function parseItineraryJson(raw: string, expectedDays: number): GeneratedDayPlan[] | null {
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return null
-  }
+  const parsed = parseLenient(raw)
   if (!Array.isArray(parsed) || parsed.length === 0) return null
 
   const plans: GeneratedDayPlan[] = []

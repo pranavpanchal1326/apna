@@ -8,6 +8,7 @@
 
 import * as functions from 'firebase-functions/v2'
 import * as admin from 'firebase-admin'
+import { FieldValue } from 'firebase-admin/firestore'
 import {
   computeBalances,
   simplifyDebts,
@@ -97,7 +98,7 @@ export const computeSettlements = functions.firestore.onDocumentWritten(
 
         tx.set(settlementRef, {
           groupId,
-          computedAt:  admin.firestore.FieldValue.serverTimestamp(),
+          computedAt:  FieldValue.serverTimestamp(),
           balances:    balances.map((b) => ({
             uid:         b.uid,
             displayName: b.displayName,

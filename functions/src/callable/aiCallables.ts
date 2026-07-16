@@ -7,7 +7,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 import {
   runAiPrompt,
-  stripCodeFences,
+  extractJsonPayload,
   GEMINI_API_KEY,
   GROQ_API_KEY,
 } from '../ai/gateway'
@@ -99,8 +99,12 @@ export const generateAiItinerary = onCall(
       return { success: false, message: 'ai_unavailable' }
     }
 
-    const plans = parseItineraryJson(stripCodeFences(result.text), days)
+    const plans = parseItineraryJson(extractJsonPayload(result.text), days)
     if (!plans) {
+      // Log a snippet so unparseable model output is diagnosable in prod
+      console.warn(
+        `[apna] generateAiItinerary: parse_failed provider=${result.provider} snippet=${JSON.stringify(result.text.slice(0, 300))}`,
+      )
       return { success: false, message: 'parse_failed' }
     }
     return { success: true, plans, provider: result.provider }
@@ -142,7 +146,7 @@ export const getDietarySuggestions = onCall(AI_OPTS, async (request) => {
   }
 
   try {
-    const parsed = JSON.parse(stripCodeFences(result.text)) as Array<Record<string, unknown>>
+    const parsed = JSON.parse(extractJsonPayload(result.text)) as Array<Record<string, unknown>>
     if (!Array.isArray(parsed)) return { success: false, message: 'parse_failed' }
     const suggestions = parsed
       .filter((s) => typeof s.name === 'string' && s.name.trim())

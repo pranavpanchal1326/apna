@@ -1,5 +1,6 @@
 // functions/src/notifications/send.ts
 import * as admin from 'firebase-admin'
+import { FieldValue } from 'firebase-admin/firestore'
 import { resolvePrefs, allowsNotification } from './prefs'
 
 const db = admin.firestore()
@@ -74,7 +75,7 @@ async function cleanupTokens(tokens: string[]): Promise<void> {
     usersSnap.docs.forEach((doc) => {
       batch.update(doc.ref, {
         fcmToken: null,
-        fcmTokenUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        fcmTokenUpdatedAt: FieldValue.serverTimestamp(),
       })
     })
 

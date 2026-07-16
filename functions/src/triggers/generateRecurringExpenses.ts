@@ -8,6 +8,7 @@
 // generate every missed occurrence, one per loop iteration.
 
 import * as admin from 'firebase-admin'
+import { FieldValue } from 'firebase-admin/firestore'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import {
   computeNextRunDate,
@@ -90,7 +91,7 @@ export const generateRecurringExpenses = onSchedule(
               splits: template.splits,
               date: runDate,
               createdBy: template.createdBy,
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              createdAt: FieldValue.serverTimestamp(),
               isSettled: false,
               recurringTemplateId: template.id,
             })
@@ -106,7 +107,7 @@ export const generateRecurringExpenses = onSchedule(
         const expired = isExpired({ nextRunDate: runDate, endDate: template.endDate })
         await templateDoc.ref.update({
           nextRunDate: runDate,
-          lastGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastGeneratedAt: FieldValue.serverTimestamp(),
           ...(expired ? { active: false } : {}),
         })
 

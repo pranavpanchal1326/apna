@@ -82,6 +82,32 @@ export function stripCodeFences(text: string): string {
   return match ? match[1].trim() : trimmed
 }
 
+/**
+ * Extracts the JSON payload from model output that may wrap it in fences
+ * AND/OR prose ("Here is your itinerary: [...] Enjoy!"). Smaller models
+ * (Groq 8B) do this constantly. Returns the substring from the first
+ * opening bracket to its matching last closing bracket, or the cleaned
+ * text unchanged when no brackets are found.
+ */
+export function extractJsonPayload(text: string): string {
+  const cleaned = stripCodeFences(text)
+  // Also handle fences embedded mid-prose (stripCodeFences only handles
+  // fence-wrapped-whole-output)
+  const fenced = /```(?:json)?\s*([\s\S]*?)\s*```/.exec(cleaned)
+  const source = fenced ? fenced[1] : cleaned
+  const firstArray = source.indexOf('[')
+  const firstObject = source.indexOf('{')
+  const start =
+    firstArray === -1 ? firstObject
+    : firstObject === -1 ? firstArray
+    : Math.min(firstArray, firstObject)
+  if (start === -1) return source.trim()
+  const closer = source[start] === '[' ? ']' : '}'
+  const end = source.lastIndexOf(closer)
+  if (end <= start) return source.trim()
+  return source.slice(start, end + 1).trim()
+}
+
 // ── Quota ────────────────────────────────────────────────────────────────────
 
 /**
