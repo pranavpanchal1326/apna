@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 12,
     borderWidth: 1.5,
-    borderColor: '#4ECDC4',
+    borderColor: '#D96A50',
   },
   rightButtons: {
     position: 'absolute',

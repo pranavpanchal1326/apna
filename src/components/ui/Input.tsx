@@ -1,4 +1,10 @@
 // src/components/ui/Input.tsx
+// Kora & Ink Input — Blueprint §3.6. Borderless bgTertiary field, radius.soft,
+// 52pt. Focus state: a stitch sews along the bottom edge (left→right, 240ms)
+// in madder — the focus ring IS the thread. Error: stitch re-sews in haldi +
+// bodySm message below; never red borders around the whole field. Amount
+// inputs use mono at monoLg with the rupee prefix pre-rendered in textMuted.
+
 import { useState, useCallback, forwardRef } from 'react'
 import {
   View,
@@ -9,6 +15,7 @@ import {
   type ViewStyle,
 } from 'react-native'
 import { useTheme } from '@theme'
+import { Stitch } from './Stitch'
 
 export type InputType = 'text' | 'phone' | 'amount'
 
@@ -56,29 +63,17 @@ export const Input = forwardRef<TextInput, InputProps>(
       [onBlur]
     )
 
-    const borderColor = error
-      ? colors.accentDanger
-      : isFocused
-      ? colors.accentPrimary
-      : colors.border
+    // The focus ring IS the thread: show the bottom stitch when focused or
+    // errored. Error re-sews in haldi (warning); focus sews in madder.
+    const showStitch = isFocused || !!error
+    const stitchColor = error ? colors.warning : colors.stitch
 
-    // ── Keyboard + type config ─────────────────────────────────
     const typeConfig: Partial<TextInputProps> =
       type === 'phone'
-        ? {
-            keyboardType: 'phone-pad',
-            maxLength: 10,
-            returnKeyType: 'done',
-          }
+        ? { keyboardType: 'phone-pad', maxLength: 10, returnKeyType: 'done' }
         : type === 'amount'
-        ? {
-            keyboardType: 'numeric',
-            returnKeyType: 'done',
-          }
-        : {
-            keyboardType: 'default',
-            returnKeyType: 'next',
-          }
+        ? { keyboardType: 'numeric', returnKeyType: 'done' }
+        : { keyboardType: 'default', returnKeyType: 'next' }
 
     return (
       <View style={[styles.container, containerStyle]}>
@@ -87,7 +82,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             style={[
               text.label.md,
               {
-                color: error ? colors.accentDanger : colors.textSecondary,
+                color: error ? colors.warning : colors.textSecondary,
                 marginBottom: spacing.xs,
               },
             ]}
@@ -101,41 +96,22 @@ export const Input = forwardRef<TextInput, InputProps>(
             styles.inputRow,
             {
               backgroundColor: colors.bgTertiary,
-              borderColor,
-              borderRadius: radius.md,
+              borderRadius: radius.soft,
               opacity: disabled ? 0.4 : 1,
-              borderWidth: isFocused ? 1.5 : 1,
             },
           ]}
         >
           {/* Phone prefix */}
           {type === 'phone' && (
-            <View
-              style={[
-                styles.prefix,
-                {
-                  borderRightColor: colors.border,
-                  paddingHorizontal: spacing.md,
-                },
-              ]}
-            >
-              <Text style={[text.body.md, { color: colors.textSecondary }]}>
-                +91
-              </Text>
+            <View style={[styles.prefix, { paddingHorizontal: spacing.md }]}>
+              <Text style={[text.body.md, { color: colors.textSecondary }]}>+91</Text>
             </View>
           )}
 
-          {/* Amount prefix */}
+          {/* Amount prefix — rupee whispers in textMuted (§3.6) */}
           {type === 'amount' && (
             <View style={[styles.prefix, { paddingLeft: spacing.md }]}>
-              <Text
-                style={[
-                  text.mono.md,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                ₹
-              </Text>
+              <Text style={[text.mono.lg, { color: colors.textMuted }]}>₹</Text>
             </View>
           )}
 
@@ -152,7 +128,7 @@ export const Input = forwardRef<TextInput, InputProps>(
               {
                 color: colors.textPrimary,
                 fontFamily: type === 'amount' ? fonts.mono : fonts.body,
-                fontSize: type === 'amount' ? 20 : 15,
+                fontSize: type === 'amount' ? 26 : 15,
                 paddingHorizontal: type === 'text' ? spacing.md : spacing.sm,
                 paddingVertical: spacing.md,
                 flex: 1,
@@ -161,15 +137,21 @@ export const Input = forwardRef<TextInput, InputProps>(
             {...typeConfig}
             {...rest}
           />
+
+          {/* Focus / error stitch sews along the bottom edge */}
+          {showStitch && (
+            <View style={styles.focusStitch} pointerEvents="none">
+              <Stitch sew color={stitchColor} />
+            </View>
+          )}
         </View>
 
-        {/* Error / hint text */}
         {(error || hint) && (
           <Text
             style={[
-              text.label.sm,
+              text.body.sm,
               {
-                color: error ? colors.accentDanger : colors.textMuted,
+                color: error ? colors.warning : colors.textMuted,
                 marginTop: spacing.xs,
               },
             ]}
@@ -197,12 +179,18 @@ const styles = StyleSheet.create({
   prefix: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderRightWidth: 1,
     alignSelf: 'stretch',
     paddingVertical: 0,
   },
   input: {
     minHeight: 52,
     textAlignVertical: 'center',
+  },
+  focusStitch: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 2,
   },
 })

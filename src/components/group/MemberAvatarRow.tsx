@@ -68,7 +68,7 @@ export const MemberAvatarRow = memo(function MemberAvatarRow({
               <Avatar
                 name={user.name}
                 imageUrl={user.photoUrl}
-                color={user.avatarColor ?? '#4ECDC4'}
+                color={user.avatarColor ?? '#D96A50'}
                 size="md"
               />
               <Text

@@ -1,0 +1,9 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna mark">
+  <!-- Dhaga "a" — Blueprint Part 7. Bowl: r=26, C=163.36, 7 whole stitches
+       (period 23.337 = dash 13.79 + gap 9.55). Do not alter without re-deriving. -->
+  <circle cx="54" cy="66" r="26" fill="none" stroke="#D96A50" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="13.79 9.55" stroke-dashoffset="6.9"/>
+  <path d="M 84 40 L 84 76 Q 84 96 102 92" fill="none" stroke="#D96A50"
+        stroke-width="7" stroke-linecap="round"/>
+  <circle cx="84" cy="40" r="6.5" fill="#EFEAE0"/>
+</svg>

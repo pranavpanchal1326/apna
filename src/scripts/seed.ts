@@ -25,9 +25,9 @@ const auth = admin.auth()
 
 // ── Test users ────────────────────────────────────────────────────
 const USERS = [
-  { uid: 'uid_arjun',  name: 'Arjun Sharma',  phone: '+919876543210', avatarColor: '#4ECDC4' },
-  { uid: 'uid_riya',   name: 'Riya Patel',    phone: '+919876543211', avatarColor: '#FF6B6B' },
-  { uid: 'uid_pranav', name: 'Pranav Mehta',  phone: '+919876543212', avatarColor: '#FFD166' },
+  { uid: 'uid_arjun',  name: 'Arjun Sharma',  phone: '+919876543210', avatarColor: '#D96A50' },
+  { uid: 'uid_riya',   name: 'Riya Patel',    phone: '+919876543211', avatarColor: '#8FAE9A' },
+  { uid: 'uid_pranav', name: 'Pranav Mehta',  phone: '+919876543212', avatarColor: '#C9A24B' },
   { uid: 'uid_kavya',  name: 'Kavya Nair',    phone: '+919876543213', avatarColor: '#A8E6CF' },
 ]
 

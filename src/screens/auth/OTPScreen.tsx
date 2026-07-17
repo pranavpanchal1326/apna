@@ -19,6 +19,7 @@ import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
 import { verifyOTP, sendOTP } from '@lib/firebase/auth'
+import { firebaseConfig, usingFirebaseEmulators } from '@lib/firebase/config'
 import type { RecaptchaRef } from '@lib/firebase/auth'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import Constants from 'expo-constants'
@@ -169,11 +170,13 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
 
   return (
     <Screen edges={['top', 'left', 'right']}>
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaRef}
-        firebaseConfig={Constants.expoConfig?.extra as Record<string, string>}
-        attemptInvisibleVerification
-      />
+      {!usingFirebaseEmulators && (
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaRef}
+          firebaseConfig={firebaseConfig}
+          attemptInvisibleVerification
+        />
+      )}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

@@ -1,20 +1,25 @@
 // src/components/ui/SettlementCard.tsx
-// "Priya pays Arjun ₹840" — the core settlement UI unit.
-// Tappable to open SettleUpScreen confirmation.
+// Kora & Ink settlement ceremony — Blueprint §3.11. One of the three sanctioned
+// card surfaces (money-moment). Debtor avatar — horizontal stitch — creditor
+// avatar; amount centered below in monoLg; on settle the stitch sews across and
+// a knot lands at the midpoint with a success haptic. "Make it feel like a
+// small ceremony." No borders, no shadow, no accent glow, no text glyphs.
 
 import { useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Avatar } from './Avatar'
-import { formatAmount } from '@lib/utils/date'
+import { Amount } from './Amount'
+import { Stitch } from './Stitch'
+import { ThreadKnot } from '../icons'
 import type { SettlementItem } from '@lib/firebase/settlements'
 
 interface SettlementCardProps {
-  settlement:   SettlementItem
-  currentUid:   string
-  onPress:      (settlement: SettlementItem) => void
-  isRecorded?:  boolean
+  settlement:  SettlementItem
+  currentUid:  string
+  onPress:     (settlement: SettlementItem) => void
+  isRecorded?: boolean
 }
 
 export function SettlementCard({
@@ -23,102 +28,87 @@ export function SettlementCard({
   onPress,
   isRecorded = false,
 }: SettlementCardProps) {
-  const { colors, spacing, radius, text, shadows } = useTheme()
+  const { colors, spacing, radius, text } = useTheme()
 
   const isMyPayment = settlement.fromUid === currentUid
-  const amountStr   = formatAmount(settlement.amountPaise / 100)
+  const rupees = settlement.amountPaise / 100
 
   const handlePress = useCallback(() => {
     if (isRecorded) return
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     onPress(settlement)
-  }, [settlement, isRecorded])
+  }, [settlement, isRecorded, onPress])
+
+  const fromColor = isRecorded ? colors.settled : colors.accentPrimary
+  const toColor = isRecorded ? colors.settled : colors.positive
 
   return (
     <Pressable
       onPress={handlePress}
       disabled={isRecorded}
       accessibilityRole="button"
-      accessibilityLabel={`${settlement.fromName} pays ${settlement.toName} ${amountStr}${isRecorded ? ', settled' : ''}`}
-      style={({ pressed }) => [
+      accessibilityLabel={`${settlement.fromName} pays ${settlement.toName} ${rupees} rupees${isRecorded ? ', settled' : ''}`}
+      style={[
         styles.card,
         {
-          backgroundColor: isRecorded ? colors.bgSecondary : colors.bgTertiary,
-          borderRadius:    radius.lg,
-          padding:         spacing.lg,
-          marginBottom:    spacing.sm,
-          borderWidth:     1,
-          borderColor:     isRecorded
-            ? colors.border
-            : isMyPayment
-            ? `${colors.accentDanger}66`
-            : settlement.toUid === currentUid
-            ? `${colors.accentPrimary}66`
-            : colors.borderAccent,
-          opacity: pressed ? 0.85 : 1,
-          ...shadows.card,
+          backgroundColor: colors.bgSecondary,
+          borderRadius: radius.sheet,
+          padding: spacing.xl,
+          marginBottom: spacing.sm,
         },
       ]}
     >
+      {/* debtor — stitch — creditor */}
       <View style={styles.row}>
-        {/* FROM avatar */}
-        <Avatar
-          name={settlement.fromName}
-          color={isRecorded ? colors.settled : colors.accentDanger}
-          size="md"
-        />
-
-        {/* Arrow + amount */}
-        <View style={styles.middle}>
-          <Text
-            style={[
-              text.mono.md,
-              {
-                color:    isRecorded ? colors.settled : isMyPayment ? colors.accentDanger : colors.textPrimary,
-                fontSize: 17,
-              },
-            ]}
-          >
-            {amountStr}
-          </Text>
-          <Text style={[text.label.sm, { color: colors.textMuted }]}>
-            {isMyPayment ? 'you pay' : 'pays'}
+        <View style={styles.avatarCol}>
+          <Avatar name={settlement.fromName} color={fromColor} size="lg" />
+          <Text style={[text.label.sm, { color: colors.textMuted, marginTop: spacing.xs }]} numberOfLines={1}>
+            {isMyPayment ? 'You' : settlement.fromName.split(' ')[0]}
           </Text>
         </View>
 
-        {/* TO avatar */}
-        <Avatar
-          name={settlement.toName}
-          color={isRecorded ? colors.settled : colors.accentPrimary}
-          size="md"
-        />
-      </View>
-
-      {/* Names row */}
-      <View style={[styles.namesRow, { marginTop: spacing.xs }]}>
-        <Text style={[text.label.md, { color: isRecorded ? colors.settled : colors.textSecondary, flex: 1 }]}>
-          {settlement.fromName}
-        </Text>
-        <Text style={[text.label.sm, { color: colors.textMuted }]}>→</Text>
-        <Text style={[text.label.md, { color: isRecorded ? colors.settled : colors.textSecondary, flex: 1, textAlign: 'right' }]}>
-          {settlement.toName}
-        </Text>
-      </View>
-
-      {/* Recorded badge */}
-      {isRecorded && (
-        <View style={[styles.recordedBadge, { marginTop: spacing.xs }]}>
-          <Text style={[text.label.sm, { color: colors.settled }]}>✓ Settled</Text>
+        <View style={styles.stitchGap}>
+          {isRecorded ? (
+            <ThreadKnot size={22} color={colors.settled} />
+          ) : (
+            <Stitch />
+          )}
         </View>
-      )}
+
+        <View style={styles.avatarCol}>
+          <Avatar name={settlement.toName} color={toColor} size="lg" />
+          <Text style={[text.label.sm, { color: colors.textMuted, marginTop: spacing.xs }]} numberOfLines={1}>
+            {settlement.toName.split(' ')[0]}
+          </Text>
+        </View>
+      </View>
+
+      {/* amount centered below */}
+      <View style={[styles.amountWrap, { marginTop: spacing.lg }]}>
+        <Amount value={rupees} size="lg" settled={isRecorded} />
+      </View>
     </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
-  card:       {},
-  row:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  middle:     { alignItems: 'center', flex: 1 },
-  namesRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  recordedBadge: { alignItems: 'center' },
+  card: {},
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  avatarCol: {
+    alignItems: 'center',
+    width: 72,
+  },
+  stitchGap: {
+    flex: 1,
+    height: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  amountWrap: {
+    alignItems: 'center',
+  },
 })

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     zIndex:         2,
   },
   orderText: {
-    color:      '#080C14',
+    color:      '#161512',
     fontSize:   10,
     fontWeight: '700',
     lineHeight: 10,

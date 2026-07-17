@@ -131,10 +131,10 @@ export function RootNavigator() {
           notification: colors.accentDanger,
         },
         fonts: {
-          regular: { fontFamily: 'Outfit-Regular', fontWeight: '400' },
-          medium:  { fontFamily: 'Outfit-Medium',  fontWeight: '500' },
-          bold:    { fontFamily: 'Outfit-Bold',    fontWeight: '700' },
-          heavy:   { fontFamily: 'Outfit-Bold',    fontWeight: '700' },
+          regular: { fontFamily: 'GeneralSans-Regular',      fontWeight: '400' },
+          medium:  { fontFamily: 'GeneralSans-Medium',       fontWeight: '500' },
+          bold:    { fontFamily: 'CabinetGrotesk-Bold',      fontWeight: '700' },
+          heavy:   { fontFamily: 'CabinetGrotesk-Extrabold', fontWeight: '800' },
         },
       }}
     >

@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native'
 import { Screen, FAB } from '../../components'
+import { Baithak } from '../../components/icons'
 import { useTheme } from '../../theme'
 import { Timestamp } from 'firebase/firestore'
 import { useGroupStore } from '../../stores/group.store'
@@ -328,13 +329,12 @@ export function ItineraryScreen({ route, navigation }: Props) {
       {activeDayId && (
         <>
           <FAB
-            icon={<Text style={{ fontSize: 22, color: colors.bgPrimary, fontWeight: '600' }}>🗳️</Text>}
+            icon={<Baithak size={26} color={colors.onAccent} />}
             onPress={() => addSheetRef.current?.open(undefined, true)}
             accessibilityLabel="Propose activity"
             style={{ position: 'absolute', bottom: spacing.xl, right: spacing.lg + 68 }}
           />
           <FAB
-            icon={<Text style={{ fontSize: 24, color: colors.bgPrimary, fontWeight: '600' }}>+</Text>}
             onPress={() => addSheetRef.current?.open(undefined, false)}
             accessibilityLabel="Add stop"
             style={{ position: 'absolute', bottom: spacing.xl, right: spacing.lg }}

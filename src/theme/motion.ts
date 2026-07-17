@@ -9,13 +9,15 @@
 
 import { Easing } from 'react-native'
 
-// Duration constants (ms) — from PRD §7
+// Duration constants (ms) — Blueprint §2.7.1
 export const Duration = {
   instant:  12,   // Minimum — for state that feels instant but isn't jarring
   fast:     200,  // Quick interactions: button press, tab switch
-  standard: 240,  // Default transition: screen slide, card expand
-  slow:     280,  // Deliberate: bottom sheet open, modal appear
+  standard: 240,  // Default transition: screen slide, row expand
+  slow:     280,  // Deliberate: sheet open, modal appear
   pageIn:   320,  // Screen entrance
+  sew:      18,   // Per stitch dash — the sewing animation (§2.6.3)
+  hero:     420,  // Odometer rolls, wrap reveals
 } as const
 
 // Easing curves for Animated.timing()
@@ -60,10 +62,18 @@ export const Spring = {
     useNativeDriver: true,
   },
 
-  // Snappy spring — tab switch indicator, toggle
+  // Snappy spring — tab stitch slide, toggle
   snappy: {
     tension:  100,
     friction: 10,
+    useNativeDriver: true,
+  },
+
+  // Settle spring — slow, weighty. Money moments ONLY (§2.7.2 rule 5):
+  // settle ceremony, odometer landings, trip-wrap reveals.
+  settle: {
+    tension:  26,
+    friction: 8,
     useNativeDriver: true,
   },
 } as const

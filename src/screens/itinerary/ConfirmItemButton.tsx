@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   check: {
     fontSize:  18,
-    color:     '#4ECDC4',
+    color:     '#D96A50',
     position:  'absolute',
     left:      -28,
   },

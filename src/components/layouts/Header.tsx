@@ -1,6 +1,10 @@
 // src/components/layouts/Header.tsx
+// Kora & Ink Header — Blueprint §3.12. Transparent over fabric (no navBar fill
+// at scroll-top). Back control: 36pt circular bgTertiary tile with Phosphor
+// CaretLeft (kills the CSS-arrow glyph). Right side max two icon controls.
 import { View, Text, StyleSheet, Pressable, type ViewStyle } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 
 interface HeaderProps {
@@ -18,7 +22,7 @@ export function Header({
   rightAction,
   style,
 }: HeaderProps) {
-  const { colors, spacing, layout, text } = useTheme()
+  const { colors, layout, text } = useTheme()
   const displayBack = showBack || Boolean(onBack)
 
   const handleBackPress = () => {
@@ -32,10 +36,8 @@ export function Header({
         styles.container,
         {
           height: layout.headerHeight,
-          backgroundColor: colors.bgPrimary,
-          paddingHorizontal: spacing.lg,
-          borderBottomColor: colors.border,
-          borderBottomWidth: 1,
+          backgroundColor: 'transparent',
+          paddingHorizontal: layout.screenPaddingH,
         },
         style,
       ]}
@@ -45,18 +47,13 @@ export function Header({
         {displayBack && (
           <Pressable
             onPress={handleBackPress}
-            style={styles.backButton}
+            style={[styles.backTile, { backgroundColor: colors.bgTertiary }]}
             accessible
             accessibilityRole="button"
             accessibilityLabel="Go back"
+            hitSlop={8}
           >
-            {/* Pure CSS Chevron Left */}
-            <View
-              style={[
-                styles.chevron,
-                { borderColor: colors.textPrimary },
-              ]}
-            />
+            <CaretLeft size={20} color={colors.textPrimary} weight="regular" />
           </Pressable>
         )}
       </View>
@@ -92,19 +89,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
-  backButton: {
-    width: 44,
-    height: 44,
+  backTile: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  chevron: {
-    width: 12,
-    height: 12,
-    borderLeftWidth: 2.5,
-    borderBottomWidth: 2.5,
-    transform: [{ rotate: '45deg' }],
-    marginLeft: 4, // Visual offset to center it in the 44pt box
   },
   titleContainer: {
     flex: 1,

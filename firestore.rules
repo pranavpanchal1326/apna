@@ -67,8 +67,12 @@ service cloud.firestore {
     }
 
     // Is this an avatar color from the allowed palette?
+    // Dyed-thread ramp (Design Blueprint §2.1.4) + legacy palette so
+    // pre-redesign users can still update their profile documents.
     function isValidAvatarColor(value) {
       return value in [
+        '#D96A50', '#8FAE9A', '#C9A24B', '#A98BB8',
+        '#7FA0B8', '#C98B6B', '#B8A98B', '#B87F8F',
         '#4ECDC4', '#FF6B6B', '#FFD166', '#A8E6CF',
         '#FF8B94', '#7EC8E3', '#B5B5FF', '#FECA57'
       ];

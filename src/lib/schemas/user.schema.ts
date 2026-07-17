@@ -1,9 +1,10 @@
 // src/lib/schemas/user.schema.ts
 import { z } from 'zod'
 
+// Dyed-thread ramp — Blueprint §2.1.4. Must match AVATAR_COLORS in user.types.ts.
 export const AVATAR_COLORS_ARRAY = [
-  '#4ECDC4', '#FF6B6B', '#FFD166', '#A8E6CF',
-  '#FF8B94', '#7EC8E3', '#B5B5FF', '#FECA57',
+  '#D96A50', '#8FAE9A', '#C9A24B', '#A98BB8',
+  '#7FA0B8', '#C98B6B', '#B8A98B', '#B87F8F',
 ] as const
 
 // Notification preferences — mirrors functions/src/notifications/prefs.ts.
@@ -36,7 +37,9 @@ export const UserSchema = z.object({
   phone:       z.string().regex(/^\+91[6-9]\d{9}$/, 'Invalid Indian phone number'),
   phoneHash:   z.string().length(16).optional(),
   name:        z.string().min(1).max(40),
-  avatarColor: z.enum(AVATAR_COLORS_ARRAY),
+  // Hex regex (not enum): accepts legacy pre-redesign palette values already
+  // stored in Firestore. New writes must come from AVATAR_COLORS_ARRAY.
+  avatarColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid avatar color'),
   createdAt:   z.unknown(),   // Firestore Timestamp — validated as present, not typed
   groups:      z.array(z.string().max(128)).max(20).default([]),
   fcmToken:    z.string().max(512).optional(),   // Phase 5 — push notifications

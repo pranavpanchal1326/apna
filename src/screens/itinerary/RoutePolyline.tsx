@@ -3,7 +3,7 @@
 // Rendered as a Mapbox ShapeSource + LineLayer inside a MapboxGL.MapView.
 //
 // LINE DESIGN (from PRD §7 map spec):
-//   Color:        colors.accentPrimary (#4ECDC4)
+//   Color:        colors.accentPrimary (madder #D96A50)
 //   Width:        2dp
 //   Opacity:      0.7
 //   Dash pattern: [4, 3] — 4px dash, 3px gap (Dhaga thread visual)

@@ -1,0 +1,8 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna mark">
+  <!-- Dhaga "a" on kora (light) surfaces. Geometry identical to ink variant. -->
+  <circle cx="54" cy="66" r="26" fill="none" stroke="#B0402F" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="13.79 9.55" stroke-dashoffset="6.9"/>
+  <path d="M 84 40 L 84 76 Q 84 96 102 92" fill="none" stroke="#B0402F"
+        stroke-width="7" stroke-linecap="round"/>
+  <circle cx="84" cy="40" r="6.5" fill="#1C1A15"/>
+</svg>

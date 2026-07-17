@@ -16,6 +16,7 @@ import { useTheme } from '@theme'
 import { Button, Input, Screen } from '@components'
 import { useAuthStore } from '@stores/auth.store'
 import { sendOTP } from '@lib/firebase/auth'
+import { firebaseConfig, usingFirebaseEmulators } from '@lib/firebase/config'
 import type { RecaptchaRef } from '@lib/firebase/auth'
 import { track } from '@lib/analytics'
 
@@ -96,14 +97,17 @@ export function PhoneInputScreen({ onOTPSent }: PhoneInputScreenProps) {
 
   return (
     <Screen edges={['top', 'left', 'right']}>
-      {/* Firebase reCAPTCHA — invisible, required for phone auth in RN */}
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaRef}
-        firebaseConfig={Constants.expoConfig?.extra as Record<string, string>}
-        attemptInvisibleVerification
-        title="Verify you're human"
-        cancelLabel="Cancel"
-      />
+      {/* Firebase reCAPTCHA — invisible, required for phone auth in RN.
+          Skipped on local emulators (auth emulator needs no verifier). */}
+      {!usingFirebaseEmulators && (
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaRef}
+          firebaseConfig={firebaseConfig}
+          attemptInvisibleVerification
+          title="Verify you're human"
+          cancelLabel="Cancel"
+        />
+      )}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

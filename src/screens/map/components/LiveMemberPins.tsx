@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   initialText: {
-    color: '#080C14',
+    color: '#161512',
     fontWeight: '700',
   },
   livePulse: {

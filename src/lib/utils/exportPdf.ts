@@ -83,7 +83,7 @@ export async function generateExpensesPdf(bundle: ExpenseExportBundle): Promise<
             font-weight: 700;
             color: #0F172A;
             margin-bottom: 16px;
-            border-left: 4px solid #4ECDC4;
+            border-left: 4px solid #B0402F;
             padding-left: 8px;
           }
           .flex-columns {
@@ -129,7 +129,7 @@ export async function generateExpensesPdf(bundle: ExpenseExportBundle): Promise<
             margin-right: 8px;
           }
           .progress-bar-fill {
-            background-color: #4ECDC4;
+            background-color: #B0402F;
             border-radius: 4px;
             height: 6px;
           }

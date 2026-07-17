@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countText: { color: '#080C14', fontSize: 10, fontWeight: '700' },
+  countText: { color: '#161512', fontSize: 10, fontWeight: '700' },
   gridBadge: {
     position: 'absolute',
     top: 4,

@@ -1,89 +1,114 @@
 // src/screens/group/GroupHomeScreen.tsx
-// Full group home — GroupHeaderHero + GroupNavigator (custom inner tab navigator).
-// Settlement balances fetched from group document (recalculated by Cloud Function).
+// Kora & Ink group hub — Blueprint §4.3.1.
+// Signature moment: the my-position strip — every group screen leads with what
+// it means for *you*. Law 3 madder slots: (1) FAB "Add expense", (2) tab
+// stitch, (3) my-position amount.
 
 import { useCallback } from 'react'
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { CaretRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
-import { Screen, FAB, Button } from '@components'
+import { Screen, FAB, Row, Amount, Button, Card, ThreadKnot } from '@components'
 import { GroupHeaderHero } from '@components/group'
 import { GroupNavigator } from '@navigation/GroupNavigator'
 import { useActiveGroup } from '@hooks/useGroups'
 import { useAuth } from '@hooks/useAuth'
 import { getCachedTripWrap } from '../../lib/utils/tripWrapData'
+import { groupNetForUser, netTone } from '@lib/utils/netPosition'
+import { SkeletonRow } from '@components'
 import type { HomeStackScreenProps } from '@navigation/types'
 
 type Props = HomeStackScreenProps<'GroupHome'>
 
 export function GroupHomeScreen({ route, navigation }: Props) {
   const { groupId } = route.params
-  const { colors, text, spacing, radius } = useTheme()
-  const { user }  = useAuth()
-  const group     = useActiveGroup(groupId)
+  const { colors, text, spacing, layout } = useTheme()
+  const { user } = useAuth()
+  const group = useActiveGroup(groupId)
 
-  const handleSettle = useCallback((_withUid: string) => {
+  const handleSettle = useCallback(
+    (_withUid: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      navigation.navigate('SettleUp', { groupId, withUid: _withUid })
+    },
+    [navigation, groupId]
+  )
+
+  const openSettleUp = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    navigation.navigate('SettleUp', { groupId, withUid: _withUid })
+    navigation.navigate('SettleUp', { groupId })
   }, [navigation, groupId])
 
-  const isTripOver = group?.status === 'completed' || (group?.endDate && new Date(group.endDate) < new Date())
+  const isTripOver =
+    group?.status === 'completed' ||
+    (group?.endDate ? new Date(group.endDate) < new Date() : false)
   const hasCachedWrap = group ? Boolean(getCachedTripWrap(group.id)) : false
 
   if (!group) {
     return (
       <Screen>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator color={colors.accentPrimary} size="large" />
-          <Text style={[text.body.md, { color: colors.textSecondary, marginTop: spacing.md }]}>
-            Loading squad...
-          </Text>
+        <View style={{ paddingHorizontal: layout.screenPaddingH, paddingTop: spacing['3xl'] }}>
+          {[0, 1, 2].map((i) => (
+            <SkeletonRow key={i} index={i} />
+          ))}
         </View>
       </Screen>
     )
   }
+
+  const myNet = groupNetForUser(group.balances, user?.uid)
+  const tone = netTone(myNet)
 
   return (
     <Screen style={{ position: 'relative' }}>
       {/* Header hero */}
       <GroupHeaderHero group={group} />
 
-      {/* Trip Wrap banner prompt */}
+      {/* My-position strip — leads with what this trip means for you (§4.3.1) */}
+      <View style={{ paddingHorizontal: layout.screenPaddingH, marginTop: spacing.lg }}>
+        {tone === 'settled' ? (
+          <Row
+            title="Sab barabar."
+            titleNode={
+              <Text style={[text.body.lg, { color: colors.settled }]}>Sab barabar.</Text>
+            }
+            leading={<ThreadKnot size={22} color={colors.settled} />}
+          />
+        ) : (
+          <Row
+            title={tone === 'owed' ? "You're owed in this trip" : 'You owe in this trip'}
+            trailing={
+              <View style={styles.stripTrailing}>
+                <Amount value={Math.abs(myNet)} size="md" signed
+                  color={tone === 'owed' ? colors.positive : colors.negative} />
+                <Button label="Settle" variant="ghost" size="sm" onPress={openSettleUp} />
+              </View>
+            }
+          />
+        )}
+      </View>
+
+      {/* Trip Wrap prompt — money-moment card, no emoji chrome (§4.3.1) */}
       {isTripOver && (
-        <View
-          style={{
-            backgroundColor: colors.bgSecondary,
-            borderColor: colors.border,
-            borderWidth: 1,
-            borderRadius: radius.md,
-            marginHorizontal: spacing.lg,
-            marginTop: spacing.md,
-            padding: spacing.md,
-          }}
+        <Card
+          intent="money-moment"
+          onPress={() => navigation.navigate('TripWrap', { groupId })}
+          style={{ marginHorizontal: layout.screenPaddingH, marginTop: spacing.md }}
+          accessibilityLabel="Open your trip, wrapped"
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-            <Text style={{ fontSize: 24 }}>🎬</Text>
+          <View style={styles.wrapRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[text.label.md, { color: colors.textPrimary }]}>
-                Trip Wrap is Ready!
+              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
+                Your trip, wrapped
               </Text>
-              <Text style={[text.label.sm, { color: colors.textSecondary }]}>
-                Relive the squad's stats and highlight moments.
+              <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]}>
+                {hasCachedWrap ? 'Relive the stats and moments.' : 'The stats and moments, sewn together.'}
               </Text>
             </View>
+            <CaretRight size={20} color={colors.textMuted} />
           </View>
-          <Button
-            variant="primary"
-            label={hasCachedWrap ? 'View Trip Wrap' : 'Generate Trip Wrap'}
-            onPress={() => navigation.navigate('TripWrap', { groupId })}
-            style={{ paddingVertical: spacing.xs, height: 36 }}
-          />
-        </View>
+        </Card>
       )}
 
       {/* Group navigator tabs (Feed / Members) */}
@@ -94,24 +119,25 @@ export function GroupHomeScreen({ route, navigation }: Props) {
         onSettle={handleSettle}
       />
 
-      {/* FAB to add expense */}
+      {/* FAB to add expense — thread-add pill (Law 3 slot 1) */}
       <FAB
-        icon={<Text style={{ fontSize: 24, color: colors.bgPrimary, fontWeight: '600', lineHeight: 28 }}>+</Text>}
+        label="Add expense"
         onPress={() => navigation.navigate('AddExpense', { groupId: group.id })}
         accessibilityLabel="Add expense"
-        style={{ position: 'absolute', bottom: 80, right: spacing.lg }}
+        style={{ position: 'absolute', bottom: 80, right: layout.screenPaddingH }}
       />
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
+  stripTrailing: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
   },
-  fab: {
-    position: 'absolute',
+  wrapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 })

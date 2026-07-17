@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="apna"
-        android:textColor="#4ECDC4"
+        android:textColor="#D96A50"
         android:textSize="10sp"
         android:textStyle="bold" />
 
@@ -44,7 +44,7 @@
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:background="#4ECDC4" />
+            android:background="#D96A50" />
 
         <TextView
             android:layout_width="32dp"
@@ -55,7 +55,7 @@
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:background="#FF6B6B" />
+            android:background="#8FAE9A" />
 
         <TextView
             android:layout_width="32dp"

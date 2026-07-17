@@ -77,9 +77,6 @@ export function BalanceSummaryCard({
         </Text>
       )}
 
-      {isSettled && (
-        <Text style={{ fontSize: 36, marginBottom: spacing.sm }}>🎉</Text>
-      )}
 
       <Text style={[text.body.sm, { color: colors.textSecondary }]}>
         {subline}

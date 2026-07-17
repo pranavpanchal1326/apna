@@ -129,7 +129,7 @@ export async function buildMapWidgetData(params: {
   const now = Date.now()
   const members = Object.entries(params.memberLocations)
     .map(([uid, loc]) => {
-      const profile = params.memberProfiles[uid] || { name: 'Member', avatarColor: '#4ECDC4' }
+      const profile = params.memberProfiles[uid] || { name: 'Member', avatarColor: '#D96A50' }
       const isLive = loc.sharing && (now - loc.timestamp < 60000)
       
       const names = profile.name.trim().split(/\s+/)

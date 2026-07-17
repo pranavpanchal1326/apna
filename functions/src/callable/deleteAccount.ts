@@ -170,7 +170,7 @@ export const deleteAccount = onCall(
       await db.doc(`users/${uid}`).set({
         uid,
         name: 'Deleted User',
-        avatarColor: '#B5B5FF',
+        avatarColor: '#7FA0B8',
         groups: [],
         deleted: true,
         deletedAt: FieldValue.serverTimestamp(),

@@ -1,26 +1,26 @@
 // src/components/settlement/SettleUpSheet.tsx
-// Bottom sheet to confirm a settlement.
-// Pre-fills the amount from the simplified debt.
-// User can adjust the amount (partial settlement).
-// On confirm → recordSettlement → optimistic update → close.
+// Kora & Ink settle-up ceremony — Blueprint §4.6.2 / §3.11.
+// debtor avatar — horizontal stitch — creditor avatar; editable Amount for
+// partial settlement; UPI deep-link (apna never moves money) + "Mark ₹n
+// settled" confirm. haptics.settleUp() fires the success haptic on record.
 
 import { useState, useCallback, useEffect } from 'react'
-import {
-  View, Text, TextInput, StyleSheet, Alert,
-} from 'react-native'
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native'
 import { openUpiPayment } from '@lib/utils/upi'
 import { useTheme } from '@theme'
 import { haptics } from '@lib/haptics'
-import { BottomSheet } from '@components/ui/BottomSheet'
+import { Sheet } from '@components/ui/Sheet'
 import { Button } from '@components/ui/Button'
 import { Avatar } from '@components/ui/Avatar'
+import { Stitch } from '@components/ui/Stitch'
+import { formatINR } from '@lib/utils/currency'
 import type { DebtSimplified } from '@lib/engine/balanceEngine'
 import type { UserInput } from '@lib/schemas'
 
 interface Props {
   visible: boolean
   onClose: () => void
-  debt: DebtSimplified | null         // The debt being settled
+  debt: DebtSimplified | null
   fromUser: UserInput | undefined     // Payer (always the current user)
   toUser: UserInput | undefined       // Receiver
   groupId: string
@@ -39,12 +39,10 @@ export function SettleUpSheet({
 }: Props) {
   const { colors, text, spacing, radius, fonts } = useTheme()
 
-  const defaultAmount = debt ? debt.amountRupees.toFixed(2) : ''
-  const [amountStr, setAmountStr] = useState(defaultAmount)
+  const [amountStr, setAmountStr] = useState(debt ? debt.amountRupees.toFixed(2) : '')
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // Reset when debt changes
   useEffect(() => {
     if (debt) {
       setAmountStr(debt.amountRupees.toFixed(2))
@@ -60,25 +58,20 @@ export function SettleUpSheet({
   const handleConfirm = useCallback(async () => {
     if (!canConfirm || !debt) return
     setError(null)
-
     if (amount > maxAmount + 0.01) {
-      setError(`Maximum you can settle is ₹${maxAmount.toFixed(2)}`)
+      setError(`Most you can settle is ${formatINR(maxAmount)}.`)
       return
     }
-
     try {
       await onConfirm(amount, note.trim())
       haptics.settleUp()
-      setTimeout(() => {
-        onClose()
-      }, 200)
+      setTimeout(() => onClose(), 200)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not record settlement.')
+      setError(err instanceof Error ? err.message : "Couldn't record the settlement. Retry.")
     }
   }, [canConfirm, debt, amount, maxAmount, note, onConfirm, onClose])
 
-  // Open the receiver's UPI app pre-filled — user records the settlement
-  // in apna after completing payment (apna never moves money).
+  // Deep-link the receiver's UPI app pre-filled; user records in apna after.
   const handlePayViaUpi = useCallback(async () => {
     if (!toUser?.upiId || amount <= 0) return
     const opened = await openUpiPayment({
@@ -95,61 +88,47 @@ export function SettleUpSheet({
   if (!debt || !toUser) return null
 
   return (
-    <BottomSheet
-      visible={visible}
-      onClose={onClose}
-      title="Settle up"
-      snapHeight={520}
-    >
-      <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
-        {/* Who → Who */}
-        <View style={[styles.parties, { marginBottom: spacing.xl }]}>
+    <Sheet visible={visible} onClose={onClose} title="Settle up">
+      <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl'] }}>
+        {/* Ceremony: debtor — stitch — creditor */}
+        <View style={styles.ceremony}>
           <View style={styles.party}>
             <Avatar
               name={fromUser?.name ?? 'You'}
-              color={fromUser?.avatarColor ?? '#4ECDC4'}
+              color={fromUser?.avatarColor ?? colors.accentPrimary}
               imageUrl={fromUser?.photoUrl}
               size="lg"
             />
-            <Text style={[text.label.md, { color: colors.textSecondary, marginTop: spacing.xs }]}>
-              You
-            </Text>
+            <Text style={[text.label.sm, { color: colors.textMuted, marginTop: spacing.xs }]}>You</Text>
           </View>
-          <Text style={[text.heading.sm, { color: colors.textMuted, marginHorizontal: spacing.lg }]}>
-            →
-          </Text>
+          <View style={styles.stitchGap}>
+            <Stitch />
+          </View>
           <View style={styles.party}>
-            <Avatar
-              name={toUser.name}
-              color={toUser.avatarColor}
-              imageUrl={toUser.photoUrl}
-              size="lg"
-            />
-            <Text style={[text.label.md, { color: colors.textSecondary, marginTop: spacing.xs }]} numberOfLines={1}>
+            <Avatar name={toUser.name} color={toUser.avatarColor} imageUrl={toUser.photoUrl} size="lg" />
+            <Text style={[text.label.sm, { color: colors.textMuted, marginTop: spacing.xs }]} numberOfLines={1}>
               {toUser.name.split(' ')[0]}
             </Text>
           </View>
         </View>
 
-        {/* Amount input */}
-        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
-          Amount
-        </Text>
-        <View style={[
-          styles.amountRow,
-          {
-            backgroundColor: colors.bgTertiary,
-            borderRadius: radius.md,
-            borderColor: error ? colors.accentDanger : colors.border,
-            borderWidth: 1,
-            paddingHorizontal: spacing.md,
-            marginBottom: spacing.xs,
-          },
-        ]}>
-          <Text style={[text.mono.md, { color: colors.textSecondary }]}>₹</Text>
+        {/* Editable amount (partial settlement) */}
+        <View
+          style={[
+            styles.amountRow,
+            {
+              backgroundColor: colors.bgTertiary,
+              borderRadius: radius.soft,
+              paddingHorizontal: spacing.md,
+              marginTop: spacing.xl,
+              marginBottom: spacing.xs,
+            },
+          ]}
+        >
+          <Text style={[text.mono.lg, { color: colors.textMuted }]}>₹</Text>
           <TextInput
             value={amountStr}
-            onChangeText={v => {
+            onChangeText={(v) => {
               const cleaned = v.replace(/[^0-9.]/g, '')
               const parts = cleaned.split('.')
               const safe = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleaned
@@ -161,7 +140,7 @@ export function SettleUpSheet({
             style={{
               flex: 1,
               fontFamily: fonts.mono,
-              fontSize: 28,
+              fontSize: 26,
               color: colors.textPrimary,
               paddingVertical: spacing.md,
               paddingLeft: spacing.sm,
@@ -169,20 +148,15 @@ export function SettleUpSheet({
             accessibilityLabel="Settlement amount"
           />
         </View>
-
-        {/* Max hint */}
         <Text style={[text.label.sm, { color: colors.textMuted, marginBottom: spacing.lg }]}>
-          Full amount: ₹{maxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          Full amount: {formatINR(maxAmount)}
         </Text>
 
         {/* Note */}
-        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
-          Note (optional)
-        </Text>
         <TextInput
           value={note}
           onChangeText={setNote}
-          placeholder="e.g. UPI transfer done"
+          placeholder="Add a note (optional)"
           placeholderTextColor={colors.textMuted}
           maxLength={100}
           returnKeyType="done"
@@ -191,27 +165,24 @@ export function SettleUpSheet({
             fontSize: 15,
             color: colors.textPrimary,
             backgroundColor: colors.bgTertiary,
-            borderColor: colors.border,
-            borderWidth: 1,
-            borderRadius: radius.md,
+            borderRadius: radius.soft,
             padding: spacing.md,
             minHeight: 52,
-            marginBottom: spacing.xl,
+            marginBottom: spacing.lg,
           }}
           accessibilityLabel="Settlement note"
         />
 
-        {/* Error */}
         {error && (
-          <Text style={[text.label.sm, { color: colors.accentDanger, marginBottom: spacing.md, textAlign: 'center' }]}>
+          <Text style={[text.body.sm, { color: colors.warning, marginBottom: spacing.md, textAlign: 'center' }]}>
             {error}
           </Text>
         )}
 
-        {/* Pay via UPI — deeplinks into GPay/PhonePe with amount pre-filled */}
+        {/* Pay via UPI (deep-link) */}
         {toUser.upiId ? (
           <Button
-            label={`Pay ₹${amount > 0 ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0'} via UPI`}
+            label={`Pay ${formatINR(amount > 0 ? amount : 0)} via UPI`}
             variant="secondary"
             size="lg"
             fullWidth
@@ -220,14 +191,14 @@ export function SettleUpSheet({
             style={{ marginBottom: spacing.sm }}
           />
         ) : (
-          <Text style={[text.label.sm, { color: colors.textMuted, textAlign: 'center', marginBottom: spacing.sm }]}>
-            💡 {toUser.name.split(' ')[0]} hasn't added a UPI ID yet — ask them to set it in Profile for one-tap payment.
+          <Text style={[text.body.sm, { color: colors.textMuted, textAlign: 'center', marginBottom: spacing.sm }]}>
+            {toUser.name.split(' ')[0]} hasn't added a UPI ID yet — ask them to set it in Profile for one-tap payment.
           </Text>
         )}
 
-        {/* Confirm */}
+        {/* Confirm — the knot instead of confetti (§4.6.2) */}
         <Button
-          label={isSettling ? 'Recording…' : `Confirm ₹${amount > 0 ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0'} paid`}
+          label={isSettling ? 'Recording…' : `Mark ${formatINR(amount > 0 ? amount : 0)} settled`}
           variant="primary"
           size="lg"
           fullWidth
@@ -236,12 +207,23 @@ export function SettleUpSheet({
           onPress={handleConfirm}
         />
       </View>
-    </BottomSheet>
+    </Sheet>
   )
 }
 
 const styles = StyleSheet.create({
-  parties:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  party:     { alignItems: 'center' },
+  ceremony: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  party: { alignItems: 'center', width: 72 },
+  stitchGap: {
+    flex: 1,
+    height: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
   amountRow: { flexDirection: 'row', alignItems: 'center' },
 })

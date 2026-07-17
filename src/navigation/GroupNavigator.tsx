@@ -5,6 +5,7 @@ import { useState, useCallback, useRef } from 'react'
 import { View, Text, Animated, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
+import { Stitch } from '@components'
 import { FeedTab } from '@screens/group/tabs/FeedTab'
 import { MembersTab } from '@screens/group/tabs/MembersTab'
 import type { GroupInput, SettlementBalance } from '@lib/schemas'
@@ -20,41 +21,30 @@ const TABS = ['Feed', 'Members'] as const
 type Tab = typeof TABS[number]
 
 export function GroupNavigator({ group, myUid, balances, onSettle }: GroupNavigatorProps) {
-  const { colors, text, spacing, radius } = useTheme()
+  const { colors, text, spacing, layout } = useTheme()
   const { width } = useWindowDimensions()
   const [activeTab, setActiveTab] = useState<Tab>('Feed')
-  const tabIndicatorAnim = useRef(new Animated.Value(0)).current
+  const stitchX = useRef(new Animated.Value(0)).current
 
-  const tabWidth = (width - spacing.lg * 2) / TABS.length
+  const tabWidth = (width - layout.screenPaddingH * 2) / TABS.length
 
   const handleTabPress = useCallback((tab: Tab, index: number) => {
     Haptics.selectionAsync()
     setActiveTab(tab)
-    Animated.spring(tabIndicatorAnim, {
+    // Active tab carries a 12pt stitch dash beneath, sliding with Spring.snappy
+    Animated.spring(stitchX, {
       toValue: index * tabWidth,
-      tension: 80,
+      tension: 100,
       friction: 10,
       useNativeDriver: true,
     }).start()
-  }, [tabWidth, tabIndicatorAnim, spacing.lg])
+  }, [tabWidth, stitchX])
 
   return (
     <View style={styles.container}>
-      {/* Custom Tab Bar */}
-      <View style={[styles.tabBarContainer, { paddingHorizontal: spacing.lg, marginVertical: spacing.md }]}>
-        <View style={[styles.tabBar, { backgroundColor: colors.bgTertiary, borderRadius: radius.full }]}>
-          {/* Slider indicator */}
-          <Animated.View
-            style={[
-              styles.tabIndicator,
-              {
-                width: tabWidth - 4, // account for padding
-                backgroundColor: colors.bgSecondary,
-                borderRadius: radius.full,
-                transform: [{ translateX: tabIndicatorAnim }],
-              },
-            ]}
-          />
+      {/* Text tabs with a sliding stitch beneath the active one (§4.3.1) */}
+      <View style={[styles.tabBarContainer, { paddingHorizontal: layout.screenPaddingH, marginVertical: spacing.md }]}>
+        <View style={styles.tabBar}>
           {TABS.map((tab, index) => (
             <Pressable
               key={tab}
@@ -62,13 +52,14 @@ export function GroupNavigator({ group, myUid, balances, onSettle }: GroupNaviga
               style={styles.tabButton}
               accessibilityRole="button"
               accessibilityLabel={`${tab} tab`}
+              accessibilityState={{ selected: activeTab === tab }}
             >
               <Text
                 style={[
                   text.label.lg,
                   {
                     color: activeTab === tab ? colors.textPrimary : colors.textMuted,
-                    fontFamily: activeTab === tab ? 'Outfit-Bold' : 'Outfit-Regular',
+                    fontFamily: activeTab === tab ? 'GeneralSans-Medium' : 'GeneralSans-Regular',
                   },
                 ]}
               >
@@ -76,6 +67,16 @@ export function GroupNavigator({ group, myUid, balances, onSettle }: GroupNaviga
               </Text>
             </Pressable>
           ))}
+          {/* The tab stitch — 12pt madder dash under the active tab */}
+          <Animated.View
+            style={[
+              styles.tabStitch,
+              { width: tabWidth, transform: [{ translateX: stitchX }] },
+            ]}
+            pointerEvents="none"
+          >
+            <Stitch length={12} tone="live" />
+          </Animated.View>
         </View>
       </View>
 
@@ -112,21 +113,19 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     position: 'relative',
-    height: 48,
-    padding: 4,
+    height: 44,
     alignItems: 'center',
-  },
-  tabIndicator: {
-    position: 'absolute',
-    height: 40,
-    top: 4,
-    left: 4,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
-    zIndex: 1,
+  },
+  tabStitch: {
+    position: 'absolute',
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

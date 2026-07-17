@@ -1,29 +1,23 @@
 // src/screens/settlement/BalanceSummaryScreen.tsx
-// Full balance screen for a group.
-//
-// Sections (top to bottom):
-// 1. My balance hero — large teal/coral number, context label
-// 2. "What I owe" — DebtRows for my debts (tappable → SettleUpSheet)
-// 3. "Owed to me" — DebtRows where I'm the receiver
-// 4. "All balances" — BalanceRow per member
-// 5. "Settlement history" — recent settlements list
-//
-// This screen is navigated to from GroupHomeScreen Budget tab (Prompt 1.3)
-// or from the balance card on GroupHomeScreen.
+// Kora & Ink balances — Blueprint §4.6.1.
+// Hero: my net Amount ("You're owed ₹1,200"). Then two clusters under
+// StitchLabels — OWED TO YOU (leaf) and YOU OWE (madder) — as DebtRows with
+// the stitch-arrow glyph. Settlement history at the bottom. No card borders,
+// no glow, no text-glyph controls.
 
 import { useState, useCallback, useEffect } from 'react'
 import {
   View, Text, ScrollView, Pressable, StyleSheet,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { CaretLeft } from 'phosphor-react-native'
 import { useTheme } from '@theme'
-import { Screen } from '@components'
+import { Screen, StitchLabel, Amount, Row } from '@components'
 import { BalanceRow, DebtRow, SettleUpSheet } from '@components/settlement'
 import { useSettlements } from '@hooks/useSettlements'
 import { useGroupStore } from '@stores/group.store'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { useAuth } from '@hooks/useAuth'
-import { formatBalanceHero } from '@lib/engine/balanceEngine'
 import { feedTimestamp } from '@lib/utils/date'
 import type { DebtSimplified } from '@lib/engine/balanceEngine'
 import type { HomeStackScreenProps } from '@navigation/types'
@@ -33,7 +27,7 @@ type Props = HomeStackScreenProps<'BalanceSummary'>
 
 export function BalanceSummaryScreen({ route }: Props) {
   const { groupId } = route.params
-  const { colors, text, spacing, radius, shadows } = useTheme()
+  const { colors, text, spacing, layout } = useTheme()
   const navigation = useNavigation()
   const { user } = useAuth()
   const activeGroup = useGroupStore(s => s.activeGroup)
@@ -87,71 +81,66 @@ export function BalanceSummaryScreen({ route }: Props) {
 
   return (
     <Screen>
-      {/* Header */}
-      <View style={[styles.header, { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, marginBottom: spacing.lg }]}>
+      {/* Header — transparent, back tile (§3.12) */}
+      <View style={[styles.header, { paddingHorizontal: layout.screenPaddingH, paddingTop: spacing.lg, marginBottom: spacing.lg }]}>
         <Pressable
           onPress={() => navigation.goBack()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          hitSlop={12}
+          style={[styles.backTile, { backgroundColor: colors.bgTertiary }]}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Text style={{ color: colors.accentPrimary, fontSize: 24, fontWeight: '700' }}>‹ Back</Text>
+          <CaretLeft size={20} color={colors.textPrimary} />
         </Pressable>
-        <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
-          Balances
-        </Text>
-        <View style={{ width: 50 }} />
+        <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Balances</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: 80 }}
+        contentContainerStyle={{ paddingHorizontal: layout.screenPaddingH, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* My balance hero */}
+        {/* My net hero (Law 2 focal point) */}
         {myBalance && (
-          <View style={[
-            styles.heroCard,
-            {
-              backgroundColor: colors.bgSecondary,
-              borderRadius: radius.xl,
-              borderColor: myBalance.isSettled
-                ? colors.border
-                : myBalance.isPayer
-                  ? colors.accentPrimary + '30'
-                  : colors.accentDanger + '30',
-              borderWidth: 1.5,
-              padding: spacing.xl,
-              marginBottom: spacing.xl,
-              alignItems: 'center',
-              ...(myBalance.isSettled ? shadows.card : myBalance.isPayer ? shadows.accentGlow : shadows.card),
-            },
-          ]}>
-            <Text style={[text.display.sm, {
-              color: myBalance.isSettled
-                ? colors.settled
-                : myBalance.isPayer
-                  ? colors.positive
-                  : colors.negative,
-              fontVariant: ['tabular-nums'],
-            }]}>
-              {myBalance.isSettled ? 'All clear ✓' : formatBalanceHero(myBalance.netPaise)}
-            </Text>
-            <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.sm }]}>
-              {myBalance.isSettled
-                ? "You're fully settled in this group"
-                : myBalance.isPayer
-                  ? 'the group owes you'
-                  : 'you owe the group'}
-            </Text>
+          <View style={{ marginBottom: spacing.lg }}>
+            {myBalance.isSettled ? (
+              <Text style={[text.display.sm, { color: colors.settled }]}>All settled</Text>
+            ) : (
+              <>
+                <Text style={[text.heading.md, { color: colors.textSecondary }]}>
+                  {myBalance.isPayer ? "You're owed" : 'You owe'}
+                </Text>
+                <Amount
+                  value={Math.abs(myBalance.netPaise) / 100}
+                  size="lg"
+                  animate
+                  color={myBalance.isPayer ? colors.positive : colors.negative}
+                />
+              </>
+            )}
           </View>
         )}
 
-        {/* What I owe */}
+        {/* Owed to you (leaf) */}
+        {owedToMe.length > 0 && (
+          <View style={{ marginBottom: spacing.md }}>
+            <StitchLabel label="Owed to you" />
+            {owedToMe.map(debt => (
+              <DebtRow
+                key={`${debt.fromUid}-${debt.toUid}`}
+                debt={debt}
+                fromUser={members.get(debt.fromUid)}
+                toUser={members.get(debt.toUid)}
+                myUid={myUid}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* You owe (madder) */}
         {myDebts.length > 0 && (
           <View style={{ marginBottom: spacing.md }}>
-            <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm, letterSpacing: 0.5 }]}>
-              YOU OWE
-            </Text>
+            <StitchLabel label="You owe" />
             {myDebts.map(debt => (
               <DebtRow
                 key={`${debt.fromUid}-${debt.toUid}`}
@@ -165,36 +154,9 @@ export function BalanceSummaryScreen({ route }: Props) {
           </View>
         )}
 
-        {/* Owed to me */}
-        {owedToMe.length > 0 && (
-          <View style={{ marginBottom: spacing.md }}>
-            <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm, marginTop: spacing.lg, letterSpacing: 0.5 }]}>
-              OWED TO YOU
-            </Text>
-            {owedToMe.map(debt => (
-              <DebtRow
-                key={`${debt.fromUid}-${debt.toUid}`}
-                debt={debt}
-                fromUser={members.get(debt.fromUid)}
-                toUser={members.get(debt.toUid)}
-                myUid={myUid}
-              />
-            ))}
-          </View>
-        )}
-
         {/* All balances */}
-        <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm, marginTop: spacing.lg, letterSpacing: 0.5 }]}>
-          ALL BALANCES
-        </Text>
-        <View style={{
-          backgroundColor: colors.bgSecondary,
-          borderRadius: radius.lg,
-          borderColor: colors.border,
-          borderWidth: 1,
-          paddingHorizontal: spacing.md,
-          marginBottom: spacing.xl,
-        }}>
+        <StitchLabel label="All balances" />
+        <View style={{ marginBottom: spacing.lg }}>
           {summary.balances.map(balance => (
             <BalanceRow
               key={balance.uid}
@@ -206,50 +168,31 @@ export function BalanceSummaryScreen({ route }: Props) {
         </View>
 
         {/* Total group spend */}
-        <View style={[styles.totalRow, {
-          backgroundColor: colors.bgSecondary,
-          borderRadius: radius.lg,
-          borderColor: colors.border,
-          borderWidth: 1,
-          padding: spacing.md,
-          marginBottom: spacing.xl,
-        }]}>
-          <Text style={[text.body.sm, { color: colors.textSecondary }]}>Total group spend</Text>
-          <Text style={[text.mono.md, { color: colors.textPrimary, fontVariant: ['tabular-nums'] }]}>
-            ₹{summary.totalExpensesRupees.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-          </Text>
-        </View>
+        <Row
+          dense
+          title="Total group spend"
+          titleNode={<Text style={[text.body.sm, { color: colors.textSecondary }]}>Total group spend</Text>}
+          trailing={<Amount value={summary.totalExpensesRupees} size="md" />}
+        />
 
         {/* Settlement history */}
         {settlements.length > 0 && (
           <>
-            <Text style={[text.label.md, { color: colors.textSecondary, marginBottom: spacing.sm, letterSpacing: 0.5 }]}>
-              SETTLEMENT HISTORY
-            </Text>
+            <StitchLabel label="Settlement history" />
             {settlements.slice(0, 10).map(s => {
               const from = members.get(s.fromUid)
               const to = members.get(s.toUid)
               const ts = s.createdAt as unknown as Timestamp
+              const fromLabel = s.fromUid === myUid ? 'You' : from?.name.split(' ')[0] ?? '?'
+              const toLabel = s.toUid === myUid ? 'you' : to?.name.split(' ')[0] ?? '?'
               return (
-                <View key={s.id} style={[styles.historyRow, {
-                  paddingVertical: spacing.sm,
-                  borderBottomColor: colors.border,
-                  borderBottomWidth: 1,
-                }]}>
-                  <Text style={[text.body.sm, { color: colors.textPrimary, flex: 1 }]}>
-                    {s.fromUid === myUid ? 'You' : from?.name.split(' ')[0] ?? '?'}
-                    {' paid '}
-                    {s.toUid === myUid ? 'you' : to?.name.split(' ')[0] ?? '?'}
-                  </Text>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[text.mono.sm, { color: colors.positive, fontVariant: ['tabular-nums'] }]}>
-                      ₹{s.amountRupees.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                    </Text>
-                    <Text style={[text.label.sm, { color: colors.textMuted, marginTop: 2 }]}>
-                      {ts?.toDate ? feedTimestamp(ts.toDate()) : ''}
-                    </Text>
-                  </View>
-                </View>
+                <Row
+                  key={s.id}
+                  dense
+                  title={`${fromLabel} paid ${toLabel}`}
+                  subtitle={ts?.toDate ? feedTimestamp(ts.toDate()) : undefined}
+                  trailing={<Amount value={s.amountRupees} size="sm" />}
+                />
               )
             })}
           </>
@@ -272,8 +215,12 @@ export function BalanceSummaryScreen({ route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  heroCard:   {},
-  totalRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  historyRow: { flexDirection: 'row', alignItems: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backTile: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 })

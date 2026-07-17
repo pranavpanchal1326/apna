@@ -1,6 +1,11 @@
 // src/components/ui/Avatar.tsx
+// Kora & Ink Avatar — Blueprint §3.4. Thread-dye color keyed by uid hash
+// (a friend is always their thread color). New `stitched` prop draws a 1.5pt
+// stitch ring for "live on trip / sharing location" — replaces any green-dot
+// presence convention. Overlap stacks (-8pt) order newest-first.
 import { View, Text, Image, StyleSheet, type ViewStyle } from 'react-native'
 import { useTheme } from '@theme'
+import Svg, { Circle } from 'react-native-svg'
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
@@ -25,7 +30,10 @@ interface AvatarProps {
   color: string             // Avatar background color (from user.avatarColor)
   imageUrl?: string         // Optional photo (Phase 4+)
   size?: AvatarSize
-  showOnlineDot?: boolean   // Green dot for "live" location sharing status
+  /** Stitch ring — "live on trip / sharing location" (§3.4). */
+  stitched?: boolean
+  /** @deprecated use `stitched` — presence is now a stitch ring, not a dot */
+  showOnlineDot?: boolean
   style?: ViewStyle
 }
 
@@ -34,13 +42,15 @@ export function Avatar({
   color,
   imageUrl,
   size = 'md',
+  stitched = false,
   showOnlineDot = false,
   style,
 }: AvatarProps) {
-  const { radius } = useTheme()
+  const { colors, radius } = useTheme()
   const dimension = AVATAR_SIZE_MAP[size]
   const fontSize = FONT_SIZE_MAP[size]
   const initial = name.trim().charAt(0).toUpperCase()
+  const ring = stitched || showOnlineDot
 
   return (
     <View style={[{ width: dimension, height: dimension }, style]}>
@@ -74,8 +84,8 @@ export function Avatar({
           <Text
             style={{
               fontSize,
-              fontFamily: 'Outfit-Bold',
-              color: '#080C14',
+              fontFamily: 'GeneralSans-Medium',
+              color: colors.onAccent,
               lineHeight: fontSize * 1.2,
             }}
           >
@@ -84,20 +94,25 @@ export function Avatar({
         </View>
       )}
 
-      {/* Online dot — shown when location sharing is active */}
-      {showOnlineDot && (
-        <View
-          style={[
-            styles.onlineDot,
-            {
-              width: dimension * 0.28,
-              height: dimension * 0.28,
-              borderRadius: radius.full,
-              bottom: 0,
-              right: 0,
-            },
-          ]}
-        />
+      {/* Stitch ring — live on trip / sharing location (§3.4) */}
+      {ring && (
+        <Svg
+          width={dimension}
+          height={dimension}
+          style={StyleSheet.absoluteFill as object}
+          pointerEvents="none"
+        >
+          <Circle
+            cx={dimension / 2}
+            cy={dimension / 2}
+            r={dimension / 2 - 1}
+            stroke={colors.stitch}
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </Svg>
       )}
     </View>
   )
@@ -140,8 +155,8 @@ export function AvatarStack({
               left: index * (dimension - overlap),
               zIndex: maxVisible - index,
               borderRadius: radius.full,
-              borderWidth: 1.5,
-              borderColor: colors.bgSecondary,
+              borderWidth: 2,
+              borderColor: colors.bgPrimary,
             },
           ]}
         >
@@ -160,15 +175,15 @@ export function AvatarStack({
               height: dimension,
               borderRadius: radius.full,
               backgroundColor: colors.bgTertiary,
-              borderWidth: 1.5,
-              borderColor: colors.border,
+              borderWidth: 2,
+              borderColor: colors.bgPrimary,
             },
           ]}
         >
           <Text
             style={{
               fontSize: FONT_SIZE_MAP[size] - 1,
-              fontFamily: 'Outfit-Medium',
+              fontFamily: 'GeneralSans-Medium',
               color: colors.textSecondary,
             }}
           >
@@ -187,12 +202,6 @@ const styles = StyleSheet.create({
   initials: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  onlineDot: {
-    position: 'absolute',
-    backgroundColor: '#4ADE80',
-    borderWidth: 1.5,
-    borderColor: '#080C14',
   },
   stackRow: {
     flexDirection: 'row',

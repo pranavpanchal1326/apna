@@ -106,7 +106,7 @@ export function useGroupLocations(
               ...update,
               userId,
               name: member.name || 'Squad Member',
-              avatarColor: member.avatarColor || '#4ECDC4',
+              avatarColor: member.avatarColor || '#D96A50',
               status,
             })
           })

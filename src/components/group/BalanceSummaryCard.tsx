@@ -96,8 +96,8 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
             Your balance
           </Text>
           {isSettled ? (
-            <Text style={[text.heading.md, { color: colors.settled ?? colors.positive }]}>
-              All settled ✓
+            <Text style={[text.heading.md, { color: colors.settled }]}>
+              All settled
             </Text>
           ) : (
             <Text
@@ -164,7 +164,7 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
               <Avatar
                 name={row.name}
                 imageUrl={row.photoURL}
-                color={row.avatarColor ?? '#4ECDC4'}
+                color={row.avatarColor ?? colors.accentPrimary}
                 size="sm"
               />
               <Text
@@ -226,8 +226,8 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
                 style={[text.label.md, { color: colors.accentPrimary }]}
               >
                 {expanded
-                  ? 'Show less ↑'
-                  : `${myRows.length - 2} more ↓`}
+                  ? 'Show less'
+                  : `${myRows.length - 2} more`}
               </Text>
             </Pressable>
           )}

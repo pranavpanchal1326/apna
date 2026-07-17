@@ -107,7 +107,7 @@ export const matchContactsByHash = onCall<MatchContactsRequest, Promise<MatchCon
           uid: userUid,
           name: data.name || 'Unnamed',
           maskedPhone,
-          avatarColor: data.avatarColor || '#4ECDC4',
+          avatarColor: data.avatarColor || '#D96A50',
           isAlreadyMember: memberIds.has(userUid),
         })
       })

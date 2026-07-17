@@ -1,397 +1,290 @@
-import React, { useCallback } from 'react'
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Animated,
-} from 'react-native'
+// src/screens/home/HomeScreen.tsx
+// Kora & Ink Home — Blueprint §4.2.1.
+// Signature moment: the net-position hero. Opening the app answers the only
+// question that matters — "am I owed, or do I owe?" — in one glance.
+//
+// Law 2 focal point: the net-position hero. Law 3 madder slots: (1) FAB
+// "New trip", (2) a negative hero amount, (3) unseen-dot on rows.
+// Cards are gone — groups are Rows on fabric, separated by StitchLabels.
+
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import * as Haptics from 'expo-haptics'
-import { useEffect } from 'react'
 import { useTheme } from '@theme'
-import { Screen } from '@components'
+import {
+  Screen,
+  Row,
+  IconTile,
+  StitchLabel,
+  Amount,
+  Avatar,
+  FAB,
+  Sheet,
+  EmptyState,
+  SkeletonRow,
+  ThreadAdd,
+  StitchArrow,
+} from '@components'
 import { useGroups } from '@hooks/useGroups'
 import { useAuth } from '@hooks/useAuth'
 import { useGroupStore } from '@stores/group.store'
+import { totalNetForUser, groupNetForUser, netTone } from '@lib/utils/netPosition'
 import type { HomeStackParamList } from '@navigation/types'
 import type { GroupInput } from '@lib/schemas'
-
 
 type Nav = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>
 type Route = RouteProp<HomeStackParamList, 'HomeList'>
 
 export function HomeScreen() {
-  const { colors, text, spacing, radius, shadows } = useTheme()
+  const { colors, text, spacing } = useTheme()
   const navigation = useNavigation<Nav>()
   const route = useRoute<Route>()
-  const { user }   = useAuth()
+  const { user } = useAuth()
   const { groups, isLoading } = useGroups()
-  const [fabOpen, setFabOpen] = React.useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   const skipped = route.params?.skipped ?? false
-  const firstName = user?.name?.split(' ')[0] ?? 'there'
+  const uid = user?.uid
 
-  // Redirect to ChoosePath onboarding selection if user has 0 groups and didn't skip
+  // Redirect to ChoosePath onboarding if user has 0 groups and didn't skip
   useEffect(() => {
     if (!isLoading && groups.length === 0 && !skipped) {
       navigation.replace('ChoosePath', {})
     }
   }, [isLoading, groups.length, skipped, navigation])
 
-  // ── FAB menu animation ────────────────────────────────────────
-  const fabAnim = React.useRef(new Animated.Value(0)).current
+  // ── Net position across all groups (the hero) ─────────────────
+  const net = useMemo(() => totalNetForUser(groups, uid), [groups, uid])
+  const tone = netTone(net)
 
-  const toggleFAB = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    const toValue = fabOpen ? 0 : 1
-    Animated.spring(fabAnim, {
-      toValue,
-      tension: 80,
-      friction: 7,
-      useNativeDriver: true,
-    }).start()
-    setFabOpen(!fabOpen)
-  }, [fabOpen, fabAnim])
+  // ── Active first, past under a second StitchLabel (§4.2.1) ────
+  const { active, past } = useMemo(() => {
+    const a: GroupInput[] = []
+    const p: GroupInput[] = []
+    for (const g of groups) {
+      ;(g.status === 'completed' ? p : a).push(g)
+    }
+    return { active: a, past: p }
+  }, [groups])
 
-  const handleCreate = useCallback(() => {
-    toggleFAB()
-    setTimeout(() => navigation.navigate('CreateGroup'), 200)
-  }, [navigation, toggleFAB])
+  const handleGroupPress = useCallback(
+    (group: GroupInput) => {
+      useGroupStore.getState().setActiveGroup(group)
+      navigation.navigate('GroupHome', { groupId: group.id, groupName: group.name })
+    },
+    [navigation]
+  )
 
-  const handleJoin = useCallback(() => {
-    toggleFAB()
-    setTimeout(() => navigation.navigate('JoinGroup'), 200)
-  }, [navigation, toggleFAB])
-
-  const handleGroupPress = useCallback((group: GroupInput) => {
-    useGroupStore.getState().setActiveGroup(group)
-    navigation.navigate('GroupHome', {
-      groupId:   group.id,
-      groupName: group.name,
-    })
+  const openProfile = useCallback(() => {
+    // Profile lives on a sibling tab; hop via the parent tab navigator.
+    navigation.getParent()?.navigate('Profile' as never)
   }, [navigation])
 
-  // ── FAB option positions ──────────────────────────────────────
-  const createTranslate = fabAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: [0, -120],
-  })
-  const joinTranslate = fabAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: [0, -64],
-  })
-  const fabRotate = fabAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: ['0deg', '45deg'],
-  })
+  const handleCreate = useCallback(() => {
+    setSheetOpen(false)
+    setTimeout(() => navigation.navigate('CreateGroup'), 180)
+  }, [navigation])
 
-  // ── Render group card ─────────────────────────────────────────
-  const renderGroup = useCallback(({ item }: { item: GroupInput }) => {
-    const memberCount = item.memberIds.length
+  const handleJoin = useCallback(() => {
+    setSheetOpen(false)
+    setTimeout(() => navigation.navigate('JoinGroup'), 180)
+  }, [navigation])
 
+  // ── Group row ─────────────────────────────────────────────────
+  const renderGroup = useCallback(
+    ({ item, muted }: { item: GroupInput; muted?: boolean }) => {
+      const memberCount = item.memberIds.length
+      const gNet = groupNetForUser(item.balances, uid)
+      const subtitleParts = [
+        `${memberCount} ${memberCount === 1 ? 'friend' : 'friends'}`,
+        item.destination,
+        item.startDate,
+      ].filter(Boolean)
+
+      return (
+        <Row
+          onPress={() => handleGroupPress(item)}
+          muted={muted}
+          title={item.name}
+          subtitle={subtitleParts.join(' · ')}
+          leading={
+            <IconTile size={48} tint={muted ? colors.bgSecondary : undefined}>
+              <Text style={{ fontSize: 24 }}>{item.coverEmoji ?? '🧵'}</Text>
+            </IconTile>
+          }
+          trailing={
+            Math.abs(gNet) >= 1 ? (
+              <Amount value={gNet} size="md" signed />
+            ) : (
+              <Amount value={0} size="md" settled />
+            )
+          }
+        />
+      )
+    },
+    [colors, uid, handleGroupPress]
+  )
+
+  const heroLabel =
+    tone === 'settled'
+      ? 'All settled'
+      : tone === 'owed'
+      ? "You're owed"
+      : 'You owe'
+
+  const onScroll = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+      const y = e.nativeEvent.contentOffset.y
+      setCollapsed((c) => (c !== y > 24 ? y > 24 : c))
+    },
+    []
+  )
+
+  // ── Loading ───────────────────────────────────────────────────
+  if (isLoading && groups.length === 0) {
     return (
-      <Pressable
-        onPress={() => handleGroupPress(item)}
-        style={({ pressed }) => [
-          styles.groupCard,
-          {
-            backgroundColor: colors.bgSecondary,
-            borderRadius:    radius.lg,
-            borderColor:     colors.border,
-            marginBottom:    spacing.md,
-            opacity:         pressed ? 0.85 : 1,
-            ...shadows.card,
-          },
-        ]}
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={`${item.name}, ${memberCount} members`}
-      >
-        {/* Emoji + info */}
-        <View style={[styles.cardRow, { padding: spacing.lg }]}>
-          <View
-            style={[
-              styles.emojiContainer,
-              {
-                backgroundColor: colors.bgTertiary,
-                borderRadius:    radius.md,
-                width:  52,
-                height: 52,
-                marginRight: spacing.md,
-              },
-            ]}
-          >
-            <Text style={{ fontSize: 26 }}>{item.coverEmoji ?? '✈️'}</Text>
-          </View>
+      <Screen contentContainerStyle={styles.pad}>
+        <HomeHeader user={user} onAvatar={openProfile} />
+        <View style={{ marginTop: spacing['2xl'] }}>
+          {[0, 1, 2, 3].map((i) => (
+            <SkeletonRow key={i} index={i} />
+          ))}
+        </View>
+      </Screen>
+    )
+  }
 
-          <View style={{ flex: 1 }}>
-            <Text
-              style={[text.heading.sm, { color: colors.textPrimary }]}
-              numberOfLines={1}
-            >
-              {item.name}
-            </Text>
+  // ── Empty ─────────────────────────────────────────────────────
+  if (!isLoading && groups.length === 0) {
+    return (
+      <Screen contentContainerStyle={styles.pad}>
+        <HomeHeader user={user} onAvatar={openProfile} />
+        <EmptyState
+          title="No trips yet."
+          description="Start one, or join with a friend's code."
+          ctaLabel="Create a trip"
+          onCta={() => navigation.navigate('CreateGroup')}
+        />
+      </Screen>
+    )
+  }
 
-            {item.destination && (
-              <Text
-                style={[
-                  text.label.md,
-                  { color: colors.textSecondary, marginTop: 2 },
-                ]}
-                numberOfLines={1}
-              >
-                📍 {item.destination}
-              </Text>
-            )}
+  return (
+    <Screen contentContainerStyle={styles.pad}>
+      <FlatList
+        data={active}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => renderGroup({ item })}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        ListHeaderComponent={
+          <View>
+            <HomeHeader user={user} onAvatar={openProfile} />
 
-            <View style={[styles.cardMeta, { marginTop: spacing.xs }]}>
-              <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                {memberCount} {memberCount === 1 ? 'member' : 'members'}
-              </Text>
-              {item.startDate && (
+            {/* Hero — net position across all trips (Law 2 focal point) */}
+            <View style={{ marginTop: spacing['2xl'], marginBottom: spacing.md }}>
+              {tone === 'settled' ? (
+                <Text style={[text.display.sm, { color: colors.settled }]}>All settled</Text>
+              ) : (
                 <>
-                  <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                    {' · '}
+                  <Text style={[text.heading.md, { color: colors.textSecondary }]}>
+                    {heroLabel}
                   </Text>
-                  <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                    {item.startDate}
-                  </Text>
+                  <Amount value={Math.abs(net)} size="lg" animate
+                    color={tone === 'owed' ? colors.positive : colors.negative} />
                 </>
               )}
             </View>
+
+            <StitchLabel label="Your trips" />
           </View>
-
-          {/* Status badge */}
-          {item.status === 'completed' && (
-            <View
-              style={[
-                styles.badge,
-                {
-                  backgroundColor: colors.bgTertiary,
-                  borderRadius:    radius.full,
-                  paddingHorizontal: spacing.sm,
-                  paddingVertical:   3,
-                },
-              ]}
-            >
-              <Text style={[text.label.sm, { color: colors.textMuted }]}>
-                Done
-              </Text>
-            </View>
-          )}
-        </View>
-      </Pressable>
-    )
-  }, [colors, text, spacing, radius, shadows, handleGroupPress])
-
-  return (
-    <Screen>
-      {/* Header */}
-      <View style={[styles.header, { marginBottom: spacing.xl }]}>
-        <View>
-          <Text style={[text.heading.lg, { color: colors.textPrimary }]}>
-            Hey {firstName} 👋
-          </Text>
-          <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]}>
-            {groups.length === 0
-              ? 'Create your first trip group'
-              : `${groups.length} ${groups.length === 1 ? 'group' : 'groups'}`}
-          </Text>
-        </View>
-      </View>
-
-      {/* Groups list */}
-      <FlatList
-        data={groups}
-        keyExtractor={(item) => item.id}
-        renderItem={renderGroup}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          !isLoading ? (
-            <View style={[styles.empty, { paddingTop: spacing['4xl'] }]}>
-              <Text style={{ fontSize: 48, marginBottom: spacing.lg }}>🗺️</Text>
-              <Text
-                style={[
-                  text.heading.sm,
-                  { color: colors.textPrimary, marginBottom: spacing.sm },
-                ]}
-              >
-                No trips yet
-              </Text>
-              <Text
-                style={[
-                  text.body.md,
-                  {
-                    color:      colors.textSecondary,
-                    textAlign: 'center',
-                    maxWidth:   240,
-                  },
-                ]}
-              >
-                Tap + to create your first group or join one with an invite code.
-              </Text>
+        }
+        ListFooterComponent={
+          past.length > 0 ? (
+            <View>
+              <StitchLabel label="Earlier" tone="dim" />
+              {past.map((item) => (
+                <React.Fragment key={item.id}>
+                  {renderGroup({ item, muted: true })}
+                </React.Fragment>
+              ))}
             </View>
           ) : null
         }
       />
 
-      {/* FAB overlay — close on backdrop tap */}
-      {fabOpen && (
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={toggleFAB}
-          accessible={false}
-        />
-      )}
+      {/* FAB — morphing pill "New trip" (Law 3 slot 1) */}
+      <FAB
+        label="New trip"
+        collapsed={collapsed}
+        onPress={() => setSheetOpen(true)}
+        accessibilityLabel="New trip"
+        style={styles.fab}
+      />
 
-      {/* FAB options */}
-      <Animated.View
-        style={[
-          styles.fabOption,
-          {
-            bottom:    80,
-            right:     spacing.lg,
-            transform: [{ translateY: createTranslate }],
-            opacity:   fabAnim,
-          },
-        ]}
-        pointerEvents={fabOpen ? 'auto' : 'none'}
-      >
-        <Pressable
-          onPress={handleCreate}
-          style={[
-            styles.fabOptionBtn,
-            {
-              backgroundColor: colors.accentPrimary,
-              borderRadius:    radius.full,
-              ...shadows.accentGlow,
-            },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Create new group"
-        >
-          <Text style={[text.label.lg, { color: colors.bgPrimary }]}>
-            ✚ Create group
-          </Text>
-        </Pressable>
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.fabOption,
-          {
-            bottom:    80,
-            right:     spacing.lg,
-            transform: [{ translateY: joinTranslate }],
-            opacity:   fabAnim,
-          },
-        ]}
-        pointerEvents={fabOpen ? 'auto' : 'none'}
-      >
-        <Pressable
-          onPress={handleJoin}
-          style={[
-            styles.fabOptionBtn,
-            {
-              backgroundColor: colors.bgTertiary,
-              borderRadius:    radius.full,
-              borderWidth:     1,
-              borderColor:     colors.border,
-            },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Join group with invite code"
-        >
-          <Text style={[text.label.lg, { color: colors.textPrimary }]}>
-            🔗 Join with code
-          </Text>
-        </Pressable>
-      </Animated.View>
-
-      {/* FAB main button */}
-      <Animated.View
-        style={[
-          styles.fab,
-          {
-            bottom:          80,
-            right:           spacing.lg,
-            backgroundColor: colors.accentPrimary,
-            borderRadius:    radius.full,
-            transform:       [{ rotate: fabRotate }],
-            ...shadows.accentGlow,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={toggleFAB}
-          style={styles.fabInner}
-          accessibilityRole="button"
-          accessibilityLabel={fabOpen ? 'Close menu' : 'Open create or join group'}
-        >
-          <Text style={{ fontSize: 28, color: colors.bgPrimary, lineHeight: 32 }}>
-            +
-          </Text>
-        </Pressable>
-      </Animated.View>
+      {/* Two-Row Sheet replaces the satellite-button pattern (§4.2.1) */}
+      <Sheet visible={sheetOpen} onClose={() => setSheetOpen(false)} title="New trip">
+        <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl'] }}>
+          <Row
+            title="Create a trip"
+            subtitle="Start fresh with friends"
+            onPress={handleCreate}
+            leading={<IconTile><ThreadAdd size={20} color={colors.textPrimary} /></IconTile>}
+          />
+          <Row
+            title="Join with code"
+            subtitle="Enter a friend's invite code"
+            onPress={handleJoin}
+            leading={<IconTile><StitchArrow size={20} color={colors.textPrimary} /></IconTile>}
+          />
+        </View>
+      </Sheet>
     </Screen>
   )
 }
 
+// ── Header: wordmark + avatar (§4.2.1) ──────────────────────────
+function HomeHeader({
+  user,
+  onAvatar,
+}: {
+  user: ReturnType<typeof useAuth>['user']
+  onAvatar: () => void
+}) {
+  const { colors, text } = useTheme()
+  return (
+    <View style={styles.header}>
+      {/* Wordmark: one stitched "a" + solid "pna" is the branded lockup (§7.3);
+          here we use the plain Cabinet 800 wordmark for the app-chrome header. */}
+      <Text style={[text.display.sm, { color: colors.textPrimary, fontSize: 20 }]}>
+        apna
+      </Text>
+      {user && (
+        <Pressable onPress={onAvatar} accessibilityRole="button" accessibilityLabel="Open profile" hitSlop={8}>
+          <Avatar name={user.name ?? '?'} color={user.avatarColor} size="sm" />
+        </Pressable>
+      )}
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
+  pad: {
+    paddingHorizontal: 20,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  groupCard: {
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  cardRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-  },
-  cardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  emojiContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badge: {
-    alignSelf: 'flex-start',
-  },
-  empty: {
-    alignItems: 'center',
+    paddingTop: 8,
   },
   fab: {
     position: 'absolute',
-    width:    56,
-    height:   56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabInner: {
-    width:    56,
-    height:   56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabOption: {
-    position: 'absolute',
-    right:    0,
-    alignItems: 'flex-end',
-  },
-  fabOptionBtn: {
-    paddingHorizontal: 16,
-    paddingVertical:   12,
-    minHeight:         44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    bottom: 80,
+    right: 20,
   },
 })

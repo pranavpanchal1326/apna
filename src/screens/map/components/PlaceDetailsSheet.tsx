@@ -204,7 +204,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
                           },
                         ]}
                       >
-                        <Text style={[text.heading.md, { color: '#080C14', fontWeight: '700' }]}>
+                        <Text style={[text.heading.md, { color: '#161512', fontWeight: '700' }]}>
                           {selection.location.name.charAt(0).toUpperCase()}
                         </Text>
                       </View>

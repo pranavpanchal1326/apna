@@ -38,7 +38,14 @@ export const AUTH_STORAGE_KEYS = {
 // ---------------------------------------------------------------------------
 const extra = Constants.expoConfig?.extra ?? {}
 
-const firebaseConfig = {
+if (__DEV__) {
+  // TEMP-DEBUG: surface which config fields actually reach the runtime
+  console.info('[apna][debug] expoConfig null?', Constants.expoConfig == null,
+    'extra fields:', Object.keys(extra).filter((k) => k.startsWith('firebase'))
+      .map((k) => `${k}=${extra[k] ? 'set' : 'MISSING'}`).join(','))
+}
+
+export const firebaseConfig = {
   apiKey:            extra.firebaseApiKey            as string,
   authDomain:        extra.firebaseAuthDomain        as string,
   projectId:         extra.firebaseProjectId         as string,
@@ -93,6 +100,9 @@ export const functions = getFunctions(app, 'asia-south1')
 // Switch to production: set appEnv: "production" in app.json extra
 // ---------------------------------------------------------------------------
 const IS_DEV = (extra.appEnv as string) === 'development' || __DEV__
+
+/** True when the app talks to local Firebase emulators instead of production. */
+export const usingFirebaseEmulators = IS_DEV
 
 if (IS_DEV) {
   const {

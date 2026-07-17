@@ -119,9 +119,9 @@ export function ExpenseDetailScreen({ route }: Props) {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Hero Section */}
         <View style={[styles.heroSection, { backgroundColor: colors.bgSecondary, borderBottomColor: colors.border }]}>
-          <View style={[styles.categoryBadge, { backgroundColor: `${colors.category?.[expense.category] ?? colors.textSecondary}15` }]}>
+          <View style={[styles.categoryBadge, { backgroundColor: colors.category[expense.category]?.tint ?? colors.bgTertiary }]}>
             <Text style={{ fontSize: 20 }}>{getCategoryEmoji(expense.category)}</Text>
-            <Text style={[text.label.md, { color: colors.category?.[expense.category] ?? colors.textSecondary, marginLeft: spacing.xs }]}>
+            <Text style={[text.label.md, { color: colors.textSecondary, marginLeft: spacing.xs }]}>
               {capitalize(expense.category)}
             </Text>
           </View>

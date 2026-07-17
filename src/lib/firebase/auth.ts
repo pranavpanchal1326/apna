@@ -22,7 +22,8 @@ import {
   getDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import { auth } from './config'
+import type { ApplicationVerifier } from 'firebase/auth'
+import { auth, usingFirebaseEmulators } from './config'
 import type { User } from '@lib/types'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import { userDoc } from './collections'
@@ -43,19 +44,22 @@ export async function sendOTP(
   phone: string,
   recaptchaRef: RecaptchaRef
 ): Promise<string> {
-  if (!recaptchaRef.current) {
-    throw new Error('reCAPTCHA not ready. Please try again.')
+  // The local Auth emulator skips reCAPTCHA entirely — a stub verifier is
+  // enough. In production the mounted FirebaseRecaptchaVerifierModal is used.
+  let verifier: ApplicationVerifier
+  if (usingFirebaseEmulators) {
+    verifier = { type: 'recaptcha', verify: async () => 'emulator-bypass' }
+  } else {
+    if (!recaptchaRef.current) {
+      throw new Error('reCAPTCHA not ready. Please try again.')
+    }
+    verifier = recaptchaRef.current
   }
 
   const fullPhone = `+91${phone.trim()}`
   const provider = new PhoneAuthProvider(auth)
 
-  const verificationId = await provider.verifyPhoneNumber(
-    fullPhone,
-    recaptchaRef.current
-  )
-
-  return verificationId
+  return provider.verifyPhoneNumber(fullPhone, verifier)
 }
 
 /**

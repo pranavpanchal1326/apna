@@ -1,4 +1,13 @@
 // src/components/ui/Card.tsx
+// Demoted per Law 1 — content sits ON the fabric; cards are exceptions.
+// Blueprint §3.2: exactly three sanctioned intents:
+//   'sheet-block'   — grouped block inside a Sheet (radius.soft)
+//   'photo'         — memories / photo surfaces (radius.sheet)
+//   'money-moment'  — settle-up confirmation, trip wrap (radius.sheet)
+// No border, no shadow, no glow. Any other usage gets converted to <Row>
+// or plain layout in review. `elevated`/`accentGlow` are dead props kept
+// only so legacy call sites compile until the Phase 2/3 screen sweep.
+
 import React, { useRef, useCallback } from 'react'
 import {
   Animated,
@@ -10,12 +19,18 @@ import {
 } from 'react-native'
 import { useTheme } from '@theme'
 
+export type CardIntent = 'sheet-block' | 'photo' | 'money-moment'
+
 interface CardProps {
   children: React.ReactNode
+  /** Sanctioned usage (§3.2). Legacy call sites without intent render as sheet-block. */
+  intent?: CardIntent
   onPress?: PressableProps['onPress']
   onLongPress?: PressableProps['onLongPress']
-  elevated?: boolean       // uses elevated shadow vs. card shadow
-  accentGlow?: boolean     // teal glow — for positive balance cards only
+  /** @deprecated flat by design — ignored */
+  elevated?: boolean
+  /** @deprecated glow is banned (§1.3) — ignored */
+  accentGlow?: boolean
   style?: ViewStyle
   contentStyle?: ViewStyle
   accessibilityLabel?: string
@@ -23,21 +38,20 @@ interface CardProps {
 
 export function Card({
   children,
+  intent = 'sheet-block',
   onPress,
   onLongPress,
-  elevated = false,
-  accentGlow = false,
   style,
   contentStyle,
   accessibilityLabel,
 }: CardProps) {
-  const { colors, spacing, radius, shadows, spring } = useTheme()
+  const { colors, spacing, radius, spring } = useTheme()
   const scaleAnim = useRef(new Animated.Value(1)).current
   const isPressable = Boolean(onPress || onLongPress)
 
   const handlePressIn = useCallback(() => {
     if (!isPressable) return
-    Animated.spring(scaleAnim, { toValue: 0.98, ...spring.snappy }).start()
+    Animated.spring(scaleAnim, { toValue: 0.97, ...spring.snappy }).start()
   }, [isPressable, scaleAnim, spring])
 
   const handlePressOut = useCallback(() => {
@@ -45,24 +59,15 @@ export function Card({
     Animated.spring(scaleAnim, { toValue: 1, ...spring.gentle }).start()
   }, [isPressable, scaleAnim, spring])
 
-  const shadowStyle = accentGlow
-    ? shadows.accentGlow
-    : elevated
-    ? shadows.elevated
-    : shadows.card
-
   const inner = (
     <View
       style={[
         styles.card,
         {
           backgroundColor: colors.bgSecondary,
-          borderRadius: radius.lg,
-          borderColor: accentGlow ? colors.borderAccent : colors.border,
-          borderWidth: 1,
-          padding: spacing.md,
+          borderRadius: intent === 'sheet-block' ? radius.soft : radius.sheet,
+          padding: intent === 'photo' ? 0 : spacing.lg,
         },
-        shadowStyle,
         contentStyle,
       ]}
     >

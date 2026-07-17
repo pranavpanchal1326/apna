@@ -50,7 +50,7 @@ export async function startBackgroundLocationTask(params: {
       foregroundService: {
         notificationTitle: 'apna is sharing your location',
         notificationBody: 'Tap to stop',
-        notificationColor: '#4ECDC4',
+        notificationColor: '#D96A50',
       },
       pausesUpdatesAutomatically: false,
       showsBackgroundLocationIndicator: true,

@@ -1,134 +1,90 @@
 // src/components/group/GroupHeaderHero.tsx
-// Collapsible group header — large when at top, collapses on scroll.
-// Shows: back button, emoji, group name, destination, dates, invite code.
+// Kora & Ink group hero — Blueprint §4.3.1. Transparent header over fabric:
+// back tile + overflow icon only (invite chip moves to the Members tab). Hero
+// block: 48pt emoji tile, group name displayMd (Cabinet Grotesk), one bodySm
+// line "Goa · 12–16 Nov · 5 friends". No text-glyph controls, no emoji chrome.
 
 import { memo, useCallback } from 'react'
-import { View, Text, Pressable, Share, StyleSheet } from 'react-native'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft, DotsThree } from 'phosphor-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useTheme } from '@theme'
+import { IconTile } from '@components'
 import type { GroupInput } from '@lib/schemas'
-import { track } from '@lib/analytics'
 
 interface Props {
-  group:          GroupInput
+  group: GroupInput
+}
+
+// "12–16 Nov" style range from YYYY-MM-DD strings; falls back gracefully.
+function formatRange(start?: string, end?: string): string | null {
+  if (!start) return null
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+  try {
+    const s = new Date(start)
+    if (!end) return s.toLocaleDateString('en-IN', opts)
+    const e = new Date(end)
+    const sameMonth = s.getMonth() === e.getMonth()
+    const sDay = s.getDate()
+    const eStr = e.toLocaleDateString('en-IN', opts)
+    return sameMonth ? `${sDay}–${eStr}` : `${s.toLocaleDateString('en-IN', opts)} – ${eStr}`
+  } catch {
+    return start
+  }
 }
 
 export const GroupHeaderHero = memo(function GroupHeaderHero({ group }: Props) {
-  const { colors, text, spacing, radius } = useTheme()
+  const { colors, text, spacing, layout } = useTheme()
   const navigation = useNavigation()
-
-  const handleShare = useCallback(async () => {
-    if (!group.inviteCode) return
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-
-    try {
-      await Share.share({
-        message: `Join "${group.name}" on apna!\n\nCode: ${group.inviteCode}\n\nhttps://apna.app`,
-      })
-      track('invite_shared', { source: 'group_header' })
-    } catch {
-      // User cancelled share sheet — no error
-    }
-  }, [group])
 
   const handleOpenSettings = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    navigation.navigate('GroupSettings' as any, { groupId: group.id })
+    ;(navigation.navigate as (screen: string, params: object) => void)('GroupSettings', { groupId: group.id })
   }, [navigation, group.id])
 
+  const memberCount = group.memberIds.length
+  const metaParts = [
+    group.destination,
+    formatRange(group.startDate, group.endDate),
+    `${memberCount} ${memberCount === 1 ? 'friend' : 'friends'}`,
+  ].filter(Boolean)
+
   return (
-    <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-      {/* Nav row */}
+    <View style={{ paddingHorizontal: layout.screenPaddingH, paddingTop: spacing.lg }}>
+      {/* Nav row — back tile + overflow (max: back, name block, overflow) */}
       <View style={[styles.navRow, { marginBottom: spacing.lg }]}>
         <Pressable
           onPress={() => navigation.goBack()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          style={[
-            styles.backBtn,
-            {
-              backgroundColor: colors.bgTertiary,
-              borderRadius:    radius.full,
-              width:           36,
-              height:          36,
-            },
-          ]}
+          hitSlop={12}
+          style={[styles.tile, { backgroundColor: colors.bgTertiary }]}
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Text style={{ color: colors.textPrimary, fontSize: 18 }}>←</Text>
+          <CaretLeft size={20} color={colors.textPrimary} weight="regular" />
         </Pressable>
 
-        <View style={styles.rightActions}>
-          {/* Invite code chip */}
-          {group.inviteCode && (
-            <Pressable
-              onPress={handleShare}
-              style={[
-                styles.inviteChip,
-                {
-                  backgroundColor: colors.bgTertiary,
-                  borderRadius:    radius.full,
-                  borderColor:     colors.borderAccent,
-                  borderWidth:     1,
-                  paddingHorizontal: spacing.md,
-                  paddingVertical:   spacing.xs,
-                  minHeight:         36,
-                  justifyContent:    'center',
-                  marginRight:       spacing.sm,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Share invite code ${group.inviteCode}`}
-            >
-              <Text style={[text.mono.sm, { color: colors.accentPrimary, letterSpacing: 3 }]}>
-                {group.inviteCode}
-              </Text>
-              <Text style={[text.label.sm, { color: colors.textMuted, marginLeft: spacing.xs }]}>
-                · share
-              </Text>
-            </Pressable>
-          )}
-
-          <Pressable
-            onPress={handleOpenSettings}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={{
-              width: 36,
-              height: 36,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.bgTertiary,
-              borderRadius: radius.full,
-              borderColor: colors.border,
-              borderWidth: 1,
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Group settings"
-          >
-            <Text style={{ fontSize: 18 }}>⚙️</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={handleOpenSettings}
+          hitSlop={12}
+          style={[styles.tile, { backgroundColor: colors.bgTertiary }]}
+          accessibilityRole="button"
+          accessibilityLabel="Group options"
+        >
+          <DotsThree size={22} color={colors.textPrimary} weight="bold" />
+        </Pressable>
       </View>
 
       {/* Hero content */}
-      <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>
-        {group.coverEmoji ?? '✈️'}
-      </Text>
-      <Text
-        style={[text.heading.lg, { color: colors.textPrimary, marginBottom: 4 }]}
-        numberOfLines={2}
-      >
+      <IconTile size={48} style={{ marginBottom: spacing.sm }}>
+        <Text style={{ fontSize: 24 }}>{group.coverEmoji ?? '🧵'}</Text>
+      </IconTile>
+      <Text style={[text.display.md, { color: colors.textPrimary }]} numberOfLines={2}>
         {group.name}
       </Text>
-      {group.destination && (
-        <Text style={[text.body.sm, { color: colors.textSecondary }]}>
-          📍 {group.destination}
-        </Text>
-      )}
-      {group.startDate && (
-        <Text style={[text.label.md, { color: colors.textMuted, marginTop: 2 }]}>
-          {group.startDate}{group.endDate ? ` → ${group.endDate}` : ''}
+      {metaParts.length > 0 && (
+        <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 4 }]}>
+          {metaParts.join(' · ')}
         </Text>
       )}
     </View>
@@ -136,8 +92,16 @@ export const GroupHeaderHero = memo(function GroupHeaderHero({ group }: Props) {
 })
 
 const styles = StyleSheet.create({
-  navRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  backBtn:      { alignItems: 'center', justifyContent: 'center' },
-  inviteChip:   { flexDirection: 'row', alignItems: 'center' },
-  rightActions: { flexDirection: 'row', alignItems: 'center' },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tile: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 })

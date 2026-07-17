@@ -12,13 +12,14 @@ interface BudgetCategoryListProps {
 export function BudgetCategoryList({ items, currency = 'INR' }: BudgetCategoryListProps) {
   const { colors, spacing, text, radius } = useTheme()
 
+  // §2.1.5 — categories are tinted neutrals; the dot carries the tint only
   const CATEGORY_COLORS: Record<string, string> = {
-    food: colors.category?.food || '#FF6B6B',
-    stay: colors.category?.stay || '#4ECDC4',
-    transport: colors.category?.transport || '#45B7D1',
-    activities: colors.category?.activities || '#96CEB4',
-    shopping: colors.category?.shopping || '#FFEEAD',
-    misc: colors.category?.misc || '#D4D4D4',
+    food: colors.category.food.tint,
+    stay: colors.category.stay.tint,
+    transport: colors.category.transport.tint,
+    activities: colors.category.activities.tint,
+    shopping: colors.category.shopping.tint,
+    misc: colors.category.misc.tint,
   }
 
   // Filter categories with positive amounts
@@ -37,7 +38,7 @@ export function BudgetCategoryList({ items, currency = 'INR' }: BudgetCategoryLi
   return (
     <View style={styles.container}>
       {activeItems.map((item) => {
-        const catColor = CATEGORY_COLORS[item.key] ?? '#D4D4D4'
+        const catColor = CATEGORY_COLORS[item.key] ?? colors.stitchDim
         return (
           <View
             key={item.key}

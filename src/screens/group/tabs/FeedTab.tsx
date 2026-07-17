@@ -1,35 +1,79 @@
 // src/screens/group/tabs/FeedTab.tsx
-// The main activity feed tab. Real-time list of all group activity.
-// Handles loading, empty, error, and pagination states.
+// Kora & Ink activity feed — Blueprint §4.3.2. The canonical stitch surface.
+// A vertical stitch runs down the left gutter sewing the day's events together;
+// the current day's segment is live madder, older days turn dim. Day
+// boundaries are StitchLabels (— — — TODAY / YESTERDAY / date). Money events
+// carry amounts; life (joins, photos) stays quiet.
 
-import { useCallback, useEffect, useRef } from 'react'
-import {
-  FlatList,
-  View,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { FlatList, View, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { useTheme } from '@theme'
 import { haptics } from '@lib/haptics'
-import { ActivityFeedItem } from '@components/group'
-import { BalanceSummaryCard } from '@components/group'
-import { MemberAvatarRow } from '@components/group'
+import { ActivityFeedItem, MemberAvatarRow } from '@components/group'
+import { StitchLabel, EmptyState, SkeletonRow } from '@components'
 import { useActivityFeed } from '@hooks/useActivityFeed'
 import { useGroupMembers } from '@hooks/useGroupMembers'
+import { Timestamp } from 'firebase/firestore'
 import type { ActivityItem, GroupInput, SettlementBalance } from '@lib/schemas'
 
 interface Props {
-  group:     GroupInput
-  myUid:     string
-  balances:  SettlementBalance[]
-  onSettle:  (withUid: string) => void
+  group:    GroupInput
+  // myUid / balances / onSettle now surface on the GroupHome my-position strip
+  // (§4.3.1); kept in props for GroupNavigator's shared signature.
+  myUid?:    string
+  balances?: SettlementBalance[]
+  onSettle?: (withUid: string) => void
   onViewMembers: () => void
 }
 
-export function FeedTab({ group, myUid, balances, onSettle, onViewMembers }: Props) {
-  const { colors, text, spacing } = useTheme()
+// ── Day bucketing ────────────────────────────────────────────────
+type FeedRow =
+  | { kind: 'label'; key: string; label: string; tone: 'live' | 'dim' }
+  | { kind: 'item'; key: string; item: ActivityItem; isLast: boolean; tone: 'live' | 'dim' }
+
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+}
+
+function dayLabel(d: Date, now: Date): string {
+  const today = dayKey(now)
+  const yest = new Date(now); yest.setDate(now.getDate() - 1)
+  if (dayKey(d) === today) return 'Today'
+  if (dayKey(d) === dayKey(yest)) return 'Yesterday'
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+}
+
+function buildRows(items: ActivityItem[]): FeedRow[] {
+  const now = new Date()
+  const todayKey = dayKey(now)
+  const rows: FeedRow[] = []
+  let currentKey: string | null = null
+  let bucket: ActivityItem[] = []
+
+  const flush = () => {
+    if (!bucket.length) return
+    const first = (bucket[0].createdAt as unknown as Timestamp)
+    const d = first?.toDate ? first.toDate() : now
+    const tone: 'live' | 'dim' = dayKey(d) === todayKey ? 'live' : 'dim'
+    rows.push({ kind: 'label', key: `label-${dayKey(d)}`, label: dayLabel(d, now), tone })
+    bucket.forEach((it, i) =>
+      rows.push({ kind: 'item', key: it.id, item: it, isLast: i === bucket.length - 1, tone })
+    )
+    bucket = []
+  }
+
+  for (const it of items) {
+    const ts = it.createdAt as unknown as Timestamp
+    const d = ts?.toDate ? ts.toDate() : now
+    const k = dayKey(d)
+    if (k !== currentKey) { flush(); currentKey = k }
+    bucket.push(it)
+  }
+  flush()
+  return rows
+}
+
+export function FeedTab({ group, onViewMembers }: Props) {
   const navigation = useNavigation<any>()
   const { items, isLoading, isLoadingMore, hasMore, loadMore } = useActivityFeed(group.id)
   const { members } = useGroupMembers(group.memberIds)
@@ -38,133 +82,98 @@ export function FeedTab({ group, myUid, balances, onSettle, onViewMembers }: Pro
   const isInitialLoaded = useRef(false)
 
   useEffect(() => {
-    if (isLoading) {
-      isInitialLoaded.current = false
-      return
-    }
-
+    if (isLoading) { isInitialLoaded.current = false; return }
     if (!isInitialLoaded.current) {
-      seenItemIds.current = new Set(items.map(item => item.id))
+      seenItemIds.current = new Set(items.map((item) => item.id))
       isInitialLoaded.current = true
       return
     }
-
-    if (isLoadingMore) {
-      items.forEach(item => seenItemIds.current.add(item.id))
-      return
-    }
+    if (isLoadingMore) { items.forEach((item) => seenItemIds.current.add(item.id)); return }
 
     let joinedCount = 0
-    items.forEach(item => {
+    items.forEach((item) => {
       if (!seenItemIds.current.has(item.id)) {
         seenItemIds.current.add(item.id)
-        if (item.type === 'member_joined') {
-          joinedCount++
-        }
+        if (item.type === 'member_joined') joinedCount++
       }
     })
-
-    if (joinedCount > 0) {
-      haptics.memberJoined()
-    }
+    if (joinedCount > 0) haptics.memberJoined()
   }, [items, isLoading, isLoadingMore])
 
-  const handlePress = useCallback((_item: ActivityItem) => {
-    if (_item.metadata?.expenseId) {
-      navigation.navigate('ExpenseDetail', {
-        groupId:   group.id,
-        expenseId: _item.metadata.expenseId,
-      })
-    }
-  }, [navigation, group.id])
+  const handlePress = useCallback(
+    (_item: ActivityItem) => {
+      if (_item.metadata?.expenseId) {
+        navigation.navigate('ExpenseDetail', { groupId: group.id, expenseId: _item.metadata.expenseId })
+      }
+    },
+    [navigation, group.id]
+  )
 
-  const renderItem = useCallback(
-    ({ item, index }: { item: ActivityItem; index: number }) => (
-      <ActivityFeedItem
-        item={item}
-        members={members}
-        isLast={index === items.length - 1}
-        onPress={item.type === 'expense_added' ? handlePress : undefined}
-      />
-    ),
-    [members, items.length, handlePress]
+  const rows = useMemo(() => buildRows(items), [items])
+
+  const renderRow = useCallback(
+    ({ item: row }: { item: FeedRow }) => {
+      if (row.kind === 'label') {
+        return (
+          <View style={styles.labelWrap}>
+            <StitchLabel label={row.label} tone={row.tone} />
+          </View>
+        )
+      }
+      return (
+        <ActivityFeedItem
+          item={row.item}
+          members={members}
+          isLast={row.isLast}
+          tone={row.tone}
+          onPress={row.item.type === 'expense_added' ? handlePress : undefined}
+        />
+      )
+    },
+    [members, handlePress]
   )
 
   const ListHeader = (
-    <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-      {/* Balance summary */}
-      <BalanceSummaryCard
-        myUid={myUid}
-        balances={balances}
-        members={members}
-        onSettle={onSettle}
-      />
-
-      {/* Member avatars */}
+    <View style={styles.header}>
       <MemberAvatarRow
         members={members}
         memberIds={group.memberIds}
         onPressAll={onViewMembers}
       />
-
-      {/* Feed section header */}
-      <Text
-        style={[
-          text.label.md,
-          {
-            color:        colors.textSecondary,
-            marginBottom: spacing.md,
-            letterSpacing: 1,
-          },
-        ]}
-      >
-        ACTIVITY
-      </Text>
     </View>
   )
 
-  const ListEmpty = !isLoading ? (
-    <View style={[styles.emptyState, { paddingTop: spacing['3xl'] }]}>
-      <Text style={{ fontSize: 40, marginBottom: spacing.md }}>💸</Text>
-      <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
-        No activity yet
-      </Text>
-      <Text
-        style={[
-          text.body.md,
-          { color: colors.textSecondary, textAlign: 'center', maxWidth: 240 },
-        ]}
-      >
-        Add your first expense to get the group started.
-      </Text>
-    </View>
-  ) : null
-
-  const ListFooter =
-    isLoadingMore ? (
-      <View style={{ padding: spacing.xl, alignItems: 'center' }}>
-        <ActivityIndicator color={colors.accentPrimary} />
-      </View>
-    ) : null
-
   if (isLoading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={colors.accentPrimary} />
+      <View style={styles.pad}>
+        {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} index={i} />)}
+      </View>
+    )
+  }
+
+  if (rows.length === 0) {
+    return (
+      <View style={styles.flex}>
+        {ListHeader}
+        <EmptyState
+          title="Nothing sewn yet."
+          description="Add the first expense and the feed begins."
+        />
       </View>
     )
   }
 
   return (
     <FlatList
-      data={items}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
+      data={rows}
+      keyExtractor={(row) => row.key}
+      renderItem={renderRow}
       ListHeaderComponent={ListHeader}
-      ListEmptyComponent={ListEmpty}
-      ListFooterComponent={ListFooter}
       onEndReached={hasMore ? loadMore : undefined}
       onEndReachedThreshold={0.3}
+      ListFooterComponent={
+        isLoadingMore ? <View style={styles.pad}><SkeletonRow index={0} /></View> : null
+      }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
       removeClippedSubviews
@@ -175,6 +184,8 @@ export function FeedTab({ group, myUid, balances, onSettle, onViewMembers }: Pro
 }
 
 const styles = StyleSheet.create({
-  emptyState: { alignItems: 'center', paddingHorizontal: 32 },
-  loader:     { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  flex: { flex: 1 },
+  pad: { paddingHorizontal: 20, paddingTop: 16 },
+  header: { paddingHorizontal: 20, paddingTop: 16 },
+  labelWrap: { paddingHorizontal: 20 },
 })

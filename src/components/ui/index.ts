@@ -1,4 +1,13 @@
 // src/components/ui/index.ts
+// Kora & Ink primitives (Blueprint §3.0)
+export * from './Stitch'
+export * from './StitchLabel'
+export * from './Amount'
+export * from './IconTile'
+export * from './Row'
+export * from './Sheet'
+export * from './DhagaLogo'
+// Core components
 export * from './Button'
 export * from './Input'
 export * from './Avatar'

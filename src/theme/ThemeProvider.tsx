@@ -18,7 +18,7 @@ import React, {
 import { useColorScheme, useWindowDimensions } from 'react-native'
 import { createMMKV } from 'react-native-mmkv'
 
-import { DarkColors, LightColors, type AppColors, type ColorScheme } from './colors'
+import { InkColors, KoraColors, type AppColors, type ColorScheme } from './colors'
 import { Text, FontFamily, FontSize, LineHeight, LetterSpacing } from './typography'
 import { Spacing, Layout, Radius, DarkShadows, LightShadows, type Shadows } from './spacing'
 import { Duration, Ease, Spring, TimingConfig } from './motion'
@@ -89,20 +89,20 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     themeStorage.set(THEME_KEY, newPref)
   }, [])
 
-  const baseColors = isDark ? DarkColors : LightColors
+  const baseColors = isDark ? InkColors : KoraColors
 
   // Override textMuted with textSecondary in high contrast mode
   const colors = useMemo<AppColors>(() => {
     if (highContrastMode) {
       if (isDark) {
         return {
-          ...DarkColors,
-          textMuted: DarkColors.textSecondary,
+          ...InkColors,
+          textMuted: InkColors.textSecondary,
         } as unknown as AppColors
       } else {
         return {
-          ...LightColors,
-          textMuted: LightColors.textSecondary,
+          ...KoraColors,
+          textMuted: KoraColors.textSecondary,
         } as unknown as AppColors
       }
     }

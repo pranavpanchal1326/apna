@@ -1,11 +1,19 @@
 // src/components/ui/Button.tsx
-import React, { useRef, useCallback } from 'react'
+// Kora & Ink Button — Blueprint §3.1. Behavior kept (spring press, haptics),
+// skin replaced:
+// - primary: madder fill, onAccent text, pill at md/lg. The ONLY madder-filled
+//   control on any screen (Law 3 slot 1).
+// - secondary: bgTertiary fill, textPrimary. No colored outline (template tell).
+// - ghost: text-only, textSecondary → textPrimary on press.
+// - danger: destructive confirms inside sheets only; madder fill, heavy haptic.
+// - loading: label crossfades to three sewing dashes, not a spinner.
+
+import React, { useEffect, useRef, useCallback } from 'react'
 import {
   Animated,
   Pressable,
   StyleSheet,
   Text,
-  ActivityIndicator,
   View,
   type PressableProps,
   type ViewStyle,
@@ -29,6 +37,37 @@ interface ButtonProps extends Omit<PressableProps, 'style'> {
   textStyle?: TextStyle
 }
 
+// Three sewing dashes — the loading state (§3.1). A mini stitch, not a spinner.
+function SewingDashes({ color }: { color: string }) {
+  const anims = useRef([0, 1, 2].map(() => new Animated.Value(0.25))).current
+
+  useEffect(() => {
+    const loops = anims.map((a, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(i * 140),
+          Animated.timing(a, { toValue: 1, duration: 220, useNativeDriver: true }),
+          Animated.timing(a, { toValue: 0.25, duration: 220, useNativeDriver: true }),
+          Animated.delay((2 - i) * 140),
+        ])
+      )
+    )
+    loops.forEach((l) => l.start())
+    return () => loops.forEach((l) => l.stop())
+  }, [anims])
+
+  return (
+    <View style={styles.dashRow} accessibilityLabel="Loading">
+      {anims.map((a, i) => (
+        <Animated.View
+          key={i}
+          style={[styles.dash, { backgroundColor: color, opacity: a }]}
+        />
+      ))}
+    </View>
+  )
+}
+
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -47,33 +86,31 @@ export function Button({
   const isDisabled = disabled || loading
 
   const handlePressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.97,
-      ...spring.snappy,
-    }).start()
+    Animated.spring(scaleAnim, { toValue: 0.97, ...spring.snappy }).start()
   }, [scaleAnim, spring])
 
   const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      ...spring.gentle,
-    }).start()
+    Animated.spring(scaleAnim, { toValue: 1, ...spring.gentle }).start()
   }, [scaleAnim, spring])
 
   const handlePress = useCallback(
     (e: Parameters<NonNullable<PressableProps['onPress']>>[0]) => {
       if (isDisabled) return
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      if (variant === 'danger') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      }
       onPress?.(e)
     },
-    [isDisabled, onPress]
+    [isDisabled, onPress, variant]
   )
 
-  // ── Size tokens ────────────────────────────────────────────────
+  // ── Size tokens (§3.1): sm 36 soft, md 48 pill, lg 56 pill ──────
   const sizeStyles = {
-    sm: { height: 36, paddingHorizontal: spacing.md, borderRadius: radius.sm },
-    md: { height: 48, paddingHorizontal: spacing.lg, borderRadius: radius.md },
-    lg: { height: 56, paddingHorizontal: spacing.xl, borderRadius: radius.lg },
+    sm: { height: 36, paddingHorizontal: spacing.md, borderRadius: radius.soft },
+    md: { height: 48, paddingHorizontal: spacing.xl, borderRadius: radius.full },
+    lg: { height: 56, paddingHorizontal: spacing.xl, borderRadius: radius.full },
   }
 
   const textSizeStyles = {
@@ -82,34 +119,21 @@ export function Button({
     lg: text.body.lg,
   }
 
-  // ── Variant tokens ─────────────────────────────────────────────
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
-    primary: {
-      backgroundColor: colors.accentPrimary,
-    },
-    secondary: {
-      backgroundColor: 'transparent',
-      borderWidth: 1.5,
-      borderColor: colors.accentPrimary,
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-    },
-    danger: {
-      backgroundColor: colors.accentDanger,
-    },
+    primary:   { backgroundColor: colors.accentPrimary },
+    secondary: { backgroundColor: colors.bgTertiary },
+    ghost:     { backgroundColor: 'transparent' },
+    danger:    { backgroundColor: colors.accentPrimary },
   }
 
   const textColorMap: Record<ButtonVariant, string> = {
-    primary:   colors.bgPrimary,
-    secondary: colors.accentPrimary,
+    primary:   colors.onAccent,
+    secondary: colors.textPrimary,
     ghost:     colors.textSecondary,
-    danger:    '#FFFFFF',
+    danger:    colors.onAccent,
   }
 
-  const disabledOverlay: ViewStyle = isDisabled
-    ? { opacity: 0.4 }
-    : {}
+  const disabledOverlay: ViewStyle = isDisabled ? { opacity: 0.4 } : {}
 
   return (
     <Animated.View
@@ -137,10 +161,7 @@ export function Button({
         {...rest}
       >
         {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={textColorMap[variant]}
-          />
+          <SewingDashes color={textColorMap[variant]} />
         ) : (
           <View style={styles.inner}>
             {leftIcon && <View style={{ marginRight: spacing.sm }}>{leftIcon}</View>}
@@ -171,5 +192,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dashRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dash: {
+    width: 6,
+    height: 2,
+    borderRadius: 1,
   },
 })

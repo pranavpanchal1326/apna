@@ -27,7 +27,7 @@ export function Badge({
     danger:   `${colors.accentDanger}20`,
     gold:     `${colors.accentGold}20`,
     muted:    colors.bgTertiary,
-    category: category ? `${colors.category[category]}20` : colors.bgTertiary,
+    category: category ? colors.category[category].tint : colors.bgTertiary,
   }
 
   const textColorMap: Record<BadgeVariant, string> = {
@@ -35,7 +35,7 @@ export function Badge({
     danger:   colors.accentDanger,
     gold:     colors.accentGold,
     muted:    colors.textSecondary,
-    category: category ? colors.category[category] : colors.textSecondary,
+    category: colors.textSecondary, // §2.1.5 — category text stays textSecondary
   }
 
   return (
@@ -91,9 +91,9 @@ export function CountBadge({ count, style }: CountBadgeProps) {
     >
       <Text
         style={{
-          color: '#FFFFFF',
-          fontSize: 10,
-          fontFamily: 'Outfit-Bold',
+          color: colors.onAccent,
+          fontSize: 11,
+          fontFamily: 'GeneralSans-Medium',
           lineHeight: 18,
           textAlign: 'center',
         }}

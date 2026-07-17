@@ -1,0 +1,13 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna app icon">
+  <!-- App icon, ink tile. Mark scaled 6.4x and optically centered (shifted left 25
+       to balance the tail). Stroke bumped 7->7.6 units for small-size legibility.
+       Export: 1024 master; regenerate all densities from this file. -->
+  <rect width="1024" height="1024" rx="228" fill="#161512"/>
+  <g transform="translate(487,512) scale(6.4) translate(-60,-60)">
+    <circle cx="54" cy="66" r="26" fill="none" stroke="#D96A50" stroke-width="7.6"
+            stroke-linecap="round" stroke-dasharray="13.79 9.55" stroke-dashoffset="6.9"/>
+    <path d="M 84 40 L 84 76 Q 84 96 102 92" fill="none" stroke="#D96A50"
+          stroke-width="7.6" stroke-linecap="round"/>
+    <circle cx="84" cy="40" r="7" fill="#EFEAE0"/>
+  </g>
+</svg>

@@ -1,26 +1,13 @@
-# apna Font Assets
+# Fonts — Kora & Ink (Blueprint §2.2)
 
-Download and place these files in this directory:
+| File | Role | Source |
+|---|---|---|
+| CabinetGrotesk-Extrabold.ttf | display | fontshare.com (free license) |
+| CabinetGrotesk-Bold.ttf | heading | fontshare.com |
+| GeneralSans-Regular.ttf | body | fontshare.com |
+| GeneralSans-Medium.ttf | label | fontshare.com |
+| SplineSansMono-Medium.ttf | mono (amounts, codes, time) | fonts.google.com |
 
-## Outfit (Google Fonts)
-https://fonts.google.com/specimen/Outfit
-
-Files needed:
-- Outfit-Regular.ttf   (weight 400)
-- Outfit-Medium.ttf    (weight 500)
-- Outfit-SemiBold.ttf  (weight 600)
-- Outfit-Bold.ttf      (weight 700)
-
-## JetBrains Mono (Google Fonts)
-https://fonts.google.com/specimen/JetBrains+Mono
-
-Files needed:
-- JetBrainsMono-Medium.ttf  (weight 500)
-
-## After downloading:
-1. Place all 5 .ttf files in assets/fonts/
-2. Run: npx expo start --clear
-3. Fonts are loaded in App.tsx via expo-font (wired in Prompt 0.5)
-
-## License
-Both fonts are Open Font License (OFL) — free for commercial use.
+Registered via `FONT_ASSET_MAP` in `src/theme/typography.ts`.
+Fonts load in App.tsx via expo-font. After changing: `npx expo start --clear`.
+Do not add faces without amending `docs/DESIGN_BLUEPRINT.md`.

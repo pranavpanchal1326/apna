@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="apna"
-        android:textColor="#4ECDC4"
+        android:textColor="#D96A50"
         android:textSize="10sp"
         android:textStyle="bold" />
 
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="₹1,250"
-        android:textColor="#4ECDC4"
+        android:textColor="#D96A50"
         android:textSize="28sp"
         android:textStyle="bold" />
 

@@ -1,0 +1,41 @@
+<svg width="240" height="240" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna mark, sewing itself in">
+  <!-- THE SIGNATURE: "the sew" — Blueprint Part 7.4.
+       Reference motion file. Timeline (total 1150ms):
+         0-700ms   bowl stitches appear sequentially (wipe reveal, ease-out)
+         550-900ms tail thread pulls through (draw-on, overlaps bowl end)
+         900-1020ms knot pops (scale overshoot)
+       In-app implementation uses react-native-svg + Animated (see Part 7.4);
+       this SMIL file is the canonical timing reference and web/marketing asset. -->
+  <defs>
+    <mask id="sewWipe">
+      <!-- Undashed arc that wipes around the bowl, revealing dashes in order.
+           pathLength normalized to 100; starts at the seam (dashoffset origin). -->
+      <circle cx="54" cy="66" r="26" fill="none" stroke="#FFFFFF" stroke-width="12"
+              pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"
+              transform="rotate(-75 54 66)">
+        <animate attributeName="stroke-dashoffset" from="100" to="0"
+                 dur="0.7s" begin="0s" fill="freeze"
+                 calcMode="spline" keySplines="0.22 0.9 0.36 1" keyTimes="0;1" values="100;0"/>
+      </circle>
+    </mask>
+  </defs>
+
+  <g mask="url(#sewWipe)">
+    <circle cx="54" cy="66" r="26" fill="none" stroke="#D96A50" stroke-width="7"
+            stroke-linecap="round" stroke-dasharray="13.79 9.55" stroke-dashoffset="6.9"/>
+  </g>
+
+  <path d="M 84 40 L 84 76 Q 84 96 102 92" fill="none" stroke="#D96A50"
+        stroke-width="7" stroke-linecap="round"
+        pathLength="100" stroke-dasharray="100" stroke-dashoffset="100">
+    <animate attributeName="stroke-dashoffset" from="100" to="0"
+             dur="0.35s" begin="0.55s" fill="freeze"
+             calcMode="spline" keySplines="0.22 0.9 0.36 1" keyTimes="0;1" values="100;0"/>
+  </path>
+
+  <circle cx="84" cy="40" fill="#EFEAE0" r="0">
+    <!-- Knot pop: overshoot to 7.8 then settle at 6.5 (the brand's only bounce). -->
+    <animate attributeName="r" values="0;7.8;6.5" keyTimes="0;0.7;1"
+             dur="0.12s" begin="0.9s" fill="freeze"/>
+  </circle>
+</svg>
