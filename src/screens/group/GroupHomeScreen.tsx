@@ -9,7 +9,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { CaretRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
-import { Screen, FAB, Row, Amount, Button, Card, ThreadKnot } from '@components'
+import { Screen, FAB, Row, Amount, Button, Card, ThreadKnot, Entrance } from '@components'
 import { GroupHeaderHero } from '@components/group'
 import { GroupNavigator } from '@navigation/GroupNavigator'
 import { useActiveGroup } from '@hooks/useGroups'
@@ -65,7 +65,9 @@ export function GroupHomeScreen({ route, navigation }: Props) {
       {/* Header hero */}
       <GroupHeaderHero group={group} />
 
-      {/* My-position strip — leads with what this trip means for you (§4.3.1) */}
+      {/* My-position strip — leads with what this trip means for you (§4.3.1).
+          The focal element; lands first, card and FAB assemble behind it. */}
+      <Entrance index={0}>
       <View style={{ paddingHorizontal: layout.screenPaddingH, marginTop: spacing.lg }}>
         {tone === 'settled' ? (
           <Row
@@ -88,9 +90,11 @@ export function GroupHomeScreen({ route, navigation }: Props) {
           />
         )}
       </View>
+      </Entrance>
 
       {/* Trip Wrap prompt — money-moment card, no emoji chrome (§4.3.1) */}
       {isTripOver && (
+        <Entrance index={1}>
         <Card
           intent="money-moment"
           onPress={() => navigation.navigate('TripWrap', { groupId })}
@@ -109,6 +113,7 @@ export function GroupHomeScreen({ route, navigation }: Props) {
             <CaretRight size={20} color={colors.textMuted} />
           </View>
         </Card>
+        </Entrance>
       )}
 
       {/* Group navigator tabs (Feed / Members) */}
@@ -119,13 +124,15 @@ export function GroupHomeScreen({ route, navigation }: Props) {
         onSettle={handleSettle}
       />
 
-      {/* FAB to add expense — thread-add pill (Law 3 slot 1) */}
-      <FAB
-        label="Add expense"
-        onPress={() => navigation.navigate('AddExpense', { groupId: group.id })}
-        accessibilityLabel="Add expense"
-        style={{ position: 'absolute', bottom: 80, right: layout.screenPaddingH }}
-      />
+      {/* FAB to add expense — thread-add pill (Law 3 slot 1). Lands last. */}
+      <Entrance delay={300} distance={14}
+        style={{ position: 'absolute', bottom: 80, right: layout.screenPaddingH }}>
+        <FAB
+          label="Add expense"
+          onPress={() => navigation.navigate('AddExpense', { groupId: group.id })}
+          accessibilityLabel="Add expense"
+        />
+      </Entrance>
     </Screen>
   )
 }

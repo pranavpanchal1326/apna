@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { CaretLeft } from 'phosphor-react-native'
 import { useTheme } from '@theme'
-import { Screen, StitchLabel, Amount, Row } from '@components'
+import { Screen, StitchLabel, Amount, Row, Entrance } from '@components'
 import { BalanceRow, DebtRow, SettleUpSheet } from '@components/settlement'
 import { useSettlements } from '@hooks/useSettlements'
 import { useGroupStore } from '@stores/group.store'
@@ -100,8 +100,9 @@ export function BalanceSummaryScreen({ route }: Props) {
         contentContainerStyle={{ paddingHorizontal: layout.screenPaddingH, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* My net hero (Law 2 focal point) */}
+        {/* My net hero (Law 2 focal point) — lands first, clusters behind it */}
         {myBalance && (
+          <Entrance index={0}>
           <View style={{ marginBottom: spacing.lg }}>
             {myBalance.isSettled ? (
               <Text style={[text.display.sm, { color: colors.settled }]}>All settled</Text>
@@ -119,10 +120,12 @@ export function BalanceSummaryScreen({ route }: Props) {
               </>
             )}
           </View>
+          </Entrance>
         )}
 
         {/* Owed to you (leaf) */}
         {owedToMe.length > 0 && (
+          <Entrance index={1}>
           <View style={{ marginBottom: spacing.md }}>
             <StitchLabel label="Owed to you" />
             {owedToMe.map(debt => (
@@ -135,10 +138,12 @@ export function BalanceSummaryScreen({ route }: Props) {
               />
             ))}
           </View>
+          </Entrance>
         )}
 
         {/* You owe (madder) */}
         {myDebts.length > 0 && (
+          <Entrance index={2}>
           <View style={{ marginBottom: spacing.md }}>
             <StitchLabel label="You owe" />
             {myDebts.map(debt => (
@@ -152,20 +157,25 @@ export function BalanceSummaryScreen({ route }: Props) {
               />
             ))}
           </View>
+          </Entrance>
         )}
 
         {/* All balances */}
-        <StitchLabel label="All balances" />
-        <View style={{ marginBottom: spacing.lg }}>
-          {summary.balances.map(balance => (
-            <BalanceRow
-              key={balance.uid}
-              balance={balance}
-              user={members.get(balance.uid)}
-              isMe={balance.uid === myUid}
-            />
-          ))}
+        <Entrance index={3}>
+        <View>
+          <StitchLabel label="All balances" />
+          <View style={{ marginBottom: spacing.lg }}>
+            {summary.balances.map(balance => (
+              <BalanceRow
+                key={balance.uid}
+                balance={balance}
+                user={members.get(balance.uid)}
+                isMe={balance.uid === myUid}
+              />
+            ))}
+          </View>
         </View>
+        </Entrance>
 
         {/* Total group spend */}
         <Row

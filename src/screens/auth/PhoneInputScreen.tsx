@@ -14,6 +14,7 @@ import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import Constants from 'expo-constants'
 import { useTheme } from '@theme'
 import { Button, Input, Screen } from '@components'
+import { AuthProgress } from '@components/auth'
 import { useAuthStore } from '@stores/auth.store'
 import { sendOTP } from '@lib/firebase/auth'
 import { firebaseConfig, usingFirebaseEmulators } from '@lib/firebase/config'
@@ -121,11 +122,14 @@ export function PhoneInputScreen({ onOTPSent }: PhoneInputScreenProps) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Flow-stitch — grows across the auth flow (§4.1) */}
+          <AuthProgress step={2} total={4} />
+
           {/* Header copy */}
           <Text
             style={[
               text.display.sm,
-              { color: colors.textPrimary, marginBottom: spacing.sm },
+              { color: colors.textPrimary, marginBottom: spacing.sm, marginTop: spacing['3xl'] },
             ]}
           >
             What's your{'\n'}number?

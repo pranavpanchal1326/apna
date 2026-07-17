@@ -3,6 +3,7 @@
 export * from './Stitch'
 export * from './StitchLabel'
 export * from './Amount'
+export * from './Entrance'
 export * from './IconTile'
 export * from './Row'
 export * from './Sheet'

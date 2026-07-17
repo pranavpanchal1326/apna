@@ -1,125 +1,77 @@
 // src/screens/auth/SplashScreen.tsx
-// PRD §9.1: "Splash screen — logo draws in 0.8s, fades out"
-// First screen the user sees on every cold launch.
-// Also shown while auth state is initializing.
+// Kora & Ink splash — Blueprint §7.4/§7.5. THE SEW: the dhaga "a" sews itself
+// (bowl → thread pull → knot bounce, 1150ms), then the "pna" wordmark joins and
+// the screen hands off. This is the brand's single most important animation —
+// the first thing seen on every cold launch, and while auth initializes.
+//
+// Reduce Motion (§7.4): DhagaLogo renders its static mark; we skip the fades
+// and hand off quickly rather than crossfade-to-nothing.
 
-import { useEffect, useRef } from 'react'
-import { Animated, View, StyleSheet, Dimensions } from 'react-native'
+import { useEffect, useRef, useCallback } from 'react'
+import { Animated, View, StyleSheet } from 'react-native'
 import { useTheme } from '@theme'
-
-const { width } = Dimensions.get('window')
-const LOGO_SIZE = width * 0.28  // ~30% of screen width
+import { DhagaLogo } from '@components'
+import { useReduceMotion } from '@hooks/useReduceMotion'
 
 interface SplashScreenProps {
-  onComplete: () => void   // Called after animation — navigates to next screen
+  onComplete: () => void   // Called after the mark sews and the screen hands off
 }
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
-  const { colors } = useTheme()
+  const { colors, text } = useTheme()
+  const reduceMotion = useReduceMotion()
 
-  // Logo animation values
-  const drawProgress = useRef(new Animated.Value(0)).current
-  const logoOpacity  = useRef(new Animated.Value(0)).current
+  const wordmarkOpacity = useRef(new Animated.Value(0)).current
   const screenOpacity = useRef(new Animated.Value(1)).current
-  const logoScale    = useRef(new Animated.Value(0.85)).current
+  const done = useRef(false)
 
-  useEffect(() => {
+  // After the knot ties, "pna" joins the stitched "a", the mark holds, then the
+  // screen fades and hands off. Guarded so it can only run once.
+  const handoff = useCallback(() => {
+    if (done.current) return
+    done.current = true
+
+    if (reduceMotion) {
+      wordmarkOpacity.setValue(1)
+      onComplete()
+      return
+    }
+
     Animated.sequence([
-      // Phase 1: Logo fades + scales in (0–300ms)
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(logoScale, {
-          toValue: 1,
-          tension: 60,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Phase 2: Draw progress animates (300–1100ms = 800ms draw)
-      Animated.timing(drawProgress, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: false, // strokeDashoffset/width can't use native driver
+      Animated.timing(wordmarkOpacity, {
+        toValue: 1, duration: 200, useNativeDriver: true,
       }),
-      // Phase 3: Hold (400ms)
-      Animated.delay(400),
-      // Phase 4: Fade out entire screen (200ms)
+      Animated.delay(500),
       Animated.timing(screenOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
+        toValue: 0, duration: 200, useNativeDriver: true,
       }),
     ]).start(() => onComplete())
-  }, [logoOpacity, logoScale, drawProgress, screenOpacity, onComplete])
+  }, [reduceMotion, wordmarkOpacity, screenOpacity, onComplete])
 
-  // Underline draw — the Dhaga thread under "apna"
-  const underlineWidth = drawProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, LOGO_SIZE],
-  })
+  // Safety net: if onSewComplete never fires (edge cases), hand off anyway.
+  useEffect(() => {
+    const t = setTimeout(handoff, 2600)
+    return () => clearTimeout(t)
+  }, [handoff])
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.bgPrimary,
-          opacity: screenOpacity,
-        },
-      ]}
+      style={[styles.container, { backgroundColor: colors.bgPrimary, opacity: screenOpacity }]}
     >
-      <Animated.View
-        style={[
-          styles.logoWrapper,
-          {
-            opacity: logoOpacity,
-            transform: [{ scale: logoScale }],
-          },
-        ]}
-      >
-        {/* Wordmark: "apna" in Outfit Bold */}
-        <Animated.Text
-          style={{
-            fontSize: 52,
-            fontFamily: 'Outfit-Bold',
-            color: colors.textPrimary,
-            letterSpacing: -1.5,
-            lineHeight: 60,
-          }}
-        >
-          apna
-        </Animated.Text>
+      <View style={styles.lockup}>
+        {/* The stitched "a" — sews itself on mount (THE SEW) */}
+        <DhagaLogo size={96} sew onSewComplete={handoff} />
 
-        {/* Dhaga thread underline — draws left to right */}
-        <View style={styles.underlineTrack}>
-          <Animated.View
-            style={[
-              styles.underline,
-              {
-                width: underlineWidth,
-                backgroundColor: colors.accentPrimary,
-              },
-            ]}
-          />
-        </View>
-
-        {/* Tagline — fades in with logo */}
+        {/* "pna" completes the wordmark once the knot lands (§7.3 lockup) */}
         <Animated.Text
-          style={{
-            fontSize: 13,
-            fontFamily: 'Outfit-Regular',
-            color: colors.textSecondary,
-            letterSpacing: 0.5,
-            marginTop: 12,
-          }}
+          style={[
+            text.display.md,
+            { color: colors.textPrimary, opacity: wordmarkOpacity, marginLeft: -6 },
+          ]}
         >
-          our own
+          pna
         </Animated.Text>
-      </Animated.View>
+      </View>
     </Animated.View>
   )
 }
@@ -130,18 +82,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoWrapper: {
+  lockup: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  underlineTrack: {
-    width: LOGO_SIZE,
-    height: 3,
-    borderRadius: 2,
-    marginTop: 6,
-    overflow: 'hidden',
-  },
-  underline: {
-    height: 3,
-    borderRadius: 2,
   },
 })

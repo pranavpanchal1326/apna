@@ -17,6 +17,7 @@ import * as Haptics from 'expo-haptics'
 import Constants from 'expo-constants'
 import { useTheme } from '@theme'
 import { Button, Input, Avatar, Screen } from '@components'
+import { AuthProgress } from '@components/auth'
 import { useAuthStore } from '@stores/auth.store'
 import { createUserDoc } from '@lib/firebase/auth'
 import { AVATAR_COLORS } from '@lib/types'
@@ -87,10 +88,13 @@ export function ProfileSetupScreen({ onComplete }: ProfileSetupScreenProps) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Flow-stitch — the last segment, thread complete (§4.1) */}
+          <AuthProgress step={4} total={4} />
+
           <Text
             style={[
               text.display.sm,
-              { color: colors.textPrimary, marginBottom: spacing.sm },
+              { color: colors.textPrimary, marginBottom: spacing.sm, marginTop: spacing['3xl'] },
             ]}
           >
             What should{'\n'}we call you?

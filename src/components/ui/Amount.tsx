@@ -11,6 +11,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Animated, Easing, Text, View, StyleSheet, type TextStyle } from 'react-native'
 import { useTheme } from '@theme'
+import { useReduceMotion } from '@hooks/useReduceMotion'
+import { amountSemantics, formatAmountDigits } from '@lib/utils/amount'
 import { Stitch } from './Stitch'
 
 export type AmountSize = 'lg' | 'md' | 'sm'
@@ -30,13 +32,6 @@ interface AmountProps {
   style?: TextStyle
 }
 
-function formatDigits(n: number): string {
-  return Math.abs(n).toLocaleString('en-IN', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })
-}
-
 export function Amount({
   value,
   size = 'md',
@@ -48,12 +43,13 @@ export function Amount({
 }: AmountProps) {
   const { colors, text, fontSize, duration } = useTheme()
   const [display, setDisplay] = useState(value)
+  const reduceMotion = useReduceMotion()
   const animRef = useRef(new Animated.Value(value)).current
 
-  // Odometer roll (simple count interpolation; digit-by-digit roll lands
-  // with the money-moment choreography in Phase 3)
+  // Odometer roll (count interpolation; digit-by-digit roll lands with the
+  // money-moment choreography in Phase 3). §2.7.2 rule 6: Reduce Motion snaps.
   useEffect(() => {
-    if (!animate) {
+    if (!animate || reduceMotion) {
       setDisplay(value)
       return
     }
@@ -70,19 +66,21 @@ export function Amount({
       anim.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, animate])
+  }, [value, animate, reduceMotion])
 
   const monoStyle = text.mono[size]
   const rupeeSize = Math.round(fontSize[`mono${size.charAt(0).toUpperCase()}${size.slice(1)}` as 'monoLg' | 'monoMd' | 'monoSm'] * 0.8)
 
-  const isZero = settled || Math.round(display * 100) === 0
-  const isPositive = display > 0
+  // Semantic state (color, sign, sewn-shut strike) tracks the TARGET value —
+  // not the animating display — so a roll passing through zero doesn't flash
+  // the settled strike-through or flip the sign mid-animation. See @lib/utils/amount.
+  const { isZero, showPlus, showStrike, role } = amountSemantics(value, { signed, settled })
 
   const digitColor = color ?? (
-    isZero ? colors.settled
-    : signed
-      ? (isPositive ? colors.positive : colors.negative)
-      : colors.textPrimary
+    role === 'zero' ? colors.settled
+    : role === 'positive' ? colors.positive
+    : role === 'negative' ? colors.negative
+    : colors.textPrimary
   )
 
   return (
@@ -92,15 +90,15 @@ export function Amount({
         numberOfLines={1}
         accessibilityLabel={
           isZero ? 'zero rupees, settled'
-          : `${signed && isPositive ? 'plus ' : ''}${formatDigits(display)} rupees`
+          : `${showPlus ? 'plus ' : ''}${formatAmountDigits(value)} rupees`
         }
       >
-        {signed && isPositive && !isZero ? '+' : ''}
+        {showPlus ? '+' : ''}
         <Text style={{ fontSize: rupeeSize, color: color ?? colors.textSecondary }}>₹</Text>
-        {isZero ? '0' : formatDigits(display)}
+        {settled ? '0' : formatAmountDigits(display)}
       </Text>
       {/* Sewn shut — stitchDim strike-through on ₹0 (§2.2.4) */}
-      {isZero && (
+      {showStrike && (
         <View style={styles.strike} pointerEvents="none">
           <Stitch tone="dim" />
         </View>

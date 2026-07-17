@@ -12,10 +12,11 @@
 // = exactly 7 stitches (dash 13.79 + gap 9.55), offset 6.9 so the seam
 // falls in a gap. Any resize must re-derive whole-stitch counts.
 
-import { useEffect, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { Animated } from 'react-native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { useTheme } from '@theme'
+import { useReduceMotion } from '@hooks/useReduceMotion'
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle)
 const AnimatedPath = Animated.createAnimatedComponent(Path)
@@ -54,7 +55,7 @@ export function DhagaLogo({
   onSewComplete,
 }: DhagaLogoProps) {
   const { colors, isDark } = useTheme()
-  const [reduceMotion, setReduceMotion] = useState(false)
+  const reduceMotion = useReduceMotion()
   const bowlOffset = useRef(new Animated.Value(sew ? BOWL_CIRC : 0)).current
   const tailOffset = useRef(new Animated.Value(sew ? TAIL_LENGTH : 0)).current
   const knotScale = useRef(new Animated.Value(sew ? 0 : 1)).current
@@ -64,12 +65,6 @@ export function DhagaLogo({
   const knot = knotColor ?? (isDark ? '#EFEAE0' : '#1C1A15')
   // Small-size stroke compensation (§7.2)
   const stroke = size <= 48 ? 8.5 : 7
-
-  useEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => mounted && setReduceMotion(v))
-    return () => { mounted = false }
-  }, [])
 
   useEffect(() => {
     if (!sew) return

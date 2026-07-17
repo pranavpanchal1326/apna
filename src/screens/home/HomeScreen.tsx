@@ -25,6 +25,7 @@ import {
   SkeletonRow,
   ThreadAdd,
   StitchArrow,
+  Entrance,
 } from '@components'
 import { useGroups } from '@hooks/useGroups'
 import { useAuth } from '@hooks/useAuth'
@@ -94,7 +95,7 @@ export function HomeScreen() {
 
   // ── Group row ─────────────────────────────────────────────────
   const renderGroup = useCallback(
-    ({ item, muted }: { item: GroupInput; muted?: boolean }) => {
+    ({ item, muted, index }: { item: GroupInput; muted?: boolean; index?: number }) => {
       const memberCount = item.memberIds.length
       const gNet = groupNetForUser(item.balances, uid)
       const subtitleParts = [
@@ -103,25 +104,30 @@ export function HomeScreen() {
         item.startDate,
       ].filter(Boolean)
 
+      // Rows rise behind the hero (§2.7.2 rule 1). The stagger index is capped
+      // so a row re-mounting deep in the list on scroll settles quickly rather
+      // than inheriting a growing delay. `+2` keeps rows behind hero + label.
       return (
-        <Row
-          onPress={() => handleGroupPress(item)}
-          muted={muted}
-          title={item.name}
-          subtitle={subtitleParts.join(' · ')}
-          leading={
-            <IconTile size={48} tint={muted ? colors.bgSecondary : undefined}>
-              <Text style={{ fontSize: 24 }}>{item.coverEmoji ?? '🧵'}</Text>
-            </IconTile>
-          }
-          trailing={
-            Math.abs(gNet) >= 1 ? (
-              <Amount value={gNet} size="md" signed />
-            ) : (
-              <Amount value={0} size="md" settled />
-            )
-          }
-        />
+        <Entrance index={index == null ? 0 : Math.min(index, 6) + 2} distance={8}>
+          <Row
+            onPress={() => handleGroupPress(item)}
+            muted={muted}
+            title={item.name}
+            subtitle={subtitleParts.join(' · ')}
+            leading={
+              <IconTile size={48} tint={muted ? colors.bgSecondary : undefined}>
+                <Text style={{ fontSize: 24 }}>{item.coverEmoji ?? '🧵'}</Text>
+              </IconTile>
+            }
+            trailing={
+              Math.abs(gNet) >= 1 ? (
+                <Amount value={gNet} size="md" signed />
+              ) : (
+                <Amount value={0} size="md" settled />
+              )
+            }
+          />
+        </Entrance>
       )
     },
     [colors, uid, handleGroupPress]
@@ -176,7 +182,7 @@ export function HomeScreen() {
       <FlatList
         data={active}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => renderGroup({ item })}
+        renderItem={({ item, index }) => renderGroup({ item, index })}
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
@@ -185,22 +191,27 @@ export function HomeScreen() {
           <View>
             <HomeHeader user={user} onAvatar={openProfile} />
 
-            {/* Hero — net position across all trips (Law 2 focal point) */}
-            <View style={{ marginTop: spacing['2xl'], marginBottom: spacing.md }}>
-              {tone === 'settled' ? (
-                <Text style={[text.display.sm, { color: colors.settled }]}>All settled</Text>
-              ) : (
-                <>
-                  <Text style={[text.heading.md, { color: colors.textSecondary }]}>
-                    {heroLabel}
-                  </Text>
-                  <Amount value={Math.abs(net)} size="lg" animate
-                    color={tone === 'owed' ? colors.positive : colors.negative} />
-                </>
-              )}
-            </View>
+            {/* Hero — net position across all trips (Law 2 focal point).
+                Lands first (index 0), the rest of the screen assembles behind it. */}
+            <Entrance index={0}>
+              <View style={{ marginTop: spacing['2xl'], marginBottom: spacing.md }}>
+                {tone === 'settled' ? (
+                  <Text style={[text.display.sm, { color: colors.settled }]}>All settled</Text>
+                ) : (
+                  <>
+                    <Text style={[text.heading.md, { color: colors.textSecondary }]}>
+                      {heroLabel}
+                    </Text>
+                    <Amount value={Math.abs(net)} size="lg" animate
+                      color={tone === 'owed' ? colors.positive : colors.negative} />
+                  </>
+                )}
+              </View>
+            </Entrance>
 
-            <StitchLabel label="Your trips" />
+            <Entrance index={1}>
+              <StitchLabel label="Your trips" />
+            </Entrance>
           </View>
         }
         ListFooterComponent={
@@ -217,14 +228,16 @@ export function HomeScreen() {
         }
       />
 
-      {/* FAB — morphing pill "New trip" (Law 3 slot 1) */}
-      <FAB
-        label="New trip"
-        collapsed={collapsed}
-        onPress={() => setSheetOpen(true)}
-        accessibilityLabel="New trip"
-        style={styles.fab}
-      />
+      {/* FAB — morphing pill "New trip" (Law 3 slot 1). Lands last, after the
+          hero and rows have settled (§2.7.2 rule 1). */}
+      <Entrance delay={340} distance={14} style={styles.fab}>
+        <FAB
+          label="New trip"
+          collapsed={collapsed}
+          onPress={() => setSheetOpen(true)}
+          accessibilityLabel="New trip"
+        />
+      </Entrance>
 
       {/* Two-Row Sheet replaces the satellite-button pattern (§4.2.1) */}
       <Sheet visible={sheetOpen} onClose={() => setSheetOpen(false)} title="New trip">

@@ -13,17 +13,23 @@
 // don't get a stitch (§2.6.4). Structural separation = whitespace, then hairline.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated, View, type LayoutChangeEvent } from 'react-native'
+import { Animated, View, type LayoutChangeEvent } from 'react-native'
 import Svg, { Line, Path } from 'react-native-svg'
 import { useTheme } from '@theme'
+import { useReduceMotion } from '@hooks/useReduceMotion'
+import {
+  computeSew,
+  RESTING_DASH_ARRAY,
+  STITCH_DASH,
+  STITCH_GAP,
+  STITCH_PERIOD,
+  STITCH_WIDTH,
+} from '@lib/utils/stitch'
 
 const AnimatedLine = Animated.createAnimatedComponent(Line)
 const AnimatedPath = Animated.createAnimatedComponent(Path)
 
-export const STITCH_DASH = 6
-export const STITCH_GAP = 4
-export const STITCH_PERIOD = STITCH_DASH + STITCH_GAP
-export const STITCH_WIDTH = 2
+export { STITCH_DASH, STITCH_GAP, STITCH_PERIOD, STITCH_WIDTH }
 
 export interface StitchProps {
   direction?: 'horizontal' | 'vertical'
@@ -62,14 +68,8 @@ export function Stitch({
 }: StitchProps) {
   const { colors, duration } = useTheme()
   const [measured, setMeasured] = useState<number>(typeof length === 'number' ? length : 0)
-  const [reduceMotion, setReduceMotion] = useState(false)
+  const reduceMotion = useReduceMotion()
   const dashOffset = useRef(new Animated.Value(0)).current
-
-  useEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => mounted && setReduceMotion(v))
-    return () => { mounted = false }
-  }, [])
 
   const totalLength = path ? (pathLength ?? 0) : measured
   const stroke = color ?? (tone === 'live' ? colors.stitch : colors.stitchDim)
@@ -84,11 +84,13 @@ export function Stitch({
       onSewComplete?.()
       return
     }
-    const dashes = Math.max(1, Math.round(totalLength / STITCH_PERIOD))
-    dashOffset.setValue(totalLength)
+    // See computeSew for the reveal derivation: initial offset = dashesRegion
+    // (not totalLength) so the trailing full-length gap masks exactly [0, L].
+    const { dashCount, dashesRegion } = computeSew(totalLength)
+    dashOffset.setValue(dashesRegion)
     const anim = Animated.timing(dashOffset, {
       toValue: 0,
-      duration: dashes * duration.sew,
+      duration: dashCount * duration.sew,
       delay: sewDelay,
       useNativeDriver: false, // SVG props are not native-driver animatable
     })
@@ -108,11 +110,8 @@ export function Stitch({
   // stitch pattern. We emulate by combining pattern + offset: pattern stays
   // 6/4; the offset reveal reads as dashes arriving sequentially.
   const dashArray = useMemo(() => {
-    if (!sew || totalLength <= 0) return `${STITCH_DASH} ${STITCH_GAP}`
-    // reveal trick: dash pattern repeated, with a trailing gap the size of
-    // the full line so offset animation wipes dashes in from the origin
-    const dashes = Math.max(1, Math.round(totalLength / STITCH_PERIOD))
-    return `${Array(dashes).fill(`${STITCH_DASH} ${STITCH_GAP}`).join(' ')} 0 ${totalLength}`
+    if (!sew || totalLength <= 0) return RESTING_DASH_ARRAY
+    return computeSew(totalLength).dashArray
   }, [sew, totalLength])
 
   const isH = direction === 'horizontal'

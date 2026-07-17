@@ -10,7 +10,7 @@ import { FlatList, View, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { haptics } from '@lib/haptics'
 import { ActivityFeedItem, MemberAvatarRow } from '@components/group'
-import { StitchLabel, EmptyState, SkeletonRow } from '@components'
+import { StitchLabel, EmptyState, SkeletonRow, Entrance } from '@components'
 import { useActivityFeed } from '@hooks/useActivityFeed'
 import { useGroupMembers } from '@hooks/useGroupMembers'
 import { Timestamp } from 'firebase/firestore'
@@ -133,14 +133,19 @@ export function FeedTab({ group, onViewMembers }: Props) {
     [members, handlePress]
   )
 
+  // Only the header gets an entrance rise. The feed rows deliberately do NOT
+  // stagger: the vertical day-stitch in the gutter owns the motion story here
+  // (§4.3.2) and a per-row translateY would fight the stitch's continuity.
   const ListHeader = (
-    <View style={styles.header}>
-      <MemberAvatarRow
-        members={members}
-        memberIds={group.memberIds}
-        onPressAll={onViewMembers}
-      />
-    </View>
+    <Entrance index={0}>
+      <View style={styles.header}>
+        <MemberAvatarRow
+          members={members}
+          memberIds={group.memberIds}
+          onPressAll={onViewMembers}
+        />
+      </View>
+    </Entrance>
   )
 
   if (isLoading) {

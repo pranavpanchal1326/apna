@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics'
 import Constants from 'expo-constants'
 import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
+import { AuthProgress } from '@components/auth'
 import { track } from '@lib/analytics'
 import type { AuthStackParamList } from '@navigation/types'
 
@@ -117,6 +118,11 @@ export function ValueFramingScreen() {
           },
         ]}
       >
+        {/* Flow-stitch — the first segment of the thread (§4.1) */}
+        <View style={{ marginBottom: spacing.xl }}>
+          <AuthProgress step={1} total={4} />
+        </View>
+
         {/* Brand Label */}
         <View style={styles.brandContainer}>
           <Text style={[text.heading.sm, { color: colors.accentPrimary, fontWeight: '700', letterSpacing: 1 }]}>

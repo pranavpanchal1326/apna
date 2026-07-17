@@ -17,6 +17,7 @@ import {
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
+import { AuthProgress } from '@components/auth'
 import { useAuthStore } from '@stores/auth.store'
 import { verifyOTP, sendOTP } from '@lib/firebase/auth'
 import { firebaseConfig, usingFirebaseEmulators } from '@lib/firebase/config'
@@ -183,6 +184,9 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={[styles.content, { paddingHorizontal: spacing['2xl'] }]}>
+
+          {/* Flow-stitch — unsews the last segment on a wrong code (§4.1) */}
+          <AuthProgress step={3} total={4} error={!!error} />
 
           {/* Back */}
           <Pressable
