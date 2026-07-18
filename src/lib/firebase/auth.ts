@@ -12,6 +12,7 @@
 import {
   PhoneAuthProvider,
   signInWithCredential,
+  signInAnonymously,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User as FirebaseUser,
@@ -127,6 +128,16 @@ export async function getUserDoc(uid: string): Promise<User | null> {
  */
 export async function signOut(): Promise<void> {
   await firebaseSignOut(auth)
+}
+
+/**
+ * DEV / PROTOTYPE ONLY — bypasses the OTP flow by creating a real anonymous
+ * Firebase session (real uid, valid token, works with Firestore rules). The
+ * normal auth-state subscription then routes into profile setup → the app.
+ * Guarded by __DEV__ at every call site so it never ships in release.
+ */
+export async function devBypassSignIn(): Promise<void> {
+  await signInAnonymously(auth)
 }
 
 /**

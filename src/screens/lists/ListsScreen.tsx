@@ -17,8 +17,9 @@ import { useTheme } from '../../theme'
 import { useListStore } from '../../stores/list.store'
 import { useAuthStore } from '../../stores/auth.store'
 import { useGroupStore } from '../../stores/group.store'
+import { ClipboardText, Plus } from 'phosphor-react-native'
 import { CreateListSheet } from './components/CreateListSheet'
-import { LIST_TYPE_META } from './components/ListTypeIcon'
+import { LIST_TYPE_META, ListTypeIcon } from './components/ListTypeIcon'
 import type { SharedList, SharedListCreate, SharedListType } from '../../lib/schemas/list.schema'
 import type { ListsStackParamList } from '../../navigation/types'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -65,7 +66,6 @@ export function ListsScreen() {
     const total    = item.itemCount
     const checked  = item.checkedCount
     const progress = total > 0 ? checked / total : 0
-    const meta     = LIST_TYPE_META[item.type]
 
     return (
       <Pressable
@@ -87,7 +87,7 @@ export function ListsScreen() {
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardLeft}>
-            <Text style={{ fontSize: 28 }}>{meta.emoji}</Text>
+            <ListTypeIcon type={item.type} size={26} color={colors.textPrimary} />
             <View style={{ flex: 1 }}>
               <Text
                 style={[text.body.lg, { color: colors.textPrimary, fontFamily: 'Outfit-SemiBold' }]}
@@ -145,7 +145,7 @@ export function ListsScreen() {
 
   const renderEmpty = () => (
     <View style={[styles.empty, { paddingHorizontal: spacing.xl }]}>
-      <Text style={{ fontSize: 48, textAlign: 'center' }}>📋</Text>
+      <ClipboardText size={48} color={colors.textMuted} />
       <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginTop: spacing.md }]}>
         No lists yet
       </Text>
@@ -173,7 +173,7 @@ export function ListsScreen() {
         {FILTER_OPTIONS.map((f) => {
           const active = filter === f
           const label  = f === 'all' ? 'All' : LIST_TYPE_META[f].label
-          const emoji  = f === 'all' ? '📋' : LIST_TYPE_META[f].emoji
+          const chipColor = active ? colors.accentPrimary : colors.textSecondary
           return (
             <Pressable
               key={f}
@@ -192,12 +192,14 @@ export function ListsScreen() {
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
             >
-              <Text style={[text.label.sm, {
-                color:      active ? colors.accentPrimary : colors.textSecondary,
-                fontFamily: 'Outfit-Medium',
-              }]}>
-                {emoji} {label}
-              </Text>
+              <View style={styles.chipInner}>
+                {f === 'all'
+                  ? <ClipboardText size={14} color={chipColor} />
+                  : <ListTypeIcon type={f} size={14} color={chipColor} />}
+                <Text style={[text.label.sm, { color: chipColor, fontFamily: 'Outfit-Medium' }]}>
+                  {label}
+                </Text>
+              </View>
             </Pressable>
           )
         })}
@@ -232,7 +234,7 @@ export function ListsScreen() {
         accessibilityLabel="Create new list"
         accessibilityRole="button"
       >
-        <Text style={{ color: colors.bgPrimary, fontSize: 24, fontWeight: '600', lineHeight: 28 }}>+</Text>
+        <Plus size={24} color={colors.onAccent} weight="bold" />
       </Pressable>
 
       {/* Create / Edit sheet */}
@@ -248,6 +250,7 @@ export function ListsScreen() {
 }
 
 const styles = StyleSheet.create({
+  chipInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   screen:  { flex: 1 },
   header:  { paddingBottom: 8 },
   filterRow: {
@@ -291,7 +294,7 @@ const styles = StyleSheet.create({
     height:         56,
     alignItems:     'center',
     justifyContent: 'center',
-    shadowColor:    '#000',
+    shadowColor:    'rgba(0,0,0,1)',
     shadowOffset:   { width: 0, height: 4 },
     shadowOpacity:  0.3,
     shadowRadius:   8,

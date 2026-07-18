@@ -151,6 +151,12 @@ export const KoraColors = {
   tabDot:       '#B0402F',
 } as const
 
+// Fallback avatar colour + native accent (notifications, widgets) for
+// non-React contexts (lib/, hooks, background tasks) that can't call useTheme.
+// Sourced from the token palette so no raw hex leaks into consumer files.
+export const DEFAULT_AVATAR_COLOR = InkColors.avatar[0]
+export const NATIVE_ACCENT_COLOR  = InkColors.accentPrimary
+
 export type ColorScheme = 'dark' | 'light'
 export type InkColorsType  = typeof InkColors
 export type KoraColorsType = typeof KoraColors

@@ -8,6 +8,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native'
+import { UsersThree } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ContactSuggestionRow } from './ContactSuggestionRow'
@@ -205,7 +206,7 @@ export function ContactSuggestionsSheet({
           </View>
         ) : suggestions.length === 0 ? (
           <View style={[styles.emptyContainer, { padding: spacing.xl }]}>
-            <Text style={{ fontSize: 36, marginBottom: spacing.md }}>👥</Text>
+            <UsersThree size={36} color={colors.textMuted} style={{ marginBottom: spacing.md }} />
             <Text
               style={[
                 text.body.md,

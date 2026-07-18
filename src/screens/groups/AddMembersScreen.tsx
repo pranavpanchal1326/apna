@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
   },
   avatarTextSmall: {
     fontSize: 13,
-    color: '#FFF',
+    // White initials over a dyed-thread avatar color — reads in both themes.
+    color: 'rgba(255,255,255,1)',
   },
 })

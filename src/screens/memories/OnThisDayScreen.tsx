@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { MapPin } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -132,9 +133,12 @@ export function OnThisDayScreen() {
 
         {/* Location / Caption */}
         {item.location?.name && (
-          <Text style={[text.body.sm, { color: colors.accentPrimary, marginTop: spacing.sm }]}>
-            📍 {item.location.name}
-          </Text>
+          <View style={styles.locationRow}>
+            <MapPin size={14} color={colors.accentPrimary} />
+            <Text style={[text.body.sm, { color: colors.accentPrimary }]}>
+              {item.location.name}
+            </Text>
+          </View>
         )}
 
         {item.caption ? (
@@ -200,9 +204,10 @@ export function OnThisDayScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 120 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
   card: {
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: 'rgba(0,0,0,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,

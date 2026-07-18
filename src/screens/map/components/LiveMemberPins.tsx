@@ -4,6 +4,7 @@
 import { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Marker } from '@maplibre/maplibre-react-native'
+import { Ghost } from 'phosphor-react-native'
 import { useTheme } from '../../../theme'
 import type { MemberLocation } from '../../../lib/types/location.types'
 
@@ -67,9 +68,11 @@ export const LiveMemberPins = memo(function LiveMemberPins({
                   isActive && shadows.accentGlow,
                 ]}
               >
-                <Text style={[text.label.sm, styles.initialText]}>
-                  {isGhostPin ? '👻' : loc.name.charAt(0).toUpperCase()}
-                </Text>
+                {isGhostPin
+                  ? <Ghost size={16} color="rgba(22,21,18,1)" weight="fill" />
+                  : <Text style={[text.label.sm, styles.initialText]}>
+                      {loc.name.charAt(0).toUpperCase()}
+                    </Text>}
               </View>
 
               {/* Proximity / Live Pulse effect */}
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   initialText: {
-    color: '#161512',
+    color: 'rgba(22,21,18,1)',
     fontWeight: '700',
   },
   livePulse: {

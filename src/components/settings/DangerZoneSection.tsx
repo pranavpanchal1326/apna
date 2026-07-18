@@ -113,7 +113,7 @@ export function DangerZoneSection({
         </Text>
         <Text style={[text.body.sm, { color: colors.textSecondary, marginBottom: spacing.md }]}>
           You'll be removed from the group. Your expenses remain and can't be deleted.
-          {isLastAdmin ? '\n\n⚠ Transfer admin role before leaving.' : ''}
+          {isLastAdmin ? '\n\nTransfer admin role before leaving.' : ''}
         </Text>
         <Pressable
           onPress={handleLeave}
@@ -232,7 +232,7 @@ export function DangerZoneSection({
                     opacity: confirmName.trim() !== groupName.trim() || loadingDelete ? 0.6 : 1,
                   }}
                 >
-                  <Text style={[text.body.sm, { color: '#FFFFFF', fontWeight: '600' }]}>
+                  <Text style={[text.body.sm, { color: 'rgba(255,255,255,1)', fontWeight: '600' }]}>
                     {loadingDelete ? 'Deleting…' : 'Delete'}
                   </Text>
                 </Pressable>
@@ -257,7 +257,7 @@ export function DangerZoneSection({
               accessibilityRole="button"
               accessibilityLabel="Delete group permanently"
             >
-              <Text style={[text.body.sm, { color: '#FFFFFF' }]}>
+              <Text style={[text.body.sm, { color: 'rgba(255,255,255,1)' }]}>
                 {loadingDelete ? 'Deleting…' : 'Delete Group'}
               </Text>
             </Pressable>

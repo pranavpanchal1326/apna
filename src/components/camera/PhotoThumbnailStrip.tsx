@@ -8,11 +8,12 @@ import {
   Pressable,
   Animated,
 } from 'react-native'
+import { Check } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 
 interface PhotoThumbnailStripProps {
   uris: string[]
-  uploadProgress?: Record<string, number>   // uri → 0–100
+  uploadProgress?: Record<string, number>   // uri to 0-100
   onRemove(uri: string): void
   maxPhotos?: number
   onAddMore?: () => void
@@ -134,7 +135,7 @@ function AnimatedThumbnail({
       {/* Uploaded Success Indicator Overlay */}
       {isUploaded && (
         <View style={[styles.successBadge, { backgroundColor: colors.accentPrimary, borderRadius: radius.full }]}>
-          <Text style={styles.successBadgeText}>✓</Text>
+          <Check size={11} color={colors.onAccent} weight="bold" />
         </View>
       )}
 
@@ -192,7 +193,7 @@ function UploadingSpinner({ progress, colors, textStyles }: { progress: number; 
           },
         ]}
       />
-      <Text style={[textStyles.label.sm, { color: '#FFF', fontSize: 10, marginTop: 4, fontWeight: '700' }]}>
+      <Text style={[textStyles.label.sm, { color: 'rgba(255,255,255,1)', fontSize: 10, marginTop: 4, fontWeight: '700' }]}>
         {progress}%
       </Text>
     </View>
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   successBadgeText: {
-    color: '#FFF',
+    color: 'rgba(255,255,255,1)',
     fontSize: 10,
     fontWeight: '700',
   },

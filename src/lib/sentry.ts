@@ -16,6 +16,7 @@
 
 import * as Sentry from '@sentry/react-native'
 import Constants from 'expo-constants'
+import { isExpectedError } from './errorClassification'
 
 const SENTRY_DSN = Constants.expoConfig?.extra?.sentryDsn as string | undefined
 
@@ -77,10 +78,21 @@ export function clearSentryUser() {
  * Manually capture an error with context.
  * Use in catch blocks for Firebase operations.
  */
+/**
+ * Manually capture an error with context.
+ * Use in catch blocks for Firebase operations.
+ *
+ * Expected/non-actionable errors (offline, signed-out, permission-denied) are
+ * logged as warnings and NOT sent to Sentry — only genuine faults are reported.
+ */
 export function captureError(
   error: unknown,
   context?: Record<string, unknown>
 ) {
+  if (isExpectedError(error)) {
+    if (__DEV__) console.warn('[Expected]', error, context)
+    return
+  }
   if (__DEV__) console.error('[Error]', error, context)
   Sentry.captureException(error, { extra: context })
 }

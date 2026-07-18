@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Linking } from 'react-native'
 import { BottomSheet } from '../ui/BottomSheet'
 import { Button } from '../ui/Button'
+import { LockKey, MapPin } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { useBackgroundLocation } from '../../hooks/useBackgroundLocation'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -35,9 +36,9 @@ export function LocationPermissionGate({ visible, onClose }: LocationPermissionG
       <View style={[styles.container, { paddingBottom: Math.max(spacing.lg, insets.bottom) }]}>
         {/* Icon */}
         <View style={[styles.iconContainer, { backgroundColor: colors.bgTertiary, borderRadius: radius.full }]}>
-          <Text style={styles.icon}>
-            {isBackgroundState ? '🔒📍' : '📍'}
-          </Text>
+          {isBackgroundState
+            ? <LockKey size={28} color={colors.accentPrimary} />
+            : <MapPin size={28} color={colors.accentPrimary} />}
         </View>
 
         {/* Content */}

@@ -4,9 +4,12 @@
 // Float animation: gentle vertical oscillation (Animated.loop).
 
 import { useEffect, useRef } from 'react'
-import { Animated, StyleSheet, Text } from 'react-native'
+import { Animated, StyleSheet, Text, View } from 'react-native'
+import { Backpack } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { Button } from '../../components'
+
+const AnimatedView = Animated.createAnimatedComponent(View)
 
 interface EmptyDayStateProps {
   dayNumber: number
@@ -57,16 +60,16 @@ export function EmptyDayState({ dayNumber, onAdd, onAiDraft, isAiDrafting = fals
         },
       ]}
     >
-      {/* Floating emoji */}
-      <Animated.Text
+      {/* Floating brand glyph */}
+      <AnimatedView
         style={[
           styles.emoji,
           { transform: [{ translateY: floatAnim }] },
         ]}
         accessibilityElementsHidden
       >
-        🎒
-      </Animated.Text>
+        <Backpack size={56} color={colors.textSecondary} />
+      </AnimatedView>
 
       <Text
         style={[
@@ -107,7 +110,7 @@ export function EmptyDayState({ dayNumber, onAdd, onAiDraft, isAiDrafting = fals
         <Animated.View style={{ marginTop: spacing.md, opacity: fadeAnim }}>
           <Button
             variant="secondary"
-            label={isAiDrafting ? 'Drafting your trip…' : '✨ Draft my trip with AI'}
+            label={isAiDrafting ? 'Drafting your trip…' : 'Draft my trip with AI'}
             onPress={onAiDraft}
             disabled={isAiDrafting}
             loading={isAiDrafting}
@@ -124,6 +127,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   emoji: {
-    fontSize: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

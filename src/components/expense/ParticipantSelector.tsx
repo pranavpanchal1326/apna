@@ -7,6 +7,7 @@
 import { memo, useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { Check } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { Avatar } from '@components/ui/Avatar'
 import type { UserInput } from '@lib/schemas'
@@ -105,9 +106,7 @@ export const ParticipantSelector = memo(function ParticipantSelector({
                     },
                   ]}
                 >
-                  <Text style={{ color: colors.bgPrimary, fontSize: 10, fontWeight: '700' }}>
-                    ✓
-                  </Text>
+                  <Check size={12} color={colors.onAccent} weight="bold" />
                 </View>
               )}
 

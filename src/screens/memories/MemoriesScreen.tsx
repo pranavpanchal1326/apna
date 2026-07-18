@@ -21,6 +21,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
 import { haptics } from '@lib/haptics'
+import { Sparkle, Camera, Images, GridFour, MapTrifold } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -324,9 +325,12 @@ export function MemoriesScreen() {
           },
         ]}
       >
-        <Text style={[text.body.md, { color: colors.textPrimary, fontWeight: '700' }]}>
-          ✨ On This Day
-        </Text>
+        <View style={styles.onThisDayRow}>
+          <Sparkle size={16} color={colors.textPrimary} />
+          <Text style={[text.body.md, { color: colors.textPrimary, fontWeight: '700' }]}>
+            On This Day
+          </Text>
+        </View>
         <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 4 }]}>
           Revisit memories from this exact date in prior years of this trip.
         </Text>
@@ -336,7 +340,7 @@ export function MemoriesScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={{ fontSize: 64, textAlign: 'center' }}>📸</Text>
+      <Camera size={64} color={colors.textMuted} />
       <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginTop: spacing.md }]}>
         Capture the Moment
       </Text>
@@ -381,9 +385,14 @@ export function MemoriesScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={mode === 'grid' ? 'Grid view' : 'Map view'}
               >
-                <Text style={[text.label.md, { color: isActive ? colors.accentPrimary : colors.textPrimary }]}>
-                  {mode === 'grid' ? '▦ Grid' : '🗺️ Map'}
-                </Text>
+                <View style={styles.modeToggleRow}>
+                  {mode === 'grid'
+                    ? <GridFour size={15} color={isActive ? colors.accentPrimary : colors.textPrimary} />
+                    : <MapTrifold size={15} color={isActive ? colors.accentPrimary : colors.textPrimary} />}
+                  <Text style={[text.label.md, { color: isActive ? colors.accentPrimary : colors.textPrimary }]}>
+                    {mode === 'grid' ? 'Grid' : 'Map'}
+                  </Text>
+                </View>
               </Pressable>
             )
           })}
@@ -450,7 +459,7 @@ export function MemoriesScreen() {
             }}
             style={[styles.sheetOption, { borderBottomColor: colors.border }]}
           >
-            <Text style={{ fontSize: 20, marginRight: spacing.md }}>📸</Text>
+            <Camera size={20} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
             <Text style={[text.body.lg, { color: colors.textPrimary }]}>Take photo</Text>
           </Pressable>
 
@@ -461,7 +470,7 @@ export function MemoriesScreen() {
             }}
             style={styles.sheetOption}
           >
-            <Text style={{ fontSize: 20, marginRight: spacing.md }}>🖼️</Text>
+            <Images size={20} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
             <Text style={[text.body.lg, { color: colors.textPrimary }]}>Choose from gallery</Text>
           </Pressable>
         </View>
@@ -586,6 +595,8 @@ export function MemoriesScreen() {
 }
 
 const styles = StyleSheet.create({
+  onThisDayRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  modeToggleRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   screen: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 120 },
@@ -625,7 +636,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   multiBadgeText: {
-    color: '#FFFFFF',
+    color: 'rgba(255,255,255,1)',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -635,7 +646,7 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'rgba(0,0,0,1)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -658,7 +669,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: 'rgba(0,0,0,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

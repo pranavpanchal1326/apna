@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { computeBufferWarnings, type BufferWarning, type TimedStop } from '@lib/itinerary/travelTime'
 import type { ItineraryItem } from '@lib/schemas'
 
-/** Map: itemId (the stop being travelled TO) → warning. */
+/** Map: itemId (the stop being travelled TO) to warning. */
 export function useBufferWarnings(items: ItineraryItem[]): Record<string, BufferWarning> {
   const [warnings, setWarnings] = useState<Record<string, BufferWarning>>({})
 

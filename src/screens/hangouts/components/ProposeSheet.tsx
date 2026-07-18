@@ -148,7 +148,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={[text.heading.sm, { color: colors.textPrimary, marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.lg }]}>
-              {editing ? 'Edit hangout' : '🎉 Propose hangout'}
+              {editing ? 'Edit hangout' : 'Propose hangout'}
             </Text>
 
             {/* Title */}
@@ -358,7 +358,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                     textAlign:  'center',
                     fontFamily: 'Outfit-SemiBold',
                   }]}>
-                    {editing ? 'Save changes' : 'Propose it 🎉'}
+                    {editing ? 'Save changes' : 'Propose it'}
                   </Text>
               }
             </Pressable>

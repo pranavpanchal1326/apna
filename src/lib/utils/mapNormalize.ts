@@ -4,6 +4,7 @@
 import type { ItineraryItem, UserInput } from '../schemas'
 import type { LocationUpdate, MemberLocation } from '../types/location.types'
 import { LOCATION_STATUS_THRESHOLDS } from '../types/location.types'
+import { DEFAULT_AVATAR_COLOR } from '../../theme/colors'
 
 /**
  * Normalizes itinerary items into map-ready pins.
@@ -43,7 +44,7 @@ export function normalizeMemberLocations(
         ...update,
         userId,
         name: member.name || 'Squad Member',
-        avatarColor: member.avatarColor || '#D96A50',
+        avatarColor: member.avatarColor || DEFAULT_AVATAR_COLOR,
         status,
       }
     })

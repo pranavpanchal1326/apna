@@ -21,7 +21,10 @@ import {
   View,
 } from 'react-native'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
+import { Check } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
+
+const AnimatedView = Animated.createAnimatedComponent(View)
 
 interface ConfirmItemButtonProps {
   onConfirm:  () => Promise<void>
@@ -144,22 +147,20 @@ export function ConfirmItemButton({ onConfirm, disabled }: ConfirmItemButtonProp
             <ActivityIndicator size="small" color={colors.accentPrimary} />
           ) : (
             <>
-              <Animated.Text
-                style={[
-                  styles.check,
-                  { opacity: checkOpacity },
-                ]}
-              >
-                ✓
-              </Animated.Text>
-              <Text
-                style={[
-                  text.body.md,
-                  { color: colors.accentPrimary, fontWeight: '600' },
-                ]}
-              >
-                {confirming ? 'Confirming...' : 'Lock it in ✓'}
-              </Text>
+              <AnimatedView style={[styles.check, { opacity: checkOpacity }]}>
+                <Check size={18} color={colors.accentPrimary} weight="bold" />
+              </AnimatedView>
+              <View style={styles.labelRow}>
+                <Text
+                  style={[
+                    text.body.md,
+                    { color: colors.accentPrimary, fontWeight: '600' },
+                  ]}
+                >
+                  {confirming ? 'Confirming...' : 'Lock it in'}
+                </Text>
+                {!confirming && <Check size={16} color={colors.accentPrimary} weight="bold" />}
+              </View>
             </>
           )}
         </View>
@@ -180,9 +181,12 @@ const styles = StyleSheet.create({
     gap:           8,
   },
   check: {
-    fontSize:  18,
-    color:     '#D96A50',
     position:  'absolute',
     left:      -28,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           6,
   },
 })

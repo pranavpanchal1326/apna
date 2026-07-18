@@ -3,6 +3,7 @@
 
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { ArrowUpRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { useReferral } from '@hooks/useReferral'
 
@@ -51,7 +52,7 @@ export function ReferralShareRow({
           </Text>
         )}
       </View>
-      <Text style={{ color: colors.accentPrimary, fontSize: 18 }}>↗</Text>
+      <ArrowUpRight size={18} color={colors.accentPrimary} />
     </Pressable>
   )
 }

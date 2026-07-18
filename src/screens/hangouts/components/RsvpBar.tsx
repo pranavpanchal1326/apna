@@ -4,20 +4,22 @@
 
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { Check, Question, X, type IconProps } from 'phosphor-react-native'
+import type { ComponentType } from 'react'
 import { useTheme } from '../../../theme'
 import type { RsvpValue } from '../../../lib/schemas/hangout.schema'
 
 interface RsvpConfig {
   value:   RsvpValue
   label:   string
-  emoji:   string
+  Icon:    ComponentType<IconProps>
   colorFn: (colors: ReturnType<typeof useTheme>['colors']) => string
 }
 
 const RSVP_OPTIONS: RsvpConfig[] = [
-  { value: 'yes',   label: 'Yes',   emoji: '✓',  colorFn: (c) => c.positive        },
-  { value: 'maybe', label: 'Maybe', emoji: '?',  colorFn: (c) => c.accentGold      },
-  { value: 'no',    label: 'No',    emoji: '✕',  colorFn: (c) => c.accentDanger    },
+  { value: 'yes',   label: 'Yes',   Icon: Check,    colorFn: (c) => c.positive },
+  { value: 'maybe', label: 'Maybe', Icon: Question, colorFn: (c) => c.warning  },
+  { value: 'no',    label: 'No',    Icon: X,        colorFn: (c) => c.negative },
 ]
 
 interface Props {
@@ -68,9 +70,7 @@ export function RsvpBar({ current, onVote, isPending, disabled, size = 'lg' }: P
               <ActivityIndicator color={accent} size={isSmall ? 12 : 16} />
             ) : (
               <>
-                <Text style={{ fontSize: isSmall ? 14 : 18, color: isActive ? accent : colors.textMuted }}>
-                  {opt.emoji}
-                </Text>
+                <opt.Icon size={isSmall ? 14 : 18} color={isActive ? accent : colors.textMuted} weight="bold" />
                 <Text style={[isSmall ? text.label.sm : text.label.md, {
                   color:      isActive ? accent : colors.textMuted,
                   fontFamily: 'Outfit-SemiBold',

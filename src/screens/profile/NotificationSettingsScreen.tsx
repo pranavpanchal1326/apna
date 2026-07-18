@@ -10,6 +10,7 @@ import { updateDoc } from 'firebase/firestore'
 import * as Haptics from 'expo-haptics'
 import { Screen, Header } from '@components'
 import { SettingsRow } from '@components/group'
+import { Warning } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { useAuth } from '@hooks/useAuth'
 import { userDoc } from '@lib/firebase/collections'
@@ -161,15 +162,19 @@ export function NotificationSettingsScreen() {
           </View>
         )}
 
-        <Text style={[text.body.sm, { color: colors.textMuted }]}>
-          🚨 SOS alerts always come through — they ignore every setting above.
-        </Text>
+        <View style={styles.sosNote}>
+          <Warning size={14} color={colors.textMuted} />
+          <Text style={[text.body.sm, { color: colors.textMuted, flex: 1 }]}>
+            SOS alerts always come through — they ignore every setting above.
+          </Text>
+        </View>
       </ScrollView>
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
+  sosNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
   hoursCard: { borderWidth: 1 },
   hourRow: {
     flexDirection: 'row',

@@ -99,7 +99,12 @@ export const functions = getFunctions(app, 'asia-south1')
 //
 // Switch to production: set appEnv: "production" in app.json extra
 // ---------------------------------------------------------------------------
-const IS_DEV = (extra.appEnv as string) === 'development' || __DEV__
+// PROTOTYPE: use the local emulator suite (production creds are placeholders).
+// We reach the emulators via `localhost` + `adb reverse` tunnels rather than
+// 10.0.2.2, because the host firewall blocks the 10.0.2.2 route to those ports.
+const USE_LOCAL_EMULATORS = true
+
+const IS_DEV = ((extra.appEnv as string) === 'development' || __DEV__) && USE_LOCAL_EMULATORS
 
 /** True when the app talks to local Firebase emulators instead of production. */
 export const usingFirebaseEmulators = IS_DEV
@@ -121,7 +126,7 @@ if (IS_DEV) {
     connectFunctionsEmulator,
   } = require('firebase/functions') as typeof import('firebase/functions')
 
-  const EMULATOR_HOST = process.env.EMULATOR_HOST || '10.0.2.2' // ← Change to WiFi IP for physical device
+  const EMULATOR_HOST = process.env.EMULATOR_HOST || 'localhost' // localhost + `adb reverse` tunnels (bypasses firewall on 10.0.2.2)
 
   try {
     connectFirestoreEmulator(db,        EMULATOR_HOST, 8080)

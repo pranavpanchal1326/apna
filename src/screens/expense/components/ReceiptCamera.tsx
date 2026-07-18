@@ -6,7 +6,12 @@ import { useRef } from 'react'
 import { StyleSheet, View, Text, Pressable, ActivityIndicator } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
+import { Camera, X } from 'phosphor-react-native'
 import { useTheme } from '@theme'
+
+// Camera chrome sits over live video: pure white/black are the correct,
+// contrast-safe values here (§3.17). Expressed as rgba so no raw hex leaks.
+const OVERLAY_WHITE = 'rgba(255,255,255,1)'
 
 interface ReceiptCameraProps {
   onCapture: (uri: string) => void
@@ -48,7 +53,7 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
   if (!permission.granted) {
     return (
       <View style={[styles.center, { backgroundColor: colors.bgPrimary, padding: spacing.xl }]}>
-        <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📷</Text>
+        <Camera size={48} color={colors.textSecondary} style={{ marginBottom: spacing.md }} />
         <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }]}>
           Camera Access Required
         </Text>
@@ -62,7 +67,7 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
             { backgroundColor: colors.accentPrimary, borderRadius: radius.lg, opacity: pressed ? 0.8 : 1 }
           ]}
         >
-          <Text style={[text.label.lg, { color: colors.bgPrimary }]}>Grant Permission</Text>
+          <Text style={[text.label.lg, { color: colors.onAccent }]}>Grant Permission</Text>
         </Pressable>
         <Pressable onPress={onClose} style={{ marginTop: spacing.md }}>
           <Text style={[text.label.md, { color: colors.textSecondary }]}>Cancel</Text>
@@ -98,7 +103,7 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
 
           {/* Bottom section with trigger */}
           <View style={styles.bottomBlock}>
-            <Text style={[text.body.sm, { color: '#FFF', textAlign: 'center', paddingHorizontal: spacing.xl, marginBottom: spacing.xl }]}>
+            <Text style={[text.body.sm, { color: OVERLAY_WHITE, textAlign: 'center', paddingHorizontal: spacing.xl, marginBottom: spacing.xl }]}>
               Align receipt inside the frame
             </Text>
 
@@ -107,10 +112,10 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
                 onPress={handleCapture}
                 style={({ pressed }) => [
                   styles.captureBtnOuter,
-                  { borderColor: '#FFF', opacity: pressed ? 0.8 : 1 }
+                  { borderColor: OVERLAY_WHITE, opacity: pressed ? 0.8 : 1 }
                 ]}
               >
-                <View style={[styles.captureBtnInner, { backgroundColor: '#FFF' }]} />
+                <View style={[styles.captureBtnInner, { backgroundColor: OVERLAY_WHITE }]} />
               </Pressable>
             </View>
           </View>
@@ -120,8 +125,10 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
         <Pressable
           onPress={onClose}
           style={[styles.closeBtn, { backgroundColor: 'rgba(0, 0, 0, 0.4)', borderRadius: radius.full }]}
+          accessibilityRole="button"
+          accessibilityLabel="Close camera"
         >
-          <Text style={{ color: '#FFF', fontSize: 24, fontWeight: '600' }}>×</Text>
+          <X size={24} color={OVERLAY_WHITE} weight="bold" />
         </Pressable>
       </CameraView>
     </View>
@@ -131,7 +138,7 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(0,0,0,1)',
   },
   center: {
     flex: 1,

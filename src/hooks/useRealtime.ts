@@ -10,6 +10,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { rtdb, db } from '../lib/firebase/config'
 import type { LocationUpdate, MemberLocation, GroupLocationVisibility } from '../lib/types/location.types'
 import { LOCATION_STATUS_THRESHOLDS } from '../lib/types/location.types'
+import { DEFAULT_AVATAR_COLOR } from '../theme/colors'
 import type { UserInput } from '../lib/schemas'
 
 export function useGroupLocations(
@@ -106,7 +107,7 @@ export function useGroupLocations(
               ...update,
               userId,
               name: member.name || 'Squad Member',
-              avatarColor: member.avatarColor || '#D96A50',
+              avatarColor: member.avatarColor || DEFAULT_AVATAR_COLOR,
               status,
             })
           })

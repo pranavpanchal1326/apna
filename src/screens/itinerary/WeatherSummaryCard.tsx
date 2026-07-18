@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native'
+import { ArrowsClockwise } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import type { TripWeather, WeatherDay } from '../../lib/types/weather.types'
 
@@ -62,9 +63,9 @@ export function WeatherSummaryCard({
         accessibilityRole="button"
         accessibilityLabel="Refresh weather"
       >
-        <Text style={[text.label.sm, { color: colors.accentPrimary }]}>
-          {isRefreshing ? '...' : '↻'}
-        </Text>
+        {isRefreshing
+          ? <ActivityIndicator size="small" color={colors.accentPrimary} />
+          : <ArrowsClockwise size={16} color={colors.accentPrimary} />}
       </Pressable>
     </View>
   )

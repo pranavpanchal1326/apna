@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { MapTrifold, CaretLeft } from 'phosphor-react-native'
 import { Screen, Button } from '@components'
 import { useTheme } from '@theme'
 import { PublicRecapCard, PUBLIC_RECAP_CARD_WIDTH, PUBLIC_RECAP_CARD_HEIGHT } from '@components/recap'
@@ -66,7 +67,7 @@ export function PublicRecapLandingScreen({ slug, onClose }: PublicRecapLandingSc
     return (
       <Screen>
         <View style={styles.center}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>🗺️</Text>
+          <MapTrifold size={48} color={colors.textMuted} style={{ marginBottom: spacing.md }} />
           <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center' }]}>
             Recap not available
           </Text>
@@ -85,8 +86,9 @@ export function PublicRecapLandingScreen({ slug, onClose }: PublicRecapLandingSc
     <Screen>
       <View style={{ padding: spacing.lg, paddingBottom: spacing['4xl'] }}>
         {onClose ? (
-          <Pressable onPress={onClose} style={{ marginBottom: spacing.md }}>
-            <Text style={[text.body.md, { color: colors.accentPrimary }]}>← Back</Text>
+          <Pressable onPress={onClose} style={{ marginBottom: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <CaretLeft size={18} color={colors.accentPrimary} />
+            <Text style={[text.body.md, { color: colors.accentPrimary }]}>Back</Text>
           </Pressable>
         ) : null}
 

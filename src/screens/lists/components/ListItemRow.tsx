@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { Check } from 'phosphor-react-native'
 import { useTheme } from '../../../theme'
 import { DeadlineBadge } from './DeadlineBadge'
 import type { SharedListItem } from '../../../lib/schemas/list.schema'
@@ -148,8 +149,8 @@ export function ListItemRow({
         },
       ]}>
         {toggling
-          ? <ActivityIndicator size={12} color={colors.bgPrimary} />
-          : item.checked && <Text style={{ color: colors.bgPrimary, fontSize: 11, fontWeight: '700' }}>✓</Text>
+          ? <ActivityIndicator size={12} color={colors.onAccent} />
+          : item.checked && <Check size={12} color={colors.onAccent} weight="bold" />
         }
       </View>
 

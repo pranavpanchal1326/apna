@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ScrollView, Image, StyleSheet, ActivityIndicator } from 'react-native'
 import { useRoute, type RouteProp } from '@react-navigation/native'
+import { CalendarBlank } from 'phosphor-react-native'
 import { Screen, Header } from '@components'
 import { useTheme } from '@theme'
 import { fetchYearInReview, type YearInReview } from '@lib/firebase/yearInReview'
@@ -15,12 +16,12 @@ import type { HomeStackParamList } from '@navigation/types'
 type Route = RouteProp<HomeStackParamList, 'YearInReview'>
 
 const CATEGORY_LABELS: Record<string, string> = {
-  food: '🍜 Food',
-  stay: '🏨 Stay',
-  transport: '🚗 Transport',
-  activities: '🎢 Activities',
-  shopping: '🛍️ Shopping',
-  misc: '📦 Misc',
+  food: 'Food',
+  stay: 'Stay',
+  transport: 'Transport',
+  activities: 'Activities',
+  shopping: 'Shopping',
+  misc: 'Misc',
 }
 
 export function YearInReviewScreen() {
@@ -60,7 +61,7 @@ export function YearInReviewScreen() {
       <Screen>
         <Header title={`${year} in Review`} showBack />
         <View style={[styles.center, { padding: spacing.xl }]}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>🗓️</Text>
+          <CalendarBlank size={48} color={colors.textMuted} style={{ marginBottom: spacing.md }} />
           <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center' }]}>
             Not ready yet
           </Text>

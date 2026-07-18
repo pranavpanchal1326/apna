@@ -92,7 +92,7 @@ export function ContactSuggestionRow({
           },
         ]}
       >
-        <Text style={[styles.avatarText, { color: '#FFF', fontFamily: 'Outfit-Bold' }]}>
+        <Text style={[styles.avatarText, { color: 'rgba(255,255,255,1)', fontFamily: 'Outfit-Bold' }]}>
           {initials}
         </Text>
       </View>

@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { ArrowRight } from 'phosphor-react-native'
 import { useTheme }      from '../../theme'
 import { Button }        from '../../components'
 import { CATEGORY_META } from '../../lib/schemas'
@@ -179,7 +180,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
               maxLength={5}
               accessibilityLabel="Start time"
             />
-            <Text style={[text.label.md, { color: colors.textMuted }]}>→</Text>
+            <ArrowRight size={16} color={colors.textMuted} />
             <TextInput
               value={endTime}
               onChangeText={t => { setEndTime(t); setErrors(e => ({ ...e, endTime: '' })) }}

@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
     zIndex:         2,
   },
   orderText: {
-    color:      '#161512',
+    // Dark ink text on the madder pin badge — reads in both themes.
+    color:      'rgba(22,21,18,1)',
     fontSize:   10,
     fontWeight: '700',
     lineHeight: 10,

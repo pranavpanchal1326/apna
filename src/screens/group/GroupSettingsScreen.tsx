@@ -18,6 +18,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { Camera, Repeat, FilmSlate, Sparkle } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { haptics } from '@lib/haptics'
 import { Screen, Header, Button, MediaPickerSheet } from '@components'
@@ -297,9 +298,10 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
             />
           ) : (
             isAdmin && (
-              <View style={{ width: '100%', height: 64, backgroundColor: colors.accentPrimary + '15', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: colors.accentPrimary }}>
+              <View style={{ width: '100%', height: 64, flexDirection: 'row', gap: spacing.xs, backgroundColor: colors.accentPrimary + '15', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: colors.accentPrimary }}>
+                <Camera size={16} color={colors.accentPrimary} />
                 <Text style={[text.label.sm, { color: colors.accentPrimary, fontWeight: '700' }]}>
-                  📸 ADD TRIP COVER PHOTO
+                  ADD TRIP COVER PHOTO
                 </Text>
               </View>
             )
@@ -315,7 +317,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
                 </Text>
               </View>
             </View>
-            <View style={[styles.divider, { backgroundColor: colors.border, marginVertical: spacing.md }]} />
+            <View style={[styles.divider, { backgroundColor: colors.hairline, marginVertical: spacing.md }]} />
             
             <View style={styles.overviewMeta}>
               <Text style={[text.body.sm, { color: colors.textSecondary }]}>Dates: {dateRangeStr}</Text>
@@ -332,7 +334,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           {uploadState.isUploading && (
             <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 20 }]}>
               <ActivityIndicator size="large" color={colors.accentPrimary} />
-              <Text style={[text.label.md, { color: '#FFF', marginTop: spacing.sm, fontWeight: '700' }]}>
+              <Text style={[text.label.md, { color: 'rgba(255,255,255,1)', marginTop: spacing.sm, fontWeight: '700' }]}>
                 Uploading Cover… {uploadState.progress}%
               </Text>
             </View>
@@ -409,7 +411,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
         <View style={{ marginBottom: spacing.xl }}>
           <SettingsRow
             label="Recurring Expenses"
-            rightMeta="🔁"
+            rightMeta={<Repeat size={18} color={colors.textMuted} />}
             onPress={() => navigation.navigate('RecurringExpenses', { groupId })}
           />
         </View>
@@ -419,7 +421,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
           <View style={{ marginBottom: spacing.xl }}>
             <SettingsRow
               label={hasCachedWrap ? 'View Trip Wrap' : 'Generate Trip Wrap'}
-              rightMeta="🎬"
+              rightMeta={<FilmSlate size={18} color={colors.textMuted} />}
               onPress={() => navigation.navigate('TripWrap', { groupId })}
             />
           </View>
@@ -429,7 +431,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
         <View style={{ marginBottom: spacing.xl }}>
           <SettingsRow
             label="Year in Review"
-            rightMeta="✨"
+            rightMeta={<Sparkle size={18} color={colors.textMuted} />}
             onPress={() => {
               // Generated every December — before then, show last year's.
               const now = new Date()

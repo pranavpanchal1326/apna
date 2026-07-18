@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { Confetti, CalendarBlank, ClockCounterClockwise, ForkKnife } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { useHangoutStore } from '../../stores/hangout.store'
 import { useAuthStore } from '../../stores/auth.store'
@@ -73,7 +74,7 @@ export function HangoutsScreen() {
 
   const renderEmpty = () => (
     <View style={[styles.empty, { paddingHorizontal: spacing.xl }]}>
-      <Text style={{ fontSize: 48, textAlign: 'center' }}>🎉</Text>
+      <Confetti size={48} color={colors.textMuted} />
       <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginTop: spacing.md }]}>
         {filter === 'active' ? 'No plans yet' : 'No past hangouts'}
       </Text>
@@ -99,14 +100,18 @@ export function HangoutsScreen() {
       <View style={[styles.filterRow, { paddingHorizontal: spacing.md, marginVertical: spacing.sm }]}>
         {(['active', 'past'] as FilterKey[]).map((f) => {
           const active = filter === f
-          const label  = f === 'active' ? '🗓 Upcoming' : '📜 Past'
+          const label  = f === 'active' ? 'Upcoming' : 'Past'
+          const chipColor = active ? colors.accentPrimary : colors.textSecondary
           return (
             <Pressable
               key={f}
               onPress={() => { Haptics.selectionAsync(); setFilter(f) }}
               style={[styles.chip, {
+                flexDirection:   'row',
+                alignItems:      'center',
+                gap:             5,
                 backgroundColor: active ? colors.accentPrimary + '22' : colors.bgSecondary,
-                borderColor:     active ? colors.accentPrimary         : colors.border,
+                borderColor:     active ? colors.accentPrimary         : colors.hairline,
                 borderRadius:    radius.full,
                 borderWidth:     1,
                 paddingHorizontal: 12,
@@ -115,10 +120,10 @@ export function HangoutsScreen() {
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
             >
-              <Text style={[text.label.sm, {
-                color:      active ? colors.accentPrimary : colors.textSecondary,
-                fontFamily: 'Outfit-Medium',
-              }]}>
+              {f === 'active'
+                ? <CalendarBlank size={14} color={chipColor} />
+                : <ClockCounterClockwise size={14} color={chipColor} />}
+              <Text style={[text.label.sm, { color: chipColor, fontFamily: 'Outfit-Medium' }]}>
                 {label}
               </Text>
             </Pressable>
@@ -140,9 +145,12 @@ export function HangoutsScreen() {
             accessibilityRole="button"
             accessibilityLabel="Get dietary-friendly food ideas"
           >
-            <Text style={[text.label.sm, { color: colors.textSecondary, fontFamily: 'Outfit-Medium' }]}>
-              🥗 Food ideas
-            </Text>
+            <View style={styles.foodIdeasRow}>
+              <ForkKnife size={14} color={colors.textSecondary} />
+              <Text style={[text.label.sm, { color: colors.textSecondary, fontFamily: 'Outfit-Medium' }]}>
+                Food ideas
+              </Text>
+            </View>
           </Pressable>
         ) : null}
       </View>
@@ -200,6 +208,7 @@ export function HangoutsScreen() {
 }
 
 const styles = StyleSheet.create({
+  foodIdeasRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   screen:    { flex: 1 },
   header:    { paddingBottom: 8 },
   filterRow: { flexDirection: 'row', gap: 8 },
@@ -211,7 +220,7 @@ const styles = StyleSheet.create({
     height:         56,
     alignItems:     'center',
     justifyContent: 'center',
-    shadowColor:    '#000',
+    shadowColor:    'rgba(0,0,0,1)',
     shadowOffset:   { width: 0, height: 4 },
     shadowOpacity:  0.3,
     shadowRadius:   8,

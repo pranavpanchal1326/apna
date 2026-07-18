@@ -15,6 +15,7 @@ import {
   Animated,
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { Button, Screen } from '@components'
 import { AuthProgress } from '@components/auth'
@@ -196,7 +197,7 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={{ color: colors.accentPrimary, fontSize: 22 }}>←</Text>
+            <CaretLeft size={22} color={colors.textPrimary} />
           </Pressable>
 
           <Text style={[text.display.sm, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
@@ -229,9 +230,9 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
                   {
                     backgroundColor: colors.bgTertiary,
                     borderColor: digit
-                      ? colors.accentPrimary
+                      ? colors.stitch
                       : error
-                      ? colors.accentDanger
+                      ? colors.negative
                       : colors.border,
                     borderRadius: radius.md,
                     borderWidth: digit ? 1.5 : 1,
@@ -250,7 +251,7 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
             <Text
               style={[
                 text.label.md,
-                { color: colors.accentDanger, marginTop: spacing.md, textAlign: 'center' },
+                { color: colors.negative, marginTop: spacing.md, textAlign: 'center' },
               ]}
             >
               {error}
@@ -264,7 +265,7 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
             </Text>
             {otpFlow.canResend ? (
               <Pressable onPress={handleResend} accessibilityRole="button" accessibilityLabel="Resend OTP">
-                <Text style={[text.body.sm, { color: colors.accentPrimary }]}>
+                <Text style={[text.body.sm, { color: colors.stitch }]}>
                   Resend OTP
                 </Text>
               </Pressable>

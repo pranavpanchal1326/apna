@@ -27,6 +27,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import { X, Clock, Check, Hourglass, CaretRight } from 'phosphor-react-native'
 import { useTheme }      from '../../theme'
 import { CATEGORY_META } from '../../lib/schemas'
 import type { ItineraryItem } from '../../lib/schemas'
@@ -125,19 +126,22 @@ export function MapCallout({
           accessibilityRole="button"
           accessibilityLabel="Close preview"
         >
-          <Text style={{ color: colors.textMuted, fontSize: 16 }}>✕</Text>
+          <X size={16} color={colors.textMuted} />
         </Pressable>
       </View>
 
       {/* Meta row: time + status */}
       <View style={[styles.metaRow, { marginTop: spacing.sm }]}>
         {item.timeSlot && (
-          <Text style={[text.mono.sm, { color: colors.textSecondary }]}>
-            🕐 {item.timeSlot.startTime}
-          </Text>
+          <View style={styles.metaInline}>
+            <Clock size={13} color={colors.textSecondary} />
+            <Text style={[text.mono.sm, { color: colors.textSecondary }]}>
+              {item.timeSlot.startTime}
+            </Text>
+          </View>
         )}
         {item.estimatedCost ? (
-          <Text style={[text.mono.sm, { color: colors.accentGold }]}>
+          <Text style={[text.mono.sm, { color: colors.warning }]}>
             ₹{item.estimatedCost.toLocaleString('en-IN')}
           </Text>
         ) : null}
@@ -147,23 +151,18 @@ export function MapCallout({
             {
               backgroundColor: item.isConfirmed
                 ? `${colors.accentPrimary}18`
-                : `${colors.accentGold}18`,
-              borderColor:  item.isConfirmed ? colors.accentPrimary : colors.accentGold,
+                : `${colors.warning}18`,
+              borderColor:  item.isConfirmed ? colors.accentPrimary : colors.warning,
               borderRadius: radius.full,
               borderWidth:  1,
               paddingHorizontal: spacing.xs + 2,
-              paddingVertical:   1,
+              paddingVertical:   2,
             },
           ]}
         >
-          <Text
-            style={[
-              text.label.sm,
-              { color: item.isConfirmed ? colors.accentPrimary : colors.accentGold },
-            ]}
-          >
-            {item.isConfirmed ? '✓' : '⏳'}
-          </Text>
+          {item.isConfirmed
+            ? <Check size={12} color={colors.accentPrimary} weight="bold" />
+            : <Hourglass size={12} color={colors.warning} />}
         </View>
       </View>
 
@@ -184,17 +183,20 @@ export function MapCallout({
         accessibilityRole="button"
         accessibilityLabel={`View details for ${item.title}`}
       >
-        <Text
-          style={[text.label.md, { color: colors.accentPrimary, textAlign: 'center' }]}
-        >
-          View details →
-        </Text>
+        <View style={styles.detailsRow}>
+          <Text style={[text.label.md, { color: colors.accentPrimary }]}>
+            View details
+          </Text>
+          <CaretRight size={14} color={colors.accentPrimary} />
+        </View>
       </Pressable>
     </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
+  metaInline: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  detailsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
   callout: {
     position: 'absolute',
     zIndex:   30,

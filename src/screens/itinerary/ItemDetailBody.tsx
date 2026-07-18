@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import { Clock, Star, Link, ThumbsUp, ThumbsDown, ChatCircle } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import type { ItineraryItem } from '../../lib/schemas'
 import { useActivityVoting } from '../../hooks/useActivityVoting'
@@ -22,7 +23,7 @@ import { ProposalVoteChips } from './ProposalVoteChips'
 
 interface ItemDetailBodyProps {
   item:            ItineraryItem
-  memberNames:     Record<string, string>  // uid → display name
+  memberNames:     Record<string, string>  // uid to display name
   onLinkExpenses:  () => void
   myUid:           string
   onVote:          (vote: 'up' | 'down') => void
@@ -91,10 +92,13 @@ export function ItemDetailBody({
                 },
               ]}
             >
-              <Text style={[text.mono.sm, { color: colors.textPrimary }]}>
-                🕐 {item.timeSlot.startTime}
-                {item.timeSlot.endTime ? ` – ${item.timeSlot.endTime}` : ''}
-              </Text>
+              <View style={styles.inlineRow}>
+                <Clock size={14} color={colors.textPrimary} />
+                <Text style={[text.mono.sm, { color: colors.textPrimary }]}>
+                  {item.timeSlot.startTime}
+                  {item.timeSlot.endTime ? ` – ${item.timeSlot.endTime}` : ''}
+                </Text>
+              </View>
             </View>
           )}
 
@@ -124,15 +128,15 @@ export function ItemDetailBody({
               style={[
                 styles.infoPill,
                 {
-                  backgroundColor: `${colors.accentGold}12`,
-                  borderColor:     `${colors.accentGold}40`,
+                  backgroundColor: `${colors.warning}12`,
+                  borderColor:     `${colors.warning}40`,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   spacing.xs,
                 },
               ]}
             >
-              <Text style={[text.mono.sm, { color: colors.accentGold }]}>
+              <Text style={[text.mono.sm, { color: colors.warning }]}>
                 ₹{item.estimatedCost.toLocaleString('en-IN')}
               </Text>
             </View>
@@ -146,9 +150,12 @@ export function ItemDetailBody({
           <SectionLabel label="Place info" />
           <View style={styles.pillRow}>
             {item.placeRef.rating && (
-              <Text style={[text.mono.sm, { color: colors.accentGold }]}>
-                ⭐ {item.placeRef.rating.toFixed(1)}
-              </Text>
+              <View style={styles.inlineRow}>
+                <Star size={14} color={colors.warning} weight="fill" />
+                <Text style={[text.mono.sm, { color: colors.warning }]}>
+                  {item.placeRef.rating.toFixed(1)}
+                </Text>
+              </View>
             )}
             {item.placeRef.priceLevel !== undefined && (
               <Text style={[text.label.md, { color: colors.textSecondary }]}>
@@ -156,12 +163,15 @@ export function ItemDetailBody({
               </Text>
             )}
             {item.placeRef.website && (
-              <Text
-                style={[text.label.md, { color: colors.accentPrimary }]}
-                numberOfLines={1}
-              >
-                🔗 Website
-              </Text>
+              <View style={styles.inlineRow}>
+                <Link size={14} color={colors.accentPrimary} />
+                <Text
+                  style={[text.label.md, { color: colors.accentPrimary }]}
+                  numberOfLines={1}
+                >
+                  Website
+                </Text>
+              </View>
             )}
           </View>
         </View>
@@ -226,7 +236,7 @@ export function ItemDetailBody({
             <SectionLabel label="Vote results" />
             <View style={styles.voteTally}>
               <View style={styles.voteCount}>
-                <Text style={{ fontSize: 24 }}>👍</Text>
+                <ThumbsUp size={24} color={colors.positive} />
                 <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                   {summary.yesCount}
                 </Text>
@@ -234,9 +244,9 @@ export function ItemDetailBody({
                   Going
                 </Text>
               </View>
-              <View style={[styles.voteDivider, { backgroundColor: colors.border }]} />
+              <View style={[styles.voteDivider, { backgroundColor: colors.hairline }]} />
               <View style={styles.voteCount}>
-                <Text style={{ fontSize: 24 }}>💬</Text>
+                <ChatCircle size={24} color={colors.warning} />
                 <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                   {summary.maybeCount}
                 </Text>
@@ -244,9 +254,9 @@ export function ItemDetailBody({
                   Maybe
                 </Text>
               </View>
-              <View style={[styles.voteDivider, { backgroundColor: colors.border }]} />
+              <View style={[styles.voteDivider, { backgroundColor: colors.hairline }]} />
               <View style={styles.voteCount}>
-                <Text style={{ fontSize: 24 }}>👎</Text>
+                <ThumbsDown size={24} color={colors.negative} />
                 <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                   {summary.noCount}
                 </Text>
@@ -273,7 +283,7 @@ export function ItemDetailBody({
             <SectionLabel label="Group vote" />
             <View style={styles.voteTally}>
               <View style={styles.voteCount}>
-                <Text style={{ fontSize: 24 }}>👍</Text>
+                <ThumbsUp size={24} color={colors.positive} />
                 <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                   {item.votes.up?.length ?? 0}
                 </Text>
@@ -282,10 +292,10 @@ export function ItemDetailBody({
                 </Text>
               </View>
               <View
-                style={[styles.voteDivider, { backgroundColor: colors.border }]}
+                style={[styles.voteDivider, { backgroundColor: colors.hairline }]}
               />
               <View style={styles.voteCount}>
-                <Text style={{ fontSize: 24 }}>👎</Text>
+                <ThumbsDown size={24} color={colors.negative} />
                 <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                   {item.votes.down?.length ?? 0}
                 </Text>
@@ -297,22 +307,21 @@ export function ItemDetailBody({
 
             {/* My vote indicator */}
             {legacyMyVote && (
-              <Text
-                style={[
-                  text.label.sm,
-                  {
-                    color:     legacyMyVote === 'up' ? colors.accentPrimary : colors.accentDanger,
-                    marginTop: spacing.xs,
-                    textAlign: 'center',
-                  },
-                ]}
-              >
-                You voted {legacyMyVote === 'up' ? '👍' : '👎'}
-                {' · '}
-                <Text onPress={() => onVote(legacyMyVote === 'up' ? 'down' : 'up')}>
+              <View style={styles.myVoteRow}>
+                <Text style={[text.label.sm, { color: legacyMyVote === 'up' ? colors.accentPrimary : colors.negative }]}>
+                  You voted
+                </Text>
+                {legacyMyVote === 'up'
+                  ? <ThumbsUp size={13} color={colors.accentPrimary} weight="fill" />
+                  : <ThumbsDown size={13} color={colors.negative} weight="fill" />}
+                <Text style={[text.label.sm, { color: colors.textMuted }]}>·</Text>
+                <Text
+                  style={[text.label.sm, { color: colors.accentPrimary }]}
+                  onPress={() => onVote(legacyMyVote === 'up' ? 'down' : 'up')}
+                >
                   Change vote
                 </Text>
-              </Text>
+              </View>
             )}
           </View>
         )
@@ -337,6 +346,18 @@ const styles = StyleSheet.create({
     flexWrap:      'wrap',
     gap:           8,
     alignItems:    'center',
+  },
+  inlineRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           4,
+  },
+  myVoteRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    justifyContent: 'center',
+    gap:           4,
+    marginTop:     4,
   },
   infoPill: {
     borderWidth: 1,

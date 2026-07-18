@@ -1,0 +1,29 @@
+name: verify
+
+# Enforces the Kora & Ink Definition of Done (docs/DESIGN_BLUEPRINT.md §6):
+# types compile, the design-system lint is clean (zero raw hex / emoji chrome /
+# text-glyph controls), and the unit suite passes. Runs on every push and PR.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apna
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apna/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint:design
+      # Runs the suite with the money-path coverage regression gate (jest.config.js).
+      - run: npm run test:coverage

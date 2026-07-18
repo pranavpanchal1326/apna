@@ -27,6 +27,7 @@ const HEX_ALLOW = [
   /^scripts[\\/]/,                      // seed data
   /^components[\\/]recap[\\/]PublicRecapCard\.tsx$/, // kora-always export artifact (§3.17)
   /^components[\\/]reel[\\/]ReelOverlayFrame\.tsx$/, // kora-always export artifact
+  /^screens[\\/]tripWrap[\\/]components[\\/]TripWrapCard\.tsx$/, // fixed-palette export card (§3.17)
   /^native[\\/]/,                       // Android widget resources (mirrored tokens)
   /^lib[\\/]utils[\\/]exportPdf\.ts$/,     // static HTML artifact
   /\.test\.tsx?$/,                      // tests assert data, not chrome

@@ -19,6 +19,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import { Check, Hourglass } from 'phosphor-react-native'
 import { useTheme }    from '../../theme'
 import { CATEGORY_META } from '../../lib/schemas'
 import type { ItineraryItem } from '../../lib/schemas'
@@ -141,14 +142,19 @@ export function ItemDetailHeader({
             },
           ]}
         >
-          <Text
-            style={[
-              text.label.sm,
-              { color: confirmed ? colors.accentPrimary : colors.accentGold },
-            ]}
-          >
-            {confirmed ? '✓ Confirmed' : '⏳ Tentative'}
-          </Text>
+          <View style={styles.statusRow}>
+            {confirmed
+              ? <Check size={13} color={colors.accentPrimary} weight="bold" />
+              : <Hourglass size={13} color={colors.warning} />}
+            <Text
+              style={[
+                text.label.sm,
+                { color: confirmed ? colors.accentPrimary : colors.warning },
+              ]}
+            >
+              {confirmed ? 'Confirmed' : 'Tentative'}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -176,6 +182,7 @@ export function ItemDetailHeader({
 }
 
 const styles = StyleSheet.create({
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   container: {
     flexDirection: 'row',
     alignItems:    'flex-start',

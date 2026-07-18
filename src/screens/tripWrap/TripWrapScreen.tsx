@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
+import { Backpack, CalendarBlank, CurrencyInr, Camera, MapPin, Star, Note, ChartBar, UsersThree } from 'phosphor-react-native'
 import { Screen, Header, Button } from '@components'
 import { useTheme } from '@theme'
 import { useGroupStore } from '@stores/group.store'
@@ -249,7 +250,7 @@ export function TripWrapScreen() {
       <Screen>
         <Header title="Trip Wrap" showBack />
         <View style={styles.center}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>🎒</Text>
+          <Backpack size={48} color={colors.textMuted} style={{ marginBottom: spacing.md }} />
           <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center' }]}>
             Not enough squad data
           </Text>
@@ -269,17 +270,18 @@ export function TripWrapScreen() {
         
         {/* Visual Hero Stats Row */}
         <View style={[styles.heroSection, { backgroundColor: colors.bgSecondary, padding: spacing.lg }]}>
-          <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.lg }]}>
-            🎒 SQUAD STATS
-          </Text>
+          <View style={styles.sectionTitleRow}>
+            <Backpack size={16} color={colors.textPrimary} />
+            <Text style={[text.heading.sm, { color: colors.textPrimary }]}>SQUAD STATS</Text>
+          </View>
           <View style={styles.statGrid}>
             <View style={[styles.statItem, { backgroundColor: colors.bgTertiary, borderRadius: radius.md }]}>
-              <Text style={{ fontSize: 24 }}>🗓️</Text>
+              <CalendarBlank size={24} color={colors.textSecondary} />
               <Text style={[text.heading.sm, { color: colors.textPrimary }]}>{wrapData.tripDays}</Text>
               <Text style={[text.label.sm, { color: colors.textSecondary }]}>Days Traveled</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.bgTertiary, borderRadius: radius.md }]}>
-              <Text style={{ fontSize: 24 }}>💸</Text>
+              <CurrencyInr size={24} color={colors.accentPrimary} />
               <Text style={[text.heading.sm, { color: colors.accentPrimary }]}>
                 {wrapData.currency === 'INR' ? '₹' : ''}
                 {wrapData.totalSpend.toLocaleString('en-IN')}
@@ -287,12 +289,12 @@ export function TripWrapScreen() {
               <Text style={[text.label.sm, { color: colors.textSecondary }]}>Total Spend</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.bgTertiary, borderRadius: radius.md }]}>
-              <Text style={{ fontSize: 24 }}>📸</Text>
+              <Camera size={24} color={colors.textSecondary} />
               <Text style={[text.heading.sm, { color: colors.textPrimary }]}>{wrapData.memoriesCount}</Text>
               <Text style={[text.label.sm, { color: colors.textSecondary }]}>Memories</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.bgTertiary, borderRadius: radius.md }]}>
-              <Text style={{ fontSize: 24 }}>📍</Text>
+              <MapPin size={24} color={colors.textSecondary} />
               <Text style={[text.heading.sm, { color: colors.textPrimary }]}>{wrapData.placesVisitedCount}</Text>
               <Text style={[text.label.sm, { color: colors.textSecondary }]}>Stops Visited</Text>
             </View>
@@ -302,9 +304,10 @@ export function TripWrapScreen() {
         {/* Top Memories Selection */}
         {wrapData.topMemories.length > 0 && (
           <View style={{ padding: spacing.lg }}>
-            <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.md }]}>
-              🌟 Highlight Moments
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Star size={16} color={colors.textPrimary} weight="fill" />
+              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Highlight Moments</Text>
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }}>
               {wrapData.topMemories.map((m) => (
                 <View key={m.id} style={[styles.memoryCard, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, ...shadows.card }]}>
@@ -312,7 +315,7 @@ export function TripWrapScreen() {
                     <Image source={{ uri: getMemoryCoverUrl(m) }} style={styles.memoryImg} resizeMode="cover" />
                   ) : (
                     <View style={[styles.memoryImg, { backgroundColor: colors.bgTertiary, alignItems: 'center', justifyContent: 'center' }]}>
-                      <Text style={{ fontSize: 32 }}>📝</Text>
+                      <Note size={32} color={colors.textSecondary} />
                     </View>
                   )}
                   <View style={{ padding: spacing.sm }}>
@@ -337,9 +340,10 @@ export function TripWrapScreen() {
         {/* Spend Breakdown by Category */}
         {wrapData.categoryBreakdown.length > 0 && (
           <View style={{ padding: spacing.lg, backgroundColor: colors.bgSecondary }}>
-            <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.md }]}>
-              📊 Spent by Category
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <ChartBar size={16} color={colors.textPrimary} />
+              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Spent by Category</Text>
+            </View>
             <View style={{ gap: spacing.md }}>
               {wrapData.categoryBreakdown.map((item) => (
                 <View key={item.category}>
@@ -371,9 +375,10 @@ export function TripWrapScreen() {
 
         {/* Per-person cost logs */}
         <View style={{ padding: spacing.lg }}>
-          <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.md }]}>
-            👥 Squad Balances
-          </Text>
+          <View style={styles.sectionTitleRow}>
+            <UsersThree size={16} color={colors.textPrimary} />
+            <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Squad Balances</Text>
+          </View>
           <View style={{ gap: spacing.sm }}>
             {wrapData.perPersonSummary.map((m) => (
               <View key={m.uid} style={[styles.memberRow, { borderBottomColor: colors.border, borderBottomWidth: 1, paddingVertical: spacing.sm }]}>
@@ -406,9 +411,10 @@ export function TripWrapScreen() {
         {/* Settlement Instructions */}
         {wrapData.settlementHighlights.length > 0 && (
           <View style={[styles.settlementsSection, { backgroundColor: colors.bgSecondary, padding: spacing.lg }]}>
-            <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.md }]}>
-              💸 Settlements Highlights
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <CurrencyInr size={16} color={colors.textPrimary} />
+              <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Settlements Highlights</Text>
+            </View>
             <View style={{ gap: spacing.md }}>
               {wrapData.settlementHighlights.map((s, idx) => (
                 <View key={idx} style={[styles.settleCard, { backgroundColor: colors.bgTertiary, borderRadius: radius.md, padding: spacing.md }]}>
@@ -596,7 +602,7 @@ export function TripWrapScreen() {
           {/* 7.5 AI caption — tap to generate, tap the result to copy */}
           <Button
             variant="secondary"
-            label={isCaptionLoading ? 'Writing…' : '✨ AI caption for your share'}
+            label={isCaptionLoading ? 'Writing…' : 'AI caption for your share'}
             onPress={handleGenerateCaption}
             disabled={isCaptionLoading}
             style={{ width: '100%', marginTop: spacing.sm }}
@@ -636,6 +642,7 @@ export function TripWrapScreen() {
 }
 
 const styles = StyleSheet.create({
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 16 },
   center: {
     flex: 1,
     alignItems: 'center',

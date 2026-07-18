@@ -19,8 +19,10 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft, MapPin } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { Button, Input, Screen } from '@components'
+import { GROUP_COVER_EMOJI } from '@lib/constants/groupCoverEmoji'
 import { useGroupStore } from '@stores/group.store'
 import { useAuth } from '@hooks/useAuth'
 import type { HomeStackParamList } from '@navigation/types'
@@ -28,11 +30,6 @@ import { track } from '@lib/analytics'
 import Constants from 'expo-constants'
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
-
-const EMOJI_OPTIONS = [
-  '✈️','🏖️','🏔️','🌴','🗺️','🎒',
-  '🏕️','🚢','🚂','🏝️','🌏','🎡',
-]
 
 const STEPS = ['Name', 'Details', 'Confirm'] as const
 
@@ -156,7 +153,7 @@ export function CreateGroupScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={{ color: colors.accentPrimary, fontSize: 22 }}>←</Text>
+            <CaretLeft size={22} color={colors.accentPrimary} />
           </Pressable>
 
           <Text style={[text.label.lg, { color: colors.textSecondary }]}>
@@ -228,7 +225,7 @@ export function CreateGroupScreen() {
                 Pick a cover
               </Text>
               <View style={styles.emojiGrid}>
-                {EMOJI_OPTIONS.map((e) => (
+                {GROUP_COVER_EMOJI.map((e) => (
                   <Pressable
                     key={e}
                     onPress={() => {
@@ -358,9 +355,12 @@ export function CreateGroupScreen() {
                       {name}
                     </Text>
                     {destination ? (
-                      <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={1}>
-                        📍 {destination}
-                      </Text>
+                      <View style={styles.destinationRow}>
+                        <MapPin size={13} color={colors.textSecondary} />
+                        <Text style={[text.body.sm, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {destination}
+                        </Text>
+                      </View>
                     ) : null}
                   </View>
                 </View>
@@ -413,6 +413,7 @@ export function CreateGroupScreen() {
 }
 
 const styles = StyleSheet.create({
+  destinationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { useTheme } from '../../theme'
+import { WeatherIcon } from '@components'
 import type { WeatherDay } from '../../lib/types/weather.types'
 
 interface WeatherDayChipProps {
@@ -11,7 +12,7 @@ export function WeatherDayChip({ day }: WeatherDayChipProps) {
   if (!day || day.condition === 'unknown') return null
 
   const warning = day.isOutdoorRisk
-  const icon = getWeatherEmoji(day)
+  const iconColor = warning ? colors.warning : colors.textSecondary
   const rainLabel = day.rainProbability >= 40 ? ` ${day.rainProbability}%` : ''
 
   return (
@@ -20,13 +21,13 @@ export function WeatherDayChip({ day }: WeatherDayChipProps) {
         styles.chip,
         {
           backgroundColor: warning ? `${colors.warning}18` : colors.bgTertiary,
-          borderColor: warning ? `${colors.warning}66` : colors.border,
+          borderColor: warning ? `${colors.warning}66` : colors.hairline,
           borderRadius: radius.full,
           paddingHorizontal: spacing.xs,
         },
       ]}
     >
-      <Text style={styles.icon}>{icon}</Text>
+      <WeatherIcon condition={day.condition} size={11} color={iconColor} />
       <Text
         style={[
           text.label.sm,
@@ -39,28 +40,6 @@ export function WeatherDayChip({ day }: WeatherDayChipProps) {
       </Text>
     </View>
   )
-}
-
-function getWeatherEmoji(day: WeatherDay): string {
-  switch (day.condition) {
-    case 'clear':
-      return '☀'
-    case 'clouds':
-      return '☁'
-    case 'rain':
-    case 'drizzle':
-      return '☂'
-    case 'thunderstorm':
-      return '⚡'
-    case 'snow':
-      return '❄'
-    case 'mist':
-    case 'fog':
-    case 'haze':
-      return '≋'
-    default:
-      return ''
-  }
 }
 
 const styles = StyleSheet.create({

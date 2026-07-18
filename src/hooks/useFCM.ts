@@ -54,5 +54,5 @@ export function useFCM(uid: string | null): void {
     return () => {
       cancelled = true
     }
-  }, [uid])   // Re-run if uid changes (sign-out → sign-in as different user)
+  }, [uid])   // Re-run if uid changes (sign-out then sign-in as different user)
 }

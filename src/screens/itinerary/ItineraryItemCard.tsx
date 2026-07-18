@@ -24,7 +24,9 @@ import {
   View,
 } from 'react-native'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
+import { Trash, DotsSixVertical, CheckCircle, XCircle, ListChecks, Star, CurrencyInr } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
+import { ItineraryCategoryIcon } from '@components'
 import { CATEGORY_META } from '../../lib/schemas'
 import { VoteChips }          from './VoteChips'
 import { ProposalVoteChips }  from './ProposalVoteChips'
@@ -114,9 +116,13 @@ export function ItineraryItemCard({
           },
         ]}
       >
-        <Text style={styles.iconEmoji} accessibilityLabel={meta.label}>
-          {item.emoji ?? meta.emoji}
-        </Text>
+        {item.category === 'custom' && item.emoji ? (
+          <Text style={styles.iconEmoji} accessibilityLabel={meta.label}>
+            {item.emoji}
+          </Text>
+        ) : (
+          <ItineraryCategoryIcon category={item.category} size={20} color={colors.textPrimary} />
+        )}
         {confirmed && (
           <View style={[styles.confirmDot, { backgroundColor: colors.accentPrimary }]} />
         )}
@@ -162,11 +168,11 @@ export function ItineraryItemCard({
               accessibilityLabel="Delete stop"
               accessibilityRole="button"
             >
-              <Text style={{ color: colors.accentDanger, fontSize: 16 }}>🗑️</Text>
+              <Trash size={16} color={colors.negative} />
             </Pressable>
             {/* Drag handle — always rendered for touch target, visible on long press */}
             <View style={styles.dragHandle} accessibilityLabel="Hold to reorder">
-              <Text style={{ color: colors.textMuted, fontSize: 16 }}>⠿</Text>
+              <DotsSixVertical size={18} color={colors.textMuted} />
             </View>
           </View>
 
@@ -190,26 +196,31 @@ export function ItineraryItemCard({
                   },
                 ]}
               >
-                <Text
-                  style={[
-                    text.label.sm,
-                    {
-                      color: isProposalConfirmed
-                        ? colors.accentPrimary
-                        : isProposalRejected
-                          ? colors.accentDanger
-                          : colors.accentGold,
-                      fontWeight: '600',
-                      fontSize: 10,
-                    },
-                  ]}
-                >
-                  {isProposalConfirmed
-                    ? '✓ CONFIRMED'
-                    : isProposalRejected
-                      ? '✗ REJECTED'
-                      : '🗳️ VOTE OPEN'}
-                </Text>
+                <View style={styles.stateBadgeRow}>
+                  {isProposalConfirmed ? (
+                    <CheckCircle size={11} color={colors.accentPrimary} weight="fill" />
+                  ) : isProposalRejected ? (
+                    <XCircle size={11} color={colors.negative} weight="fill" />
+                  ) : (
+                    <ListChecks size={11} color={colors.warning} />
+                  )}
+                  <Text
+                    style={[
+                      text.label.sm,
+                      {
+                        color: isProposalConfirmed
+                          ? colors.accentPrimary
+                          : isProposalRejected
+                            ? colors.negative
+                            : colors.warning,
+                        fontWeight: '600',
+                        fontSize: 10,
+                      },
+                    ]}
+                  >
+                    {isProposalConfirmed ? 'CONFIRMED' : isProposalRejected ? 'REJECTED' : 'VOTE OPEN'}
+                  </Text>
+                </View>
               </View>
             </View>
           )}
@@ -242,14 +253,20 @@ export function ItineraryItemCard({
               </Text>
             )}
             {item.placeRef?.rating ? (
-              <Text style={[text.label.sm, { color: colors.textSecondary }]}>
-                ⭐ {item.placeRef.rating.toFixed(1)}
-              </Text>
+              <View style={styles.metaChip}>
+                <Star size={12} color={colors.warning} weight="fill" />
+                <Text style={[text.label.sm, { color: colors.textSecondary }]}>
+                  {item.placeRef.rating.toFixed(1)}
+                </Text>
+              </View>
             ) : null}
             {item.linkedExpenseIds && item.linkedExpenseIds.length > 0 && (
-              <Text style={[text.label.sm, { color: colors.accentPrimary }]}>
-                💸 {item.linkedExpenseIds.length} expense{item.linkedExpenseIds.length > 1 ? 's' : ''}
-              </Text>
+              <View style={styles.metaChip}>
+                <CurrencyInr size={12} color={colors.accentPrimary} />
+                <Text style={[text.label.sm, { color: colors.accentPrimary }]}>
+                  {item.linkedExpenseIds.length} expense{item.linkedExpenseIds.length > 1 ? 's' : ''}
+                </Text>
+              </View>
             )}
           </View>
 
@@ -321,7 +338,7 @@ export function ItineraryItemCard({
             </View>
           )}
 
-          {/* Vote chips — proposals: Yes/Maybe/No, normal: 👍/👎 */}
+          {/* Vote chips — proposals: Yes/Maybe/No, normal: up/down */}
           {isProposal ? (
             isProposalOpen && (
               <ProposalVoteChips
@@ -407,6 +424,16 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
+  },
+  stateBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  metaChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   tallyContainer: {
     marginTop: 8,

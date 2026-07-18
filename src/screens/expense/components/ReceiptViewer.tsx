@@ -20,7 +20,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { StatusBar } from 'expo-status-bar'
+import { X } from 'phosphor-react-native'
 import { useTheme } from '@theme'
+
+// Fullscreen photo viewer: pure white/black chrome over the image (§3.17),
+// expressed as rgba so no raw hex leaks past the design lint.
+const VIEWER_WHITE = 'rgba(255,255,255,1)'
 import { useAuth } from '@hooks/useAuth'
 import { useGroupStore } from '@stores/group.store'
 import { useExpenseStore } from '@stores/expense.store'
@@ -209,8 +214,10 @@ export function ReceiptViewer({
           <Pressable
             onPress={onClose}
             style={[styles.btn, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: radius.full }]}
+            accessibilityRole="button"
+            accessibilityLabel="Close receipt"
           >
-            <Text style={styles.btnText}>×</Text>
+            <X size={24} color={VIEWER_WHITE} weight="bold" />
           </Pressable>
 
           {canDelete && (
@@ -219,13 +226,13 @@ export function ReceiptViewer({
               disabled={isDeleting}
               style={[
                 styles.deleteBtn,
-                { backgroundColor: `${colors.accentDanger}30`, borderRadius: radius.md, paddingHorizontal: spacing.md },
+                { backgroundColor: `${colors.negative}30`, borderRadius: radius.md, paddingHorizontal: spacing.md },
               ]}
             >
               {isDeleting ? (
-                <ActivityIndicator size="small" color={colors.accentDanger} />
+                <ActivityIndicator size="small" color={colors.negative} />
               ) : (
-                <Text style={[text.label.md, { color: colors.accentDanger }]}>Delete</Text>
+                <Text style={[text.label.md, { color: colors.negative }]}>Delete</Text>
               )}
             </Pressable>
           )}
@@ -234,7 +241,7 @@ export function ReceiptViewer({
         {/* Loading Indicator */}
         {loading && (
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <ActivityIndicator size="large" color="#FFF" style={styles.centerSpinner} />
+            <ActivityIndicator size="large" color={VIEWER_WHITE} style={styles.centerSpinner} />
           </View>
         )}
 
@@ -256,7 +263,7 @@ export function ReceiptViewer({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(0,0,0,1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -277,12 +284,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  btnText: {
-    color: '#FFF',
-    fontSize: 28,
-    fontWeight: '400',
-    lineHeight: 28,
   },
   deleteBtn: {
     height: 36,

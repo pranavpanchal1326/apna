@@ -96,6 +96,14 @@ export function PhoneInputScreen({ onOTPSent }: PhoneInputScreenProps) {
     }
   }, [phone, isValid, recaptchaRef, setOTPVerificationId, startResendCountdown, onOTPSent])
 
+  // DEV / PROTOTYPE ONLY — skip OTP by signing in a purely local mock user.
+  // No Firebase / OTP / network, so it works regardless of backend reachability.
+  const devMockLogin = useAuthStore((s) => s.devMockLogin)
+  const handleDevSkip = useCallback(() => {
+    setError(null)
+    devMockLogin()
+  }, [devMockLogin])
+
   return (
     <Screen edges={['top', 'left', 'right']}>
       {/* Firebase reCAPTCHA — invisible, required for phone auth in RN.
@@ -191,6 +199,18 @@ export function PhoneInputScreen({ onOTPSent }: PhoneInputScreenProps) {
             onPress={handleSendOTP}
             style={{ marginTop: spacing.xl }}
           />
+
+          {/* DEV / PROTOTYPE ONLY — skip OTP. Stripped from release builds. */}
+          {__DEV__ && (
+            <Button
+              label="Skip OTP (prototype)"
+              variant="ghost"
+              size="lg"
+              fullWidth
+              onPress={handleDevSkip}
+              style={{ marginTop: spacing.md }}
+            />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

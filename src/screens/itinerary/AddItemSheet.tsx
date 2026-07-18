@@ -89,8 +89,8 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
     )
 
     const tabs: Array<{ id: TabId; label: string }> = [
-      { id: 'search', label: '🔍  Search' },
-      { id: 'manual', label: '✏️  Manual' },
+      { id: 'search', label: 'Search' },
+      { id: 'manual', label: 'Manual' },
     ]
 
     return (

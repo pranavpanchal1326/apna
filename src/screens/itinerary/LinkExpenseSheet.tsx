@@ -23,6 +23,7 @@ import {
   View,
 } from 'react-native'
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
+import { Check } from 'phosphor-react-native'
 import { useTheme }        from '../../theme'
 import { Button }          from '../../components'
 import { useExpenseStore } from '../../stores/expense.store'
@@ -159,9 +160,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
                     ]}
                   >
                     {isSelected && (
-                      <Text style={{ color: colors.bgPrimary, fontSize: 12, fontWeight: '700' }}>
-                        ✓
-                      </Text>
+                      <Check size={12} color={colors.onAccent} weight="bold" />
                     )}
                   </View>
 

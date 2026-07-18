@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { UsersThree } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 
 interface ContactPermissionCardProps {
@@ -27,7 +28,7 @@ export function ContactPermissionCard({
       <View style={styles.content}>
         {/* Left: contacts icon */}
         <View style={styles.iconContainer}>
-          <Text style={{ fontSize: 24, color: colors.accentPrimary }}>👥</Text>
+          <UsersThree size={24} color={colors.accentPrimary} />
         </View>
 
         {/* Right: details */}

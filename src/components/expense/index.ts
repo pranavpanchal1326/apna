@@ -1,3 +1,4 @@
+export * from './CategoryIcon'
 export * from './CategoryPicker'
 export * from './ParticipantSelector'
 export * from './SplitMethodPicker'

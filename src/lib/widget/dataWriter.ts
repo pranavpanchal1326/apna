@@ -5,6 +5,7 @@
 
 import * as FileSystem from 'expo-file-system/legacy'
 import { captureError } from '@lib/sentry'
+import { DEFAULT_AVATAR_COLOR } from '../../theme/colors'
 import type { WidgetPayload } from './types'
 
 const WIDGET_FILENAME = 'apna_widget_data.json'
@@ -129,7 +130,7 @@ export async function buildMapWidgetData(params: {
   const now = Date.now()
   const members = Object.entries(params.memberLocations)
     .map(([uid, loc]) => {
-      const profile = params.memberProfiles[uid] || { name: 'Member', avatarColor: '#D96A50' }
+      const profile = params.memberProfiles[uid] || { name: 'Member', avatarColor: DEFAULT_AVATAR_COLOR }
       const isLive = loc.sharing && (now - loc.timestamp < 60000)
       
       const names = profile.name.trim().split(/\s+/)

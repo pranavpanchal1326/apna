@@ -1,5 +1,6 @@
 // src/screens/tripWrap/components/TripWrapCard.tsx
 import { StyleSheet, View, Text, Image } from 'react-native'
+import { Backpack, Sun } from 'phosphor-react-native'
 import type { TripWrapBundle } from '../../../lib/utils/tripWrapData'
 import { getMemoryCoverUrl } from '../../../lib/schemas/memory.schema'
 import { useTheme } from '@theme'
@@ -51,7 +52,7 @@ export function TripWrapCard({ data }: TripWrapCardProps) {
           {/* If less than 4 photos, pad out with a beautiful card showing a stat */}
           {photos.length < 4 && (
             <View style={[styles.gridPlaceholder, { borderRadius: radius.md, backgroundColor: '#1E1E1E', gap: spacing.xs }]}>
-              <Text style={{ fontSize: 24 }}>🎒</Text>
+              <Backpack size={24} color="#FFFFFF" />
               <Text style={[text.label.md, { color: colors.accentPrimary }]}>{data.memberCount} Members</Text>
               <Text style={[text.body.sm, { color: '#888' }]}>One epic adventure</Text>
             </View>
@@ -60,7 +61,7 @@ export function TripWrapCard({ data }: TripWrapCardProps) {
       ) : (
         // Completely text/stats based placeholder if no photos exist
         <View style={[styles.noPhotosContainer, { borderRadius: radius.md, backgroundColor: '#1E1E1E', padding: spacing.lg }]}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>🌅</Text>
+          <Sun size={48} color="#FFFFFF" style={{ marginBottom: spacing.md }} />
           <Text style={[text.heading.sm, { color: '#FFFFFF', textAlign: 'center', marginBottom: spacing.xs }]}>
             No photos captured
           </Text>

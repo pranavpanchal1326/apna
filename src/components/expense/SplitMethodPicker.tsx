@@ -1,16 +1,17 @@
 // src/components/expense/SplitMethodPicker.tsx
 // Equal / Exact / Percentage tab selector for split method.
 
-import { memo } from 'react'
+import { memo, type ComponentType } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { Scales, PencilSimple, Percent, type IconProps } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import type { SplitMethod } from '@lib/engine/splitEngine'
 
-const METHODS: { key: SplitMethod; label: string; icon: string }[] = [
-  { key: 'equal',      label: 'Equal',   icon: '⚖️' },
-  { key: 'exact',      label: 'Exact',   icon: '✏️' },
-  { key: 'percentage', label: '%',        icon: '📊' },
+const METHODS: { key: SplitMethod; label: string; Icon: ComponentType<IconProps> }[] = [
+  { key: 'equal',      label: 'Equal', Icon: Scales },
+  { key: 'exact',      label: 'Exact', Icon: PencilSimple },
+  { key: 'percentage', label: '%',     Icon: Percent },
 ]
 
 interface Props {
@@ -49,27 +50,23 @@ export const SplitMethodPicker = memo(function SplitMethodPicker({ selected, onS
                 paddingVertical: spacing.sm,
                 borderRadius:    radius.md,
                 backgroundColor: isActive ? colors.bgSecondary : 'transparent',
+                flexDirection:   'row',
+                gap:             spacing.xs,
                 alignItems:      'center',
                 minHeight:       40,
                 justifyContent:  'center',
-                ...(isActive ? {
-                  shadowColor:   '#000',
-                  shadowOffset:  { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius:  3,
-                  elevation:     2,
-                } : {}),
               },
             ]}
             accessibilityRole="radio"
             accessibilityState={{ selected: isActive }}
             accessibilityLabel={`${method.label} split`}
           >
+            <method.Icon size={16} color={isActive ? colors.textPrimary : colors.textSecondary} />
             <Text style={[
               text.label.lg,
               { color: isActive ? colors.textPrimary : colors.textSecondary },
             ]}>
-              {method.icon} {method.label}
+              {method.label}
             </Text>
           </Pressable>
         )

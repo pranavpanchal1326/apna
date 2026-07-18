@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { ArrowsClockwise } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 
 interface InviteCodeCardProps {
@@ -109,7 +110,10 @@ export function InviteCodeCard({
             {isRegenerating ? (
               <ActivityIndicator size="small" color={colors.textPrimary} />
             ) : (
-              <Text style={[text.label.md, { color: colors.textSecondary }]}>↻ Regenerate Code</Text>
+              <View style={styles.regenRow}>
+                <ArrowsClockwise size={16} color={colors.textSecondary} />
+                <Text style={[text.label.md, { color: colors.textSecondary }]}>Regenerate Code</Text>
+              </View>
             )}
           </Pressable>
         )}
@@ -122,6 +126,7 @@ export function InviteCodeCard({
 }
 
 const styles = StyleSheet.create({
+  regenRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   card:          { overflow: 'hidden' },
   codeRow:       { flexDirection: 'row' },
   actions:       { flexDirection: 'column' },

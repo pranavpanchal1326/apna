@@ -7,6 +7,7 @@ import { memo, useMemo, useRef, useEffect, useState } from 'react'
 import { View, Text, Image, Pressable, ScrollView, StyleSheet, Dimensions } from 'react-native'
 import { Map as MapLibreMap, Camera, Marker, type CameraRef } from '@maplibre/maplibre-react-native'
 import * as Haptics from 'expo-haptics'
+import { Camera as CameraIcon, MapTrifold } from 'phosphor-react-native'
 import { useTheme, DarkMapStyle } from '../../theme'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { getMemoryThumbUrl, getMemoryPhotos, type MemoryInput } from '../../lib/schemas/memory.schema'
@@ -50,7 +51,7 @@ const MemoryPin = memo(function MemoryPin({
           {thumb ? (
             <Image source={{ uri: thumb }} style={[styles.pinPhoto, { borderRadius: radius.md - 2 }]} />
           ) : (
-            <Text style={{ fontSize: 18 }}>📸</Text>
+            <CameraIcon size={18} color={colors.textSecondary} />
           )}
           {group.memories.length > 1 && (
             <View style={[styles.countBadge, { backgroundColor: colors.accentPrimary }]}>
@@ -100,7 +101,7 @@ export function MemoriesMapView({ memories, onOpenMemory }: Props) {
   if (groups.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text style={{ fontSize: 48, textAlign: 'center' }}>🗺️</Text>
+        <MapTrifold size={48} color={colors.textMuted} />
         <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginTop: spacing.md }]}>
           No location-tagged memories
         </Text>
@@ -151,7 +152,7 @@ export function MemoriesMapView({ memories, onOpenMemory }: Props) {
                     <Image source={{ uri: thumb }} style={{ width: '100%', height: '100%' }} />
                   ) : (
                     <View style={{ flex: 1, backgroundColor: colors.bgTertiary, alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ fontSize: 24 }}>📸</Text>
+                      <CameraIcon size={24} color={colors.textSecondary} />
                     </View>
                   )}
                   {count > 1 && (
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countText: { color: '#161512', fontSize: 10, fontWeight: '700' },
+  countText: { color: 'rgba(22,21,18,1)', fontSize: 10, fontWeight: '700' },
   gridBadge: {
     position: 'absolute',
     top: 4,
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
-  gridBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
+  gridBadgeText: { color: 'rgba(255,255,255,1)', fontSize: 10, fontWeight: '700' },
   pinTail: {
     width: 0,
     height: 0,

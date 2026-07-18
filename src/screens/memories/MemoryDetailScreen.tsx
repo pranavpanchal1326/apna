@@ -30,6 +30,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics'
 import { haptics } from '@lib/haptics'
 import { savePhotoToGallery } from '@lib/memories/saveToGallery'
+import { DownloadSimple, Heart, MapPin, CaretRight } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { useMemoryStore } from '../../stores/memory.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -217,12 +218,19 @@ export function MemoryDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel="Save photo to camera roll"
             >
-              <Text style={styles.counterText}>{isSaving ? 'Saving…' : '⬇ Save'}</Text>
+              {isSaving ? (
+                <Text style={styles.counterText}>Saving…</Text>
+              ) : (
+                <View style={styles.saveRow}>
+                  <DownloadSimple size={13} color="rgba(255,255,255,1)" weight="bold" />
+                  <Text style={styles.counterText}>Save</Text>
+                </View>
+              )}
             </Pressable>
 
             {/* Heart Animation Overlay */}
             <Animated.View style={[styles.heartOverlay, heartStyle]} pointerEvents="none">
-              <Text style={{ fontSize: 90 }}>❤️</Text>
+              <Heart size={90} color={colors.negative} weight="fill" />
             </Animated.View>
           </View>
         </GestureDetector>
@@ -271,9 +279,12 @@ export function MemoryDetailScreen() {
 
           {/* Location if present */}
           {memory.location?.name && (
-            <Text style={[text.body.sm, { color: colors.accentPrimary, marginTop: spacing.sm }]}>
-              📍 {memory.location.name}
-            </Text>
+            <View style={styles.locationRow}>
+              <MapPin size={14} color={colors.accentPrimary} />
+              <Text style={[text.body.sm, { color: colors.accentPrimary }]}>
+                {memory.location.name}
+              </Text>
+            </View>
           )}
 
           {/* Caption */}
@@ -336,7 +347,10 @@ export function MemoryDetailScreen() {
                   </View>
                 ))}
               </View>
-              <Text style={[text.body.sm, { color: colors.textMuted }]}>View who reacted ›</Text>
+              <View style={styles.reactedRow}>
+                <Text style={[text.body.sm, { color: colors.textMuted }]}>View who reacted</Text>
+                <CaretRight size={13} color={colors.textMuted} />
+              </View>
             </Pressable>
           )}
         </View>
@@ -377,6 +391,9 @@ export function MemoryDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  saveRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+  reactedRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   screen: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   photoContainer: {
@@ -410,7 +427,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   counterText: {
-    color: '#FFFFFF',
+    color: 'rgba(255,255,255,1)',
     fontSize: 12,
     fontWeight: '700',
   },

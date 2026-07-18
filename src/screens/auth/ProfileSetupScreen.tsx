@@ -182,7 +182,7 @@ export function ProfileSetupScreen({ onComplete }: ProfileSetupScreenProps) {
           </View>
 
           <Button
-            label="Let's go →"
+            label="Let's go"
             variant="primary"
             size="lg"
             fullWidth

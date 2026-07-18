@@ -4,6 +4,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { StyleSheet, Text, View, ScrollView, TextInput } from 'react-native'
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
+import { Check, MapPin } from 'phosphor-react-native'
 import { useTheme } from '../../../theme'
 import { Button } from '../../../components'
 import type { ItineraryItem } from '../../../lib/schemas'
@@ -175,14 +176,15 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
 
                     {/* Completion / Check-in summary */}
                     {selection.item.completedAt ? (
-                      <View style={[styles.badge, { backgroundColor: colors.bgTertiary }]}>
+                      <View style={[styles.badge, styles.badgeRow, { backgroundColor: colors.bgTertiary }]}>
+                        <Check size={13} color={colors.positive} weight="bold" />
                         <Text style={[text.label.sm, { color: colors.positive }]}>
-                          ✓ Completed / Checked In
+                          Completed / Checked In
                         </Text>
                       </View>
                     ) : (
                       <Button
-                        label="📍 Check In Here"
+                        label="Check In Here"
                         variant="primary"
                         onPress={handleStartCheckIn}
                         style={{ marginTop: spacing.md }}
@@ -204,7 +206,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
                           },
                         ]}
                       >
-                        <Text style={[text.heading.md, { color: '#161512', fontWeight: '700' }]}>
+                        <Text style={[text.heading.md, { color: 'rgba(22,21,18,1)', fontWeight: '700' }]}>
                           {selection.location.name.charAt(0).toUpperCase()}
                         </Text>
                       </View>
@@ -260,7 +262,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
                   // 🌅 Searched place details
                   <>
                     <View style={styles.headerRow}>
-                      <Text style={{ fontSize: 28 }}>📍</Text>
+                      <MapPin size={28} color={colors.accentPrimary} weight="fill" />
                       <View style={{ flex: 1 }}>
                         <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
                           {selection.place.name}
@@ -272,7 +274,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
                     </View>
 
                     <Button
-                      label="📍 Check In Here"
+                      label="Check In Here"
                       variant="primary"
                       onPress={handleStartCheckIn}
                       style={{ marginTop: spacing.md }}
@@ -308,6 +310,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   badge: {
     padding: 12,

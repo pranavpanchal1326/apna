@@ -257,7 +257,7 @@ export function ItineraryScreen({ route, navigation }: Props) {
               if (result) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
                 Alert.alert(
-                  'Draft ready ✨',
+                  'Draft ready',
                   `Added ${result.itemsAdded} ideas across ${result.daysFilled} days — review and confirm the keepers.`
                 )
               } else {

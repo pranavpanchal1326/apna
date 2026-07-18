@@ -20,6 +20,7 @@ import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import { AppState, type AppStateStatus } from 'react-native'
 import { haptics } from '@lib/haptics'
+import { Ghost, Crosshair, MapPin } from 'phosphor-react-native'
 import type { MemberLocation } from '../../lib/types/location.types'
 
 import { useTheme } from '../../theme'
@@ -548,8 +549,9 @@ export function MapScreen() {
                 {hasDot && (
                   <View style={[styles.pulseDot, { backgroundColor: colors.positive, borderRadius: radius.full }]} />
                 )}
+                {isGhost && <Ghost size={13} color={textColor} style={{ marginRight: 4 }} />}
                 <Text style={[text.label.sm, { color: textColor, fontWeight: '700' }]}>
-                  {isGhost ? '👻 ' : ''}{labelText}
+                  {labelText}
                 </Text>
               </Pressable>
             )
@@ -570,8 +572,9 @@ export function MapScreen() {
                 },
               ]}
             >
+              <Ghost size={16} color={colors.textPrimary} style={{ marginRight: spacing.xs }} />
               <Text style={[text.body.sm, { color: colors.textPrimary, flex: 1 }]}>
-                👻 Ghost Mode active — others cannot see you.
+                Ghost Mode active — others cannot see you.
               </Text>
               <Pressable
                 onPress={() => {
@@ -598,7 +601,10 @@ export function MapScreen() {
                 { backgroundColor: colors.bgSecondary, borderRadius: radius.md, ...shadows.card },
               ]}
             >
-              <Text style={[text.label.sm, { color: colors.positive }]}>📍 NEARBY STOP</Text>
+              <View style={styles.nearbyRow}>
+                <MapPin size={13} color={colors.positive} weight="fill" />
+                <Text style={[text.label.sm, { color: colors.positive }]}>NEARBY STOP</Text>
+              </View>
               <Text style={[text.heading.sm, { color: colors.textPrimary, fontSize: 16 }]} numberOfLines={1}>
                 You are near {proximityAlertStop.title}!
               </Text>
@@ -707,7 +713,7 @@ export function MapScreen() {
               { backgroundColor: colors.bgTertiary, borderRadius: radius.full, ...shadows.card },
             ]}
           >
-            <Text style={{ fontSize: 20 }}>🎯</Text>
+            <Crosshair size={20} color={colors.textPrimary} />
           </Pressable>
 
           {/* Check-in Search Trigger button */}
@@ -718,7 +724,7 @@ export function MapScreen() {
               { backgroundColor: colors.accentPrimary, borderRadius: radius.full, ...shadows.card },
             ]}
           >
-            <Text style={{ fontSize: 20, color: colors.bgPrimary }}>📍</Text>
+            <MapPin size={20} color={colors.onAccent} weight="fill" />
           </Pressable>
 
           {/* SOS button */}
@@ -909,7 +915,12 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 12,
     borderWidth: 1.5,
-    borderColor: '#D96A50',
+    borderColor: 'rgba(217,106,80,1)',
+  },
+  nearbyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   rightButtons: {
     position: 'absolute',

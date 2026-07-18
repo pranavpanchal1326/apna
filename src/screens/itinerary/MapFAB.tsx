@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { List, MapTrifold } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 
 interface MapFABProps {
@@ -26,7 +27,8 @@ export function MapFAB({ variant, onPress }: MapFABProps) {
   const { colors, text, spacing, radius, shadows, layout } = useTheme()
   const insets = useSafeAreaInsets()
 
-  const label = variant === 'list' ? '☰  List view' : '🗺  Map view'
+  const label = variant === 'list' ? 'List view' : 'Map view'
+  const Icon = variant === 'list' ? List : MapTrifold
 
   return (
     <View
@@ -56,7 +58,8 @@ export function MapFAB({ variant, onPress }: MapFABProps) {
         accessibilityRole="button"
         accessibilityLabel={label}
       >
-        <Text style={[text.label.md, { color: colors.accentPrimary, fontWeight: '600' }]}>
+        <Icon size={18} color={colors.accentPrimary} />
+        <Text style={[text.label.md, { color: colors.accentPrimary, fontWeight: '600', marginLeft: spacing.xs }]}>
           {label}
         </Text>
       </Pressable>

@@ -13,6 +13,7 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft, MapPin } from 'phosphor-react-native'
 import { haptics } from '@lib/haptics'
 import { useTheme } from '@theme'
 import { Button, Input, Screen } from '@components'
@@ -173,7 +174,7 @@ export function JoinGroupScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={{ color: colors.accentPrimary, fontSize: 22 }}>←</Text>
+            <CaretLeft size={22} color={colors.accentPrimary} />
           </Pressable>
 
           <Text style={[text.label.lg, { color: colors.textSecondary }]}>
@@ -247,9 +248,12 @@ export function JoinGroupScreen() {
                     {groupPreview.name}
                   </Text>
                   {groupPreview.destination ? (
-                    <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]} numberOfLines={1}>
-                      📍 {groupPreview.destination}
-                    </Text>
+                    <View style={styles.destinationRow}>
+                      <MapPin size={13} color={colors.textSecondary} />
+                      <Text style={[text.body.sm, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {groupPreview.destination}
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
               </View>
@@ -289,6 +293,7 @@ export function JoinGroupScreen() {
 }
 
 const styles = StyleSheet.create({
+  destinationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -16,6 +16,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
+import { CaretLeft, DotsThree, Confetti, CheckCircle, CalendarBlank, MapPin, CurrencyInr, Note, Check, Question, X, type IconProps } from 'phosphor-react-native'
+import type { ComponentType, ReactNode } from 'react'
 import { useTheme } from '../../theme'
 import { useHangoutStore } from '../../stores/hangout.store'
 import { useAuthStore } from '../../stores/auth.store'
@@ -160,18 +162,19 @@ export function HangoutDetailScreen() {
         },
       ]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={8} accessibilityLabel="Back">
-          <Text style={[text.body.lg, { color: colors.accentPrimary }]}>{'←'}</Text>
+          <CaretLeft size={22} color={colors.accentPrimary} />
         </Pressable>
 
-        <View style={{ flex: 1, marginHorizontal: spacing.md }}>
-          <Text style={[text.body.lg, { color: colors.textPrimary, fontFamily: 'Outfit-SemiBold' }]} numberOfLines={1}>
-            {confirmed ? '🎉 ' : ''}{hangout.title}
+        <View style={{ flex: 1, marginHorizontal: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          {confirmed && <Confetti size={16} color={colors.positive} />}
+          <Text style={[text.body.lg, { color: colors.textPrimary, fontFamily: 'Outfit-SemiBold', flex: 1 }]} numberOfLines={1}>
+            {hangout.title}
           </Text>
         </View>
 
         {!canceled && !past && (
           <Pressable onPress={handleMenu} hitSlop={8} accessibilityLabel="Options">
-            <Text style={[text.body.lg, { color: colors.textSecondary }]}>⋯</Text>
+            <DotsThree size={22} color={colors.textSecondary} weight="bold" />
           </Pressable>
         )}
       </View>
@@ -189,9 +192,12 @@ export function HangoutDetailScreen() {
             paddingHorizontal: spacing.lg,
             paddingVertical:   spacing.md,
           }]}>
-            <Text style={[text.body.md, { color: colors.positive, fontFamily: 'Outfit-SemiBold', textAlign: 'center' }]}>
-              ✅ Confirmed! {hangout.yesCount} people going
-            </Text>
+            <View style={styles.bannerRow}>
+              <CheckCircle size={16} color={colors.positive} weight="fill" />
+              <Text style={[text.body.md, { color: colors.positive, fontFamily: 'Outfit-SemiBold' }]}>
+                Confirmed! {hangout.yesCount} people going
+              </Text>
+            </View>
           </View>
         )}
 
@@ -220,10 +226,10 @@ export function HangoutDetailScreen() {
           padding:          spacing.lg,
           gap:              spacing.sm,
         }]}>
-          <DetailRow icon="📅" label={timeLabel} colors={colors} text={text} />
-          {hangout.placeName      && <DetailRow icon="📍" label={hangout.placeName}                                  colors={colors} text={text} />}
-          {hangout.budgetEstimate && <DetailRow icon="₹"  label={`~₹${hangout.budgetEstimate} per head`}              colors={colors} text={text} />}
-          {hangout.note           && <DetailRow icon="📝" label={hangout.note}                                        colors={colors} text={text} />}
+          <DetailRow icon={<CalendarBlank size={16} color={colors.textSecondary} />} label={timeLabel} colors={colors} text={text} />
+          {hangout.placeName      && <DetailRow icon={<MapPin size={16} color={colors.textSecondary} />} label={hangout.placeName}                     colors={colors} text={text} />}
+          {hangout.budgetEstimate && <DetailRow icon={<CurrencyInr size={16} color={colors.textSecondary} />} label={`~₹${hangout.budgetEstimate} per head`} colors={colors} text={text} />}
+          {hangout.note           && <DetailRow icon={<Note size={16} color={colors.textSecondary} />} label={hangout.note}                            colors={colors} text={text} />}
         </View>
 
         {/* ── Quorum status ───────────────────────────────────────────── */}
@@ -249,12 +255,15 @@ export function HangoutDetailScreen() {
                 },
               ]} />
             </View>
-            <Text style={[text.body.sm, { color: colors.textSecondary }]}>
-              {quorumReached
-                ? `✅ Quorum reached! ${hangout.yesCount} yes votes (needed ${hangout.quorumThreshold})`
-                : `${hangout.yesCount} of ${hangout.quorumThreshold} yes votes needed to confirm`
-              }
-            </Text>
+            <View style={styles.quorumTextRow}>
+              {quorumReached && <CheckCircle size={14} color={colors.positive} weight="fill" />}
+              <Text style={[text.body.sm, { color: colors.textSecondary, flex: 1 }]}>
+                {quorumReached
+                  ? `Quorum reached! ${hangout.yesCount} yes votes (needed ${hangout.quorumThreshold})`
+                  : `${hangout.yesCount} of ${hangout.quorumThreshold} yes votes needed to confirm`
+                }
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -279,9 +288,9 @@ export function HangoutDetailScreen() {
             Votes
           </Text>
 
-          <RsvpGroupRow label="Yes" emoji="✓" color={colors.positive}     uids={yesUids}   nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
-          <RsvpGroupRow label="Maybe" emoji="?" color={colors.accentGold}  uids={maybeUids} nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
-          <RsvpGroupRow label="No"  emoji="✕" color={colors.accentDanger}  uids={noUids}    nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
+          <RsvpGroupRow label="Yes" Icon={Check} color={colors.positive}     uids={yesUids}   nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
+          <RsvpGroupRow label="Maybe" Icon={Question} color={colors.warning}  uids={maybeUids} nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
+          <RsvpGroupRow label="No"  Icon={X} color={colors.negative}  uids={noUids}    nameForUid={nameForUid} text={text} radius={radius} spacing={spacing} />
         </View>
       </ScrollView>
 
@@ -304,24 +313,24 @@ export function HangoutDetailScreen() {
 function DetailRow({
   icon, label, colors, text,
 }: {
-  icon:    string
+  icon:    ReactNode
   label:   string
   colors:  ReturnType<typeof useTheme>['colors']
   text:    ReturnType<typeof useTheme>['text']
 }) {
   return (
     <View style={styles.detailRow}>
-      <Text style={{ fontSize: 16, width: 24 }}>{icon}</Text>
+      <View style={{ width: 24, alignItems: 'center' }}>{icon}</View>
       <Text style={[text.body.md, { color: colors.textPrimary, flex: 1 }]}>{label}</Text>
     </View>
   )
 }
 
 function RsvpGroupRow({
-  label, emoji, color, uids, nameForUid, text, radius, spacing,
+  label, Icon, color, uids, nameForUid, text, radius, spacing,
 }: {
   label:      string
-  emoji:      string
+  Icon:       ComponentType<IconProps>
   color:      string
   uids:       string[]
   nameForUid: (uid: string) => string
@@ -332,9 +341,12 @@ function RsvpGroupRow({
   if (uids.length === 0) return null
   return (
     <View style={[styles.rsvpGroup, { marginBottom: spacing.sm }]}>
-      <Text style={[text.label.md, { color, fontFamily: 'Outfit-SemiBold', width: 64 }]}>
-        {emoji} {label} ({uids.length})
-      </Text>
+      <View style={styles.rsvpGroupLabel}>
+        <Icon size={14} color={color} weight="bold" />
+        <Text style={[text.label.md, { color, fontFamily: 'Outfit-SemiBold' }]}>
+          {label} ({uids.length})
+        </Text>
+      </View>
       <View style={styles.nameChips}>
         {uids.map((uid) => (
           <View
@@ -362,11 +374,14 @@ const styles = StyleSheet.create({
   confirmedBanner: {},
   detailCard:      {},
   detailRow:       { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  bannerRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  quorumTextRow:   { flexDirection: 'row', alignItems: 'center', gap: 5 },
   section:         { marginBottom: 24 },
   quorumCard:      {},
   quorumBar:       { height: 8 },
   quorumFill:      { height: 8 },
   rsvpGroup:       { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  rsvpGroupLabel:  { flexDirection: 'row', alignItems: 'center', gap: 4, width: 78 },
   nameChips:       { flexDirection: 'row', flexWrap: 'wrap', flex: 1, gap: 6 },
   nameChip:        {},
 })

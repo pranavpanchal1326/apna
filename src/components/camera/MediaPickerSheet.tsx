@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Linking } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { BottomSheet } from '../ui/BottomSheet'
 import { Button } from '../ui/Button'
+import { Images } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 
 interface MediaPickerSheetProps {
@@ -76,7 +77,7 @@ export function MediaPickerSheet({
       <View style={[styles.container, { paddingBottom: spacing.xl }]}>
         {/* Icon */}
         <View style={[styles.iconContainer, { backgroundColor: colors.bgTertiary, borderRadius: radius.full }]}>
-          <Text style={styles.icon}>🖼️</Text>
+          <Images size={28} color={colors.accentPrimary} />
         </View>
 
         {/* Content */}

@@ -26,7 +26,8 @@ import { useGroupMembers } from '../../hooks/useGroupMembers'
 import { AddItemBar } from './components/AddItemBar'
 import { ListItemRow } from './components/ListItemRow'
 import { CreateListSheet } from './components/CreateListSheet'
-import { LIST_TYPE_META } from './components/ListTypeIcon'
+import { CaretLeft, DotsThree, Confetti } from 'phosphor-react-native'
+import { ListTypeIcon } from './components/ListTypeIcon'
 import type { SharedListItem, SharedListCreate } from '../../lib/schemas/list.schema'
 import type { ListsStackParamList } from '../../navigation/types'
 
@@ -169,7 +170,6 @@ export function ListDetailScreen() {
     )
   }
 
-  const meta = LIST_TYPE_META[list.type]
 
   const renderItem = ({ item }: { item: SharedListItem }) => (
     <ListItemRow
@@ -200,18 +200,18 @@ export function ListDetailScreen() {
         },
       ]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={8} accessibilityLabel="Back">
-          <Text style={[text.body.lg, { color: colors.accentPrimary }]}>{'←'}</Text>
+          <CaretLeft size={22} color={colors.accentPrimary} />
         </Pressable>
 
         <View style={styles.headerCenter}>
-          <Text style={{ fontSize: 20 }}>{meta.emoji}</Text>
+          <ListTypeIcon type={list.type} size={20} color={colors.textPrimary} />
           <Text style={[text.body.lg, { color: colors.textPrimary, fontFamily: 'Outfit-SemiBold' }]} numberOfLines={1}>
             {list.title}
           </Text>
         </View>
 
         <Pressable onPress={handleListMenu} hitSlop={8} accessibilityLabel="List options">
-          <Text style={[text.body.lg, { color: colors.textSecondary }]}>⋯</Text>
+          <DotsThree size={22} color={colors.textSecondary} weight="bold" />
         </Pressable>
       </View>
 
@@ -228,10 +228,14 @@ export function ListDetailScreen() {
               },
             ]} />
           </View>
-          <Text style={[text.label.sm, { color: colors.textMuted, marginTop: 4 }]}>
-            {list.checkedCount} of {list.itemCount} done
-            {list.checkedCount === list.itemCount && list.itemCount > 0 ? '  🎉' : ''}
-          </Text>
+          <View style={styles.progressLabelRow}>
+            <Text style={[text.label.sm, { color: colors.textMuted }]}>
+              {list.checkedCount} of {list.itemCount} done
+            </Text>
+            {list.checkedCount === list.itemCount && list.itemCount > 0 && (
+              <Confetti size={13} color={colors.accentPrimary} />
+            )}
+          </View>
         </View>
       )}
 
@@ -245,7 +249,7 @@ export function ListDetailScreen() {
         ListEmptyComponent={
           pendingItems.length === 0 && completedItems.length === 0 ? (
             <View style={[styles.emptyState, { paddingHorizontal: spacing.xl }]}>
-              <Text style={{ fontSize: 40, textAlign: 'center' }}>{meta.emoji}</Text>
+              <ListTypeIcon type={list.type} size={40} color={colors.textMuted} />
               <Text style={[text.body.md, { color: colors.textMuted, textAlign: 'center', marginTop: spacing.md }]}>
                 No items yet. Add one below.
               </Text>
@@ -426,6 +430,7 @@ function EditItemAlert({
 }
 
 const styles = StyleSheet.create({
+  progressLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   screen:          { flex: 1 },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerCenter:    { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },

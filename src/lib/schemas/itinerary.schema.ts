@@ -165,14 +165,15 @@ export const SORT_ORDER = {
 export const CATEGORY_META: Record<ItineraryCategory, {
   label:  string
   emoji:  string
+  icon:   string   // Phosphor icon name — resolved by ItineraryCategoryIcon (§2.5)
   colorKey: string  // Maps to colors.category.* in Dhaga theme
 }> = {
-  attraction: { label: 'Attraction',  emoji: '🏛️', colorKey: 'transport'   },
-  food:       { label: 'Food',        emoji: '🍽️', colorKey: 'food'        },
-  stay:       { label: 'Stay',        emoji: '🏨', colorKey: 'stay'        },
-  transport:  { label: 'Transport',   emoji: '🚗', colorKey: 'transport'   },
-  activity:   { label: 'Activity',    emoji: '🎯', colorKey: 'activities'  },
-  shopping:   { label: 'Shopping',    emoji: '🛍️', colorKey: 'shopping'   },
-  note:       { label: 'Note',        emoji: '📝', colorKey: 'misc'        },
-  custom:     { label: 'Custom',      emoji: '⭐', colorKey: 'misc'        },
+  attraction: { label: 'Attraction',  emoji: '🏛️', icon: 'Bank',      colorKey: 'transport'   },
+  food:       { label: 'Food',        emoji: '🍽️', icon: 'BowlFood',  colorKey: 'food'        },
+  stay:       { label: 'Stay',        emoji: '🏨', icon: 'Bed',       colorKey: 'stay'        },
+  transport:  { label: 'Transport',   emoji: '🚗', icon: 'Car',       colorKey: 'transport'   },
+  activity:   { label: 'Activity',    emoji: '🎯', icon: 'Confetti',  colorKey: 'activities'  },
+  shopping:   { label: 'Shopping',    emoji: '🛍️', icon: 'Bag',       colorKey: 'shopping'   },
+  note:       { label: 'Note',        emoji: '📝', icon: 'Note',      colorKey: 'misc'        },
+  custom:     { label: 'Custom',      emoji: '⭐', icon: 'Star',      colorKey: 'misc'        },
 }

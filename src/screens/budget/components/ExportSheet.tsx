@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { StyleSheet, View, Text, Pressable, ActivityIndicator } from 'react-native'
 import * as Sharing from 'expo-sharing'
+import { FilePdf, Table, CaretRight, Warning } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { buildExpenseExportData } from '@lib/utils/exportData'
@@ -92,7 +93,6 @@ export function ExportSheet({
             styles.optionBtn,
             {
               backgroundColor: colors.bgTertiary,
-              borderColor: colors.border,
               borderRadius: radius.md,
               padding: spacing.md,
               opacity: pressed || isBusy ? 0.7 : 1,
@@ -100,7 +100,7 @@ export function ExportSheet({
           ]}
         >
           <View style={styles.optionLeft}>
-            <Text style={{ fontSize: 24, marginRight: spacing.md }}>📄</Text>
+            <FilePdf size={24} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
             <View>
               <Text style={[text.label.lg, { color: colors.textPrimary }]}>Export PDF Report</Text>
               <Text style={[text.body.sm, { color: colors.textSecondary }]}>
@@ -111,7 +111,7 @@ export function ExportSheet({
           {loadingType === 'pdf' ? (
             <ActivityIndicator size="small" color={colors.accentPrimary} />
           ) : (
-            <Text style={{ color: colors.textMuted }}>&rarr;</Text>
+            <CaretRight size={18} color={colors.textMuted} />
           )}
         </Pressable>
 
@@ -123,7 +123,6 @@ export function ExportSheet({
             styles.optionBtn,
             {
               backgroundColor: colors.bgTertiary,
-              borderColor: colors.border,
               borderRadius: radius.md,
               padding: spacing.md,
               opacity: pressed || isBusy ? 0.7 : 1,
@@ -131,7 +130,7 @@ export function ExportSheet({
           ]}
         >
           <View style={styles.optionLeft}>
-            <Text style={{ fontSize: 24, marginRight: spacing.md }}>📊</Text>
+            <Table size={24} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
             <View>
               <Text style={[text.label.lg, { color: colors.textPrimary }]}>Export CSV</Text>
               <Text style={[text.body.sm, { color: colors.textSecondary }]}>
@@ -142,15 +141,16 @@ export function ExportSheet({
           {loadingType === 'csv' ? (
             <ActivityIndicator size="small" color={colors.accentPrimary} />
           ) : (
-            <Text style={{ color: colors.textMuted }}>&rarr;</Text>
+            <CaretRight size={18} color={colors.textMuted} />
           )}
         </Pressable>
 
         {/* Error message */}
         {error && (
-          <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.xs, textAlign: 'center' }]}>
-            ⚠️ {error}
-          </Text>
+          <View style={styles.errorRow}>
+            <Warning size={16} color={colors.negative} />
+            <Text style={[text.body.sm, { color: colors.negative }]}>{error}</Text>
+          </View>
         )}
 
         {/* Cancel button */}
@@ -161,7 +161,6 @@ export function ExportSheet({
             styles.cancelBtn,
             {
               borderRadius: radius.md,
-              borderColor: colors.border,
               padding: spacing.md,
               opacity: pressed || isBusy ? 0.7 : 1,
             },
@@ -179,16 +178,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
   },
   optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
   cancelBtn: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
     marginTop: 8,
   },
 })

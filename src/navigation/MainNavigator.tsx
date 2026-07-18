@@ -1,9 +1,11 @@
 // src/navigation/MainNavigator.tsx
-import { View, Pressable, StyleSheet, Text } from 'react-native'
+import { View, Pressable, StyleSheet } from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { BlurView } from 'expo-blur'
+import { CheckSquare, User } from 'phosphor-react-native'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { MainTabParamList } from './types'
+import { Charpai, Rasta, Potli, Taveez, Baithak } from '@components/icons'
 import { useTheme } from '@theme'
 import * as Haptics from 'expo-haptics'
 import { useGroupStore } from '@stores/group.store'
@@ -19,43 +21,29 @@ import { ProfileNavigator } from './ProfileNavigator'
 
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
-// ── Tab icons — SVG inline, no external icon library dependency ──
+// ── Tab icons — brand glyphs (§2.5.1) + Phosphor, no text-glyph chrome ──
+const TAB_ICON_WRAP = { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' } as const
 const TAB_ICONS: Record<keyof MainTabParamList, (active: boolean, color: string) => React.ReactNode> = {
   HomeTab: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Home — simple house silhouette */}
-      <Text style={{ fontSize: 20, color }}>⌂</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><Charpai size={22} color={color} /></View>
   ),
   Budget: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18, color }}>₹</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><Potli size={22} color={color} /></View>
   ),
   Trip: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18, color }}>✈</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><Rasta size={22} color={color} /></View>
   ),
   Lists: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 17, color }}>☑</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><CheckSquare size={21} color={color} /></View>
   ),
   Hangouts: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18, color }}>🎉</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><Baithak size={22} color={color} /></View>
   ),
   Memories: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18, color }}>◎</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><Taveez size={22} color={color} /></View>
   ),
   Profile: (_active, color) => (
-    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18, color }}>○</Text>
-    </View>
+    <View style={TAB_ICON_WRAP}><User size={21} color={color} /></View>
   ),
 }
 

@@ -1,6 +1,7 @@
 import * as Location from 'expo-location'
 import * as Sentry from '@sentry/react-native'
 import { BACKGROUND_LOCATION_TASK } from '../../tasks/backgroundLocation.task'
+import { NATIVE_ACCENT_COLOR } from '../../theme/colors'
 import { getLocationPermissionStatus, type LocationPermissionStatus } from './permissions'
 import { sessionTimer } from './sessionTimer'
 import { setActiveGroupId, setUserId, getActiveGroupId, getUserId } from '../session'
@@ -50,7 +51,7 @@ export async function startBackgroundLocationTask(params: {
       foregroundService: {
         notificationTitle: 'apna is sharing your location',
         notificationBody: 'Tap to stop',
-        notificationColor: '#D96A50',
+        notificationColor: NATIVE_ACCENT_COLOR,
       },
       pausesUpdatesAutomatically: false,
       showsBackgroundLocationIndicator: true,

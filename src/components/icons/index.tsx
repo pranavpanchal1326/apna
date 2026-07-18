@@ -8,11 +8,35 @@
 // and never self-color except inside the three madder-budget slots (§2.5.2).
 
 import Svg, { Path, Circle, Line, Rect } from 'react-native-svg'
+import {
+  Bank, BowlFood, Bed, Car, Confetti, Bag, Note, Star,
+  type IconProps,
+} from 'phosphor-react-native'
+import type { ComponentType } from 'react'
+import { CATEGORY_META, type ItineraryCategory } from '@lib/schemas'
 
 interface GlyphProps {
   size?: number
   color?: string
   strokeWidth?: number
+}
+
+// ── Itinerary category icon — resolves CATEGORY_META.icon to a Phosphor glyph
+// (Blueprint §2.5, replaces the per-category emoji). ──────────────────────
+const ITINERARY_GLYPHS: Record<string, ComponentType<IconProps>> = {
+  Bank, BowlFood, Bed, Car, Confetti, Bag, Note, Star,
+}
+
+interface ItineraryCategoryIconProps {
+  category: ItineraryCategory
+  size?: number
+  color?: string
+  weight?: IconProps['weight']
+}
+
+export function ItineraryCategoryIcon({ category, size = 20, color, weight = 'regular' }: ItineraryCategoryIconProps) {
+  const Glyph = ITINERARY_GLYPHS[CATEGORY_META[category]?.icon] ?? Note
+  return <Glyph size={size} color={color} weight={weight} />
 }
 
 const base = (size: number) => ({ width: size, height: size, viewBox: '0 0 24 24' })
@@ -113,3 +137,5 @@ export function Baithak({ size = 24, color = '#000' }: GlyphProps) {
 }
 
 // 9. dhaga-logo mark is its own component: see ui/DhagaLogo.tsx
+
+export { WeatherIcon } from './WeatherIcon'

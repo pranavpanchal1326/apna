@@ -1,6 +1,7 @@
 // src/components/group/SettingsRow.tsx
 import React from 'react'
 import { Text, Pressable, View, StyleSheet, Switch, Platform } from 'react-native'
+import { CaretRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 
 interface SettingsRowProps {
@@ -12,7 +13,7 @@ interface SettingsRowProps {
   danger?:             boolean
   disabled?:           boolean
   leftIcon?:           React.ReactNode
-  rightMeta?:          string
+  rightMeta?:          React.ReactNode
   accessibilityLabel?: string
 }
 
@@ -30,7 +31,7 @@ export function SettingsRow({
 }: SettingsRowProps) {
   const { colors, text, spacing, radius } = useTheme()
 
-  const textColor = danger ? colors.accentDanger : colors.textPrimary
+  const textColor = danger ? colors.negative : colors.textPrimary
 
   return (
     <Pressable
@@ -70,7 +71,7 @@ export function SettingsRow({
             onValueChange={onToggle}
             disabled={disabled}
             thumbColor={Platform.OS === 'android' ? (value ? colors.accentPrimary : colors.textMuted) : undefined}
-            trackColor={{ false: colors.border, true: colors.accentPrimary + '50' }}
+            trackColor={{ false: colors.hairline, true: colors.accentPrimary + '50' }}
           />
         ) : (
           <>
@@ -79,13 +80,17 @@ export function SettingsRow({
                 {value}
               </Text>
             )}
-            {rightMeta && (
-              <Text style={[text.label.sm, { color: colors.textMuted, marginRight: spacing.xs }]}>
-                {rightMeta}
-              </Text>
+            {rightMeta != null && (
+              typeof rightMeta === 'string' || typeof rightMeta === 'number' ? (
+                <Text style={[text.label.sm, { color: colors.textMuted, marginRight: spacing.xs }]}>
+                  {rightMeta}
+                </Text>
+              ) : (
+                <View style={{ marginRight: spacing.xs }}>{rightMeta}</View>
+              )
             )}
             {onPress && !disabled && (
-              <Text style={[text.heading.sm, { color: colors.textMuted, fontSize: 16 }]}>›</Text>
+              <CaretRight size={16} color={colors.textMuted} />
             )}
           </>
         )}

@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
+import { Backpack, Export } from 'phosphor-react-native'
 import { Screen, Header, Button } from '@components'
 import { useTheme } from '@theme'
 import { useGroupStore } from '@stores/group.store'
@@ -191,7 +192,7 @@ export function BudgetScreen() {
       <Screen>
         <Header title="Budget" />
         <View style={styles.center}>
-          <Text style={{ fontSize: 48 }}>🎒</Text>
+          <Backpack size={48} color={colors.textSecondary} weight="regular" />
           <Text style={[text.heading.sm, { color: colors.textPrimary, marginTop: spacing.md, textAlign: 'center' }]}>
             No active group
           </Text>
@@ -245,7 +246,7 @@ export function BudgetScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Export expenses"
               >
-                <Text style={{ fontSize: 20 }}>📤</Text>
+                <Export size={20} color={colors.textPrimary} />
               </Pressable>
               {isGroupAdmin && (
                 <Pressable

@@ -14,9 +14,11 @@ import {
   Dimensions,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { CaretLeft, MagnifyingGlassPlus } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { haptics } from '@lib/haptics'
 import { Screen, Button } from '@components'
+import { CategoryIcon, CATEGORY_LABELS } from '@components/expense'
 import { Avatar } from '@components/ui/Avatar'
 import { useExpenses } from '@hooks/useExpenses'
 import { useGroupMembers } from '@hooks/useGroupMembers'
@@ -88,41 +90,26 @@ export function ExpenseDetailScreen({ route }: Props) {
     )
   }
 
-  // Emoji helper for categories
-  const getCategoryEmoji = (cat: string) => {
-    switch (cat) {
-      case 'food':       return '🍽️'
-      case 'stay':       return '🏨'
-      case 'transport':  return '🚗'
-      case 'activities': return '🎯'
-      case 'shopping':   return '🛍️'
-      default:           return '📦'
-    }
-  }
-
-  // Title case helper
-  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-
   return (
     <Screen>
       {/* Header */}
-      <View style={[styles.navHeader, { paddingHorizontal: spacing.lg, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={[text.label.lg, { color: colors.accentPrimary }]}>← Back</Text>
+      <View style={[styles.navHeader, { paddingHorizontal: spacing.lg, borderBottomColor: colors.hairline }]}>
+        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Go back">
+          <CaretLeft size={22} color={colors.textPrimary} />
         </Pressable>
         <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Expense Details</Text>
         <Pressable onPress={handleDelete} style={styles.deleteBtn}>
-          <Text style={[text.label.lg, { color: colors.accentDanger }]}>Delete</Text>
+          <Text style={[text.label.lg, { color: colors.negative }]}>Delete</Text>
         </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Hero Section */}
-        <View style={[styles.heroSection, { backgroundColor: colors.bgSecondary, borderBottomColor: colors.border }]}>
+        <View style={[styles.heroSection, { backgroundColor: colors.bgSecondary, borderBottomColor: colors.hairline }]}>
           <View style={[styles.categoryBadge, { backgroundColor: colors.category[expense.category]?.tint ?? colors.bgTertiary }]}>
-            <Text style={{ fontSize: 20 }}>{getCategoryEmoji(expense.category)}</Text>
+            <CategoryIcon category={expense.category} size={18} color={colors.textSecondary} />
             <Text style={[text.label.md, { color: colors.textSecondary, marginLeft: spacing.xs }]}>
-              {capitalize(expense.category)}
+              {CATEGORY_LABELS[expense.category] ?? 'Misc'}
             </Text>
           </View>
 
@@ -140,7 +127,7 @@ export function ExpenseDetailScreen({ route }: Props) {
         </View>
 
         {/* Payer Info */}
-        <View style={[styles.section, { borderBottomColor: colors.border, padding: spacing.lg }]}>
+        <View style={[styles.section, { borderBottomColor: colors.hairline, padding: spacing.lg }]}>
           <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.md }]}>
             PAID BY
           </Text>
@@ -169,11 +156,11 @@ export function ExpenseDetailScreen({ route }: Props) {
         </View>
 
         {/* Split Breakdown */}
-        <View style={[styles.section, { borderBottomColor: colors.border, padding: spacing.lg }]}>
+        <View style={[styles.section, { borderBottomColor: colors.hairline, padding: spacing.lg }]}>
           <View style={styles.sectionHeader}>
             <Text style={[text.label.sm, { color: colors.textSecondary }]}>SPLIT BREAKDOWN</Text>
             <Text style={[text.label.sm, { color: colors.textSecondary }]}>
-              {capitalize(expense.splitType)} Split
+              {expense.splitType.charAt(0).toUpperCase() + expense.splitType.slice(1)} Split
             </Text>
           </View>
 
@@ -207,11 +194,11 @@ export function ExpenseDetailScreen({ route }: Props) {
 
         {/* Notes */}
         {expense.notes && (
-          <View style={[styles.section, { borderBottomColor: colors.border, padding: spacing.lg }]}>
+          <View style={[styles.section, { borderBottomColor: colors.hairline, padding: spacing.lg }]}>
             <Text style={[text.label.sm, { color: colors.textSecondary, marginBottom: spacing.sm }]}>
               NOTES
             </Text>
-            <View style={[styles.notesCard, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.md, padding: spacing.md }]}>
+            <View style={[styles.notesCard, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.md, padding: spacing.md }]}>
               <Text style={[text.body.md, { color: colors.textPrimary }]}>{expense.notes}</Text>
             </View>
           </View>
@@ -231,10 +218,11 @@ export function ExpenseDetailScreen({ route }: Props) {
               />
               {expense.receiptUrl && (
                 <Pressable onPress={() => setReceiptModalVisible(true)}>
-                  <View style={[styles.receiptImageContainer, { borderColor: colors.border, borderRadius: radius.lg }]}>
+                  <View style={[styles.receiptImageContainer, { borderColor: colors.hairline, borderRadius: radius.lg }]}>
                     <Image source={{ uri: expense.receiptUrl }} style={styles.receiptImage} resizeMode="cover" />
-                    <View style={styles.receiptOverlay}>
-                      <Text style={[text.label.md, { color: colors.textPrimary }]}>🔍 Tap to expand</Text>
+                    <View style={[styles.receiptOverlay, styles.receiptOverlayRow]}>
+                      <MagnifyingGlassPlus size={16} color={colors.textPrimary} />
+                      <Text style={[text.label.md, { color: colors.textPrimary }]}>Tap to expand</Text>
                     </View>
                   </View>
                 </Pressable>
@@ -341,6 +329,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     paddingVertical: 8,
     alignItems:      'center',
+  },
+  receiptOverlayRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   modalContainer: {
     flex:           1,

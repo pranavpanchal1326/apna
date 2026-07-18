@@ -69,7 +69,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
           <Avatar
             name={user.name}
             imageUrl={user.photoUrl}
-            color={user.avatarColor ?? '#D96A50'}
+            color={user.avatarColor ?? colors.avatar[0]}
             size="md"
           />
 

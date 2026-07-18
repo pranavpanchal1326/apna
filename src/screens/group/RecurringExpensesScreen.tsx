@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, Switch, StyleSheet, Alert } from 'react-native'
 import { useRoute, type RouteProp } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
+import { Trash, Repeat } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { Screen, Header } from '@components'
 import {
@@ -102,7 +103,7 @@ export function RecurringExpensesScreen() {
           accessibilityRole="button"
           accessibilityLabel="Delete recurring expense"
         >
-          <Text style={{ fontSize: 16 }}>🗑️</Text>
+          <Trash size={18} color={colors.negative} />
         </Pressable>
       </View>
     </View>
@@ -118,7 +119,7 @@ export function RecurringExpensesScreen() {
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: 80 }}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={{ fontSize: 48, textAlign: 'center' }}>🔁</Text>
+            <Repeat size={48} color={colors.textSecondary} style={{ alignSelf: 'center' }} />
             <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginTop: spacing.md }]}>
               No recurring expenses
             </Text>

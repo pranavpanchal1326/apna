@@ -3,6 +3,7 @@
 // Displays thumbnail preview or loading spinner during background upload.
 
 import { StyleSheet, View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
+import { Warning, Receipt } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { useExpenseStore } from '@stores/expense.store'
 
@@ -37,7 +38,7 @@ export function ReceiptChip({ expenseId, receiptUrl, onPress, style }: ReceiptCh
         styles.chip,
         {
           backgroundColor: colors.bgSecondary,
-          borderColor: isError ? colors.accentDanger : colors.border,
+          borderColor: isError ? colors.negative : colors.hairline,
           borderRadius: radius.md,
           paddingHorizontal: spacing.sm,
           paddingVertical: spacing.xs,
@@ -57,8 +58,8 @@ export function ReceiptChip({ expenseId, receiptUrl, onPress, style }: ReceiptCh
         </View>
       ) : isError ? (
         <View style={styles.row}>
-          <Text style={styles.icon}>⚠️</Text>
-          <Text style={[text.label.sm, { color: colors.accentDanger }]}>
+          <Warning size={12} color={colors.negative} style={styles.icon} />
+          <Text style={[text.label.sm, { color: colors.negative }]}>
             Upload failed
           </Text>
         </View>
@@ -71,7 +72,7 @@ export function ReceiptChip({ expenseId, receiptUrl, onPress, style }: ReceiptCh
               resizeMode="cover"
             />
           ) : (
-            <Text style={styles.icon}>🧾</Text>
+            <Receipt size={14} color={colors.textSecondary} style={styles.icon} />
           )}
           <Text style={[text.label.sm, { color: colors.textPrimary, marginLeft: spacing.xs }]}>
             Receipt
@@ -100,6 +101,6 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.8 }],
   },
   icon: {
-    fontSize: 12,
+    marginRight: 4,
   },
 })

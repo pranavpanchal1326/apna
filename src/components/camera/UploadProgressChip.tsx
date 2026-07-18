@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native'
+import { Check, X, Clock } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 
 interface UploadProgressChipProps {
@@ -40,21 +41,21 @@ export function UploadProgressChip({
       borderColor = colors.positive
       textColor = colors.positive
       labelText = 'Uploaded'
-      IconComponent = <Text style={[styles.icon, { color: colors.positive }]}>✓</Text>
+      IconComponent = <Check size={13} color={colors.positive} weight="bold" />
       break
     case 'error':
-      bgColor = colors.accentDanger + '15'
-      borderColor = colors.accentDanger
-      textColor = colors.accentDanger
+      bgColor = colors.negative + '15'
+      borderColor = colors.negative
+      textColor = colors.negative
       labelText = 'Failed · Retry'
-      IconComponent = <Text style={[styles.icon, { color: colors.accentDanger }]}>×</Text>
+      IconComponent = <X size={13} color={colors.negative} weight="bold" />
       isInteractive = true
       break
     case 'queued':
       bgColor = colors.bgTertiary
       textColor = colors.textMuted
       labelText = 'Queued'
-      IconComponent = <Text style={[styles.icon, { color: colors.textMuted }]}>🕒</Text>
+      IconComponent = <Clock size={13} color={colors.textMuted} />
       break
   }
 

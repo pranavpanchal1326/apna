@@ -5,17 +5,18 @@
 import { useState, useCallback } from 'react'
 import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { MapPin } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { BottomSheet } from '@components/ui/BottomSheet'
 import { fetchDietarySuggestions, type DietarySuggestion } from '@lib/firebase/ai'
 
 const DIETARY_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'vegetarian', label: '🥗 Vegetarian' },
-  { key: 'vegan', label: '🌱 Vegan' },
-  { key: 'jain', label: '🙏 Jain' },
-  { key: 'halal', label: '☪️ Halal' },
-  { key: 'gluten-free', label: '🌾 Gluten-free' },
-  { key: 'no-onion-garlic', label: '🧅 No onion-garlic' },
+  { key: 'vegetarian', label: 'Vegetarian' },
+  { key: 'vegan', label: 'Vegan' },
+  { key: 'jain', label: 'Jain' },
+  { key: 'halal', label: 'Halal' },
+  { key: 'gluten-free', label: 'Gluten-free' },
+  { key: 'no-onion-garlic', label: 'No onion-garlic' },
 ]
 
 interface Props {
@@ -114,9 +115,12 @@ export function DietarySuggestSheet({ visible, onClose, groupId, destination }: 
                 {suggestion.name}
               </Text>
               {suggestion.area ? (
-                <Text style={[text.label.sm, { color: colors.accentPrimary, marginTop: 2 }]}>
-                  📍 {suggestion.area}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                  <MapPin size={13} color={colors.accentPrimary} />
+                  <Text style={[text.label.sm, { color: colors.accentPrimary }]}>
+                    {suggestion.area}
+                  </Text>
+                </View>
               ) : null}
               {suggestion.why ? (
                 <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.xs }]}>

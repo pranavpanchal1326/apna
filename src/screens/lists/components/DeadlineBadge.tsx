@@ -3,6 +3,7 @@
 // Derives urgency state from a date string — no Firestore reads.
 
 import { View, Text, StyleSheet } from 'react-native'
+import { Warning, Clock } from 'phosphor-react-native'
 import { useTheme } from '../../../theme'
 import { getDeadlineUrgency, formatDeadlineLabel } from '../../../lib/utils/listDeadline'
 
@@ -21,15 +22,18 @@ export function DeadlineBadge({ deadlineDate }: Props) {
   if (urgency === 'none') return null
 
   const badgeColor: string = urgency === 'overdue'
-    ? colors.accentDanger
+    ? colors.negative
     : urgency === 'due_soon'
     ? colors.warning
     : colors.accentPrimary
 
   return (
     <View style={[styles.badge, { backgroundColor: badgeColor + '22', borderColor: badgeColor + '55' }]}>
+      {urgency === 'overdue'
+        ? <Warning size={12} color={badgeColor} />
+        : <Clock size={12} color={badgeColor} />}
       <Text style={[text.label.sm, { color: badgeColor, fontFamily: 'Outfit-Medium' }]}>
-        {urgency === 'overdue' ? '⚠ ' : '⏱ '}{label}
+        {label}
       </Text>
     </View>
   )
@@ -40,6 +44,7 @@ const styles = StyleSheet.create({
     flexDirection:  'row',
     alignItems:     'center',
     alignSelf:      'flex-start',
+    gap:            4,
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius:   6,

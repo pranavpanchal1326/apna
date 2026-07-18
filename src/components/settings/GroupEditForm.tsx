@@ -7,6 +7,7 @@ import { useState, useCallback, useRef } from 'react'
 import {
   View, Text, TextInput, Pressable, StyleSheet, Alert,
 } from 'react-native'
+import { Check, ArrowRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import type { GroupInput } from '@lib/schemas'
 import type { GroupEditParams } from '@lib/firebase/groupAdmin'
@@ -86,9 +87,12 @@ export function GroupEditForm({ group, isAdmin, onSave }: Props) {
     <View style={{ marginBottom: spacing.xl }}>
       {/* Status indicator */}
       {(saving || saved) && (
-        <Text style={[text.label.sm, { color: saving ? colors.textMuted : colors.positive, textAlign: 'right', marginBottom: spacing.sm }]}>
-          {saving ? 'Saving…' : '✓ Saved'}
-        </Text>
+        <View style={styles.statusRow}>
+          {!saving && <Check size={13} color={colors.positive} weight="bold" />}
+          <Text style={[text.label.sm, { color: saving ? colors.textMuted : colors.positive }]}>
+            {saving ? 'Saving…' : 'Saved'}
+          </Text>
+        </View>
       )}
 
       {/* Emoji picker row */}
@@ -163,9 +167,7 @@ export function GroupEditForm({ group, isAdmin, onSave }: Props) {
           maxLength={10}
           accessibilityLabel="Trip start date"
         />
-        <Text style={[text.label.md, { color: colors.textMuted, marginHorizontal: spacing.sm }]}>
-          →
-        </Text>
+        <ArrowRight size={16} color={colors.textMuted} style={{ marginHorizontal: spacing.sm }} />
         <TextInput
           value={endDate}
           onChangeText={isAdmin ? setEndDate : undefined}
@@ -190,6 +192,7 @@ export function GroupEditForm({ group, isAdmin, onSave }: Props) {
 }
 
 const styles = StyleSheet.create({
+  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginBottom: 8 },
   emojiRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   emojiBtn: {},
   dateRow:  { flexDirection: 'row', alignItems: 'center' },

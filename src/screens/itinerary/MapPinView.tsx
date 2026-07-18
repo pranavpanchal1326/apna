@@ -16,6 +16,7 @@
 import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Map as MapLibreMap, Camera, Marker } from '@maplibre/maplibre-react-native'
+import { MapPin } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import type { PlaceRef } from '../../lib/schemas'
 
@@ -80,7 +81,7 @@ export function MapPinView({ placeRef, height = 200 }: MapPinViewProps) {
           },
         ]}
       >
-        <Text style={{ fontSize: 32 }}>📍</Text>
+        <MapPin size={32} color={colors.textMuted} />
         <Text style={[{ color: colors.textMuted, marginTop: 8, fontSize: 13 }]}>
           No location data
         </Text>

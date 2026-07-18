@@ -17,7 +17,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../../theme'
-import { LIST_TYPE_META } from './ListTypeIcon'
+import { LIST_TYPE_META, ListTypeIcon } from './ListTypeIcon'
 import type { SharedList, SharedListCreate, SharedListType } from '../../../lib/schemas/list.schema'
 
 interface Props {
@@ -129,7 +129,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
                     accessibilityState={{ checked: active }}
                     accessibilityLabel={meta.label}
                   >
-                    <Text style={{ fontSize: 20 }}>{meta.emoji}</Text>
+                    <ListTypeIcon type={t} size={20} color={active ? colors.accentPrimary : colors.textSecondary} />
                     <Text style={[text.label.sm, {
                       color:      active ? colors.accentPrimary : colors.textSecondary,
                       fontFamily: 'Outfit-SemiBold',

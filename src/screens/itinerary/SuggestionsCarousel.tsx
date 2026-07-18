@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native'
 import { getFunctions, httpsCallable } from 'firebase/functions'
+import { Star } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { captureError } from '../../lib/sentry'
 import { CATEGORY_META } from '../../lib/schemas'
@@ -79,9 +80,12 @@ function SuggestionChip({
       </Text>
 
       {suggestion.placeRef.rating && (
-        <Text style={[text.mono.sm, { color: colors.accentGold, marginTop: spacing.xs }]}>
-          ⭐ {suggestion.placeRef.rating.toFixed(1)}
-        </Text>
+        <View style={styles.ratingRow}>
+          <Star size={12} color={colors.warning} weight="fill" />
+          <Text style={[text.mono.sm, { color: colors.warning }]}>
+            {suggestion.placeRef.rating.toFixed(1)}
+          </Text>
+        </View>
       )}
     </Pressable>
   )
@@ -189,6 +193,7 @@ export function SuggestionsCarousel({
 }
 
 const styles = StyleSheet.create({
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
   container: {},
   chip: {
     borderWidth: 1,

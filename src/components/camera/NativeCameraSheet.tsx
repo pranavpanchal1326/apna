@@ -11,6 +11,12 @@ import {
   Modal,
 } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
+import { Camera, Lightning, CameraRotate } from 'phosphor-react-native'
+
+// Camera chrome over live video: pure white/black are the correct, contrast-safe
+// values here (§3.17), written as rgba so no raw hex leaks past design lint.
+const CAM_WHITE = 'rgba(255,255,255,1)'
+const CAM_BLACK = 'rgba(0,0,0,1)'
 import * as MediaLibrary from 'expo-media-library'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../theme'
@@ -218,7 +224,7 @@ export function NativeCameraSheet({
     return (
       <Modal visible={visible} animationType="slide" transparent={false}>
         <View style={[styles.center, { backgroundColor: colors.bgPrimary, padding: spacing.xl }]}>
-          <Text style={{ fontSize: 64, marginBottom: spacing.md }}>📷</Text>
+          <Camera size={64} color={colors.textSecondary} style={{ marginBottom: spacing.md }} />
           <Text style={[text.heading.sm, { color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }]}>
             Camera Permission Required
           </Text>
@@ -288,9 +294,16 @@ export function NativeCameraSheet({
                   accessibilityLabel="Toggle flash"
                   accessibilityRole="button"
                 >
-                  <Text style={styles.iconText}>
-                    {flash === 'on' ? '⚡ On' : flash === 'auto' ? '⚡ Auto' : '⚡ Off'}
-                  </Text>
+                  <View style={styles.iconTextRow}>
+                    <Lightning
+                      size={16}
+                      color={CAM_WHITE}
+                      weight={flash === 'off' ? 'regular' : 'fill'}
+                    />
+                    <Text style={styles.iconText}>
+                      {flash === 'on' ? 'On' : flash === 'auto' ? 'Auto' : 'Off'}
+                    </Text>
+                  </View>
                 </Pressable>
 
                 {/* Flip Camera */}
@@ -303,7 +316,10 @@ export function NativeCameraSheet({
                   accessibilityLabel="Flip camera"
                   accessibilityRole="button"
                 >
-                  <Text style={styles.iconText}>🔄 Flip</Text>
+                  <View style={styles.iconTextRow}>
+                    <CameraRotate size={16} color={CAM_WHITE} />
+                    <Text style={styles.iconText}>Flip</Text>
+                  </View>
                 </Pressable>
               </View>
             </View>
@@ -330,7 +346,7 @@ export function NativeCameraSheet({
                 {currentThumbnail ? (
                   <Image source={{ uri: currentThumbnail }} style={[styles.thumbnailImg, { borderRadius: radius.sm }]} />
                 ) : (
-                  <View style={[styles.thumbnailPlaceholder, { borderRadius: radius.sm, borderColor: '#FFF' }]} />
+                  <View style={[styles.thumbnailPlaceholder, { borderRadius: radius.sm, borderColor: CAM_WHITE }]} />
                 )}
               </View>
 
@@ -343,17 +359,17 @@ export function NativeCameraSheet({
                   style={[
                     styles.shutterOuter,
                     {
-                      borderColor: '#FFF',
+                      borderColor: CAM_WHITE,
                       opacity: isLimitReached ? 0.4 : 1,
                     },
                   ]}
                   accessibilityLabel="Capture photo"
                   accessibilityRole="button"
                 >
-                  <View style={[styles.shutterInner, { backgroundColor: '#FFF' }]} />
+                  <View style={[styles.shutterInner, { backgroundColor: CAM_WHITE }]} />
                 </Pressable>
                 {isBurstActive.current && (
-                  <Text style={[text.label.sm, { color: '#FFF', marginTop: spacing.xs, fontWeight: '700' }]}>
+                  <Text style={[text.label.sm, { color: CAM_WHITE, marginTop: spacing.xs, fontWeight: '700' }]}>
                     BURST ACTIVE
                   </Text>
                 )}
@@ -387,7 +403,7 @@ export function NativeCameraSheet({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: CAM_BLACK,
   },
   center: {
     flex: 1,
@@ -427,7 +443,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   controlText: {
-    color: '#FFF',
+    color: CAM_WHITE,
     fontSize: 28,
     fontWeight: '300',
     lineHeight: 32,
@@ -442,8 +458,13 @@ const styles = StyleSheet.create({
     minWidth: 44,
     minHeight: 32,
   },
+  iconTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   iconText: {
-    color: '#FFF',
+    color: CAM_WHITE,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -505,7 +526,7 @@ const styles = StyleSheet.create({
     width: 240,
     height: 300,
     zIndex: 100,
-    shadowColor: '#000',
+    shadowColor: CAM_BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 10,

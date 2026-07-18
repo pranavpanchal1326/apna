@@ -10,6 +10,7 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
+import { Warning } from 'phosphor-react-native'
 import { useTheme } from '../../theme'
 import { ThreadLine } from './ThreadLine'
 import { ItineraryItemCard } from './ItineraryItemCard'
@@ -34,7 +35,7 @@ interface DayPlannerViewProps {
   onAiDraft?:    () => void
   isAiDrafting?: boolean
   weatherDay?: WeatherDay
-  /** PRD §13 — itemId → travel-time warning for the leg INTO that item. */
+  /** PRD §13 — itemId to travel-time warning for the leg INTO that item. */
   bufferWarnings?: Record<string, BufferWarning>
 }
 
@@ -90,9 +91,12 @@ export function DayPlannerView({
             accessibilityRole="alert"
             accessibilityLabel={`Tight timing: ${warning.gapMinutes} minute gap but about ${warning.driveMinutes} minutes of driving`}
           >
-            <Text style={[text.label.sm, { color: colors.accentGold }]}>
-              ⚠️ {warning.gapMinutes} min gap — ~{warning.driveMinutes} min drive
-            </Text>
+            <View style={styles.warningRow}>
+              <Warning size={13} color={colors.warning} />
+              <Text style={[text.label.sm, { color: colors.warning }]}>
+                {warning.gapMinutes} min gap — ~{warning.driveMinutes} min drive
+              </Text>
+            </View>
           </View>
         )}
         <ItineraryItemCard
@@ -160,6 +164,7 @@ export function DayPlannerView({
 }
 
 const styles = StyleSheet.create({
+  warningRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   container: {
     flex: 1,
   },

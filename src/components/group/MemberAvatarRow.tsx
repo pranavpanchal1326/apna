@@ -5,6 +5,7 @@
 
 import { memo } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native'
+import { CaretRight } from 'phosphor-react-native'
 import { useTheme } from '@theme'
 import { Avatar } from '@components/ui/Avatar'
 import type { UserInput } from '@lib/schemas'
@@ -42,9 +43,10 @@ export const MemberAvatarRow = memo(function MemberAvatarRow({
             accessibilityRole="button"
             accessibilityLabel="View all members"
           >
-            <Text style={[text.label.md, { color: colors.accentPrimary }]}>
-              View all →
-            </Text>
+            <View style={styles.viewAllRow}>
+              <Text style={[text.label.md, { color: colors.accentPrimary }]}>View all</Text>
+              <CaretRight size={14} color={colors.accentPrimary} />
+            </View>
           </Pressable>
         )}
       </View>
@@ -68,7 +70,7 @@ export const MemberAvatarRow = memo(function MemberAvatarRow({
               <Avatar
                 name={user.name}
                 imageUrl={user.photoUrl}
-                color={user.avatarColor ?? '#D96A50'}
+                color={user.avatarColor ?? colors.avatar[0]}
                 size="md"
               />
               <Text
@@ -115,6 +117,7 @@ export const MemberAvatarRow = memo(function MemberAvatarRow({
 })
 
 const styles = StyleSheet.create({
+  viewAllRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   container: {},
   row:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   avatarItem: { alignItems: 'center', maxWidth: 52 },

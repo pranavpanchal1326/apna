@@ -18,6 +18,7 @@ import {
 } from '@lib/firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { identifyAnalyticsUser } from '@lib/analytics'
+import { DEFAULT_AVATAR_COLOR } from '@/theme/colors'
 import { contactCache } from '@lib/contacts/cache'
 
 const authStorage = createMMKV({ id: 'apna-auth' })
@@ -77,6 +78,7 @@ interface AuthStore {
   setLoading: (loading: boolean) => void
   logout: () => Promise<void>
   reset: () => void
+  devMockLogin: () => void   // DEV/prototype: enter app with a local mock user
 }
 
 const OTP_INITIAL: OTPFlowState = {
@@ -207,4 +209,25 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       isLoading: false,
       otpFlow: OTP_INITIAL,
     }),
+
+  // DEV / PROTOTYPE ONLY — drop straight into the app with a local mock user,
+  // bypassing Firebase entirely (no OTP, no network). Never wired in release.
+  devMockLogin: () => {
+    const mockUser: User = {
+      uid: 'proto-user',
+      phone: '+919876543210',
+      name: 'Prototype User',
+      avatarColor: DEFAULT_AVATAR_COLOR,
+      createdAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as unknown as User['createdAt'],
+      groups: [],
+    }
+    cacheUser(mockUser)
+    set({
+      status: 'authenticated',
+      firebaseUser: { uid: mockUser.uid } as unknown as FirebaseUser,
+      user: mockUser,
+      isLoading: false,
+      error: null,
+    })
+  },
 }))
