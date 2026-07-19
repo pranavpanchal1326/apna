@@ -1,5 +1,10 @@
+import { Platform } from 'react-native'
 import { Camera } from 'expo-camera'
-import * as MediaLibrary from 'expo-media-library'
+
+let MediaLibrary: typeof import('expo-media-library') | null = null
+if (Platform.OS !== 'web') {
+  MediaLibrary = require('expo-media-library')
+}
 
 export type CameraPermissionStatus =
   | 'undetermined'
@@ -25,6 +30,7 @@ export async function requestCameraPermission(): Promise<boolean> {
 }
 
 export async function getMediaLibraryPermissionStatus(): Promise<MediaLibraryPermissionStatus> {
+  if (Platform.OS === 'web' || !MediaLibrary) return 'denied'
   const status = await MediaLibrary.getPermissionsAsync()
   if (status.status === 'undetermined') return 'undetermined'
   if (status.granted) return 'granted'
@@ -33,6 +39,7 @@ export async function getMediaLibraryPermissionStatus(): Promise<MediaLibraryPer
 }
 
 export async function requestMediaLibraryPermission(): Promise<boolean> {
+  if (Platform.OS === 'web' || !MediaLibrary) return false
   const status = await MediaLibrary.requestPermissionsAsync()
   return status.granted
 }

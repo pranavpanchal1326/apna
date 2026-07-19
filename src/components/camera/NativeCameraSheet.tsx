@@ -13,11 +13,18 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { Camera, Lightning, CameraRotate } from 'phosphor-react-native'
 
+import { Platform } from 'react-native'
+
 // Camera chrome over live video: pure white/black are the correct, contrast-safe
 // values here (§3.17), written as rgba so no raw hex leaks past design lint.
 const CAM_WHITE = 'rgba(255,255,255,1)'
 const CAM_BLACK = 'rgba(0,0,0,1)'
-import * as MediaLibrary from 'expo-media-library'
+
+let MediaLibrary: typeof import('expo-media-library') | null = null
+if (Platform.OS !== 'web') {
+  MediaLibrary = require('expo-media-library')
+}
+
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../theme'
 import { useCameraPermissions as useAppCameraPermissions } from '../../hooks/useCameraPermissions'
@@ -63,6 +70,7 @@ export function NativeCameraSheet({
   useEffect(() => {
     async function fetchLastPhoto() {
       try {
+        if (!MediaLibrary || Platform.OS === 'web') return
         const { status } = await MediaLibrary.requestPermissionsAsync()
         if (status === 'granted') {
           const { assets } = await MediaLibrary.getAssetsAsync({

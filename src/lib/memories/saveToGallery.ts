@@ -1,10 +1,15 @@
 // src/lib/memories/saveToGallery.ts
 // Download a memory photo and save it to the device camera roll (PRD §12).
 
+import { Platform } from 'react-native'
 import * as FileSystem from 'expo-file-system/legacy'
-import * as MediaLibrary from 'expo-media-library'
 import { captureError } from '@lib/sentry'
 import { track } from '@lib/analytics'
+
+let MediaLibrary: typeof import('expo-media-library') | null = null
+if (Platform.OS !== 'web') {
+  MediaLibrary = require('expo-media-library')
+}
 
 export type SaveToGalleryResult = 'saved' | 'permission_denied' | 'error'
 
@@ -14,6 +19,9 @@ export type SaveToGalleryResult = 'saved' | 'permission_denied' | 'error'
  */
 export async function savePhotoToGallery(url: string): Promise<SaveToGalleryResult> {
   try {
+    if (Platform.OS === 'web' || !MediaLibrary) {
+      return 'permission_denied'
+    }
     // Ask for add-only access where the platform supports it (Android 10+/iOS 14+)
     const permission = await MediaLibrary.requestPermissionsAsync(true)
     if (!permission.granted) {

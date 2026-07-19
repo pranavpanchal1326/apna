@@ -1,5 +1,8 @@
 <div align="center">
 
+<img src="docs/apna-banner.svg" alt="apna — one app for the whole squad: money, live location, and memories shown on three phone screens" width="100%" />
+
+<br />
 <br />
 
 <img src="assets/brand/apna-wordmark-ink.svg" alt="apna" width="220" />

@@ -1,0 +1,205 @@
+<svg width="2000" height="1000" viewBox="0 0 2000 1000" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+  <defs>
+    <radialGradient id="skyGlow" cx="28%" cy="18%" r="95%">
+      <stop offset="0%" stop-color="#18251D"/>
+      <stop offset="55%" stop-color="#101812"/>
+      <stop offset="100%" stop-color="#0B110D"/>
+    </radialGradient>
+    <linearGradient id="potli" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F2B441"/>
+      <stop offset="100%" stop-color="#7FBF8E"/>
+    </linearGradient>
+    <linearGradient id="mapNight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#12222E"/>
+      <stop offset="100%" stop-color="#101812"/>
+    </linearGradient>
+    <filter id="phoneShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="26" stdDeviation="30" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="glow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="scr1"><rect x="0" y="0" width="300" height="620" rx="34"/></clipPath>
+    <clipPath id="scr2"><rect x="0" y="0" width="300" height="620" rx="34"/></clipPath>
+    <clipPath id="scr3"><rect x="0" y="0" width="300" height="620" rx="34"/></clipPath>
+  </defs>
+
+  <rect width="2000" height="1000" fill="url(#skyGlow)"/>
+
+  <!-- stars -->
+  <g fill="#EFE9DA">
+    <circle cx="120" cy="90" r="1.6" opacity="0.5"/><circle cx="340" cy="60" r="1.2" opacity="0.35"/>
+    <circle cx="520" cy="140" r="1.8" opacity="0.55"/><circle cx="760" cy="70" r="1.3" opacity="0.4"/>
+    <circle cx="980" cy="120" r="1.5" opacity="0.5"/><circle cx="1180" cy="55" r="1.2" opacity="0.3"/>
+    <circle cx="1420" cy="100" r="1.7" opacity="0.5"/><circle cx="1650" cy="65" r="1.3" opacity="0.4"/>
+    <circle cx="1840" cy="130" r="1.9" opacity="0.6"/><circle cx="1930" cy="70" r="1.2" opacity="0.35"/>
+    <circle cx="240" cy="210" r="1.3" opacity="0.35"/><circle cx="880" cy="200" r="1.4" opacity="0.4"/>
+    <circle cx="1560" cy="190" r="1.4" opacity="0.4"/><circle cx="660" cy="250" r="1.1" opacity="0.3"/>
+    <circle cx="1300" cy="160" r="1.5" opacity="0.45"/><circle cx="1750" cy="240" r="1.2" opacity="0.3"/>
+  </g>
+
+  <!-- ============ LEFT: brand + message ============ -->
+  <g transform="translate(130,190) scale(1.9)">
+    <circle cx="54" cy="66" r="26" fill="none" stroke="#D96A50" stroke-width="7" stroke-linecap="round" stroke-dasharray="13.79 9.55" stroke-dashoffset="6.9"/>
+    <path d="M 84 40 L 84 76 Q 84 96 102 92" fill="none" stroke="#D96A50" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="84" cy="40" r="6.5" fill="#EFE9DA"/>
+  </g>
+  <text x="348" y="382" font-size="132" font-weight="800" letter-spacing="-7" fill="#EFE9DA">pna</text>
+
+  <!-- station board -->
+  <g transform="translate(136,430) rotate(-1)">
+    <rect width="332" height="80" rx="8" fill="#F2B441" filter="url(#phoneShadow)"/>
+    <text x="28" y="35" font-size="24" font-weight="800" letter-spacing="4" fill="#191204">APNA JUNCTION</text>
+    <text x="28" y="64" font-size="19" fill="#191204" opacity="0.85">अपना जंक्शन</text>
+  </g>
+
+  <text x="134" y="596" font-size="52" font-weight="700" fill="#EFE9DA" letter-spacing="-1">One app for the whole squad.</text>
+  <text x="134" y="650" font-size="26" fill="#9BA894">Money netted &#183; live location &#183; one camera roll &#183;</text>
+  <text x="134" y="686" font-size="26" fill="#9BA894">plans that actually happen.</text>
+
+  <!-- feature chips -->
+  <g font-size="22" fill="#EFE9DA">
+    <rect x="132" y="726" width="200" height="54" rx="27" fill="none" stroke="#EFE9DA" stroke-opacity="0.22"/>
+    <text x="232" y="761" text-anchor="middle">Split &#38; settle</text>
+    <rect x="350" y="726" width="200" height="54" rx="27" fill="none" stroke="#EFE9DA" stroke-opacity="0.22"/>
+    <text x="450" y="761" text-anchor="middle">Live location</text>
+    <rect x="568" y="726" width="178" height="54" rx="27" fill="none" stroke="#EFE9DA" stroke-opacity="0.22"/>
+    <text x="657" y="761" text-anchor="middle">Memories</text>
+    <rect x="132" y="796" width="170" height="54" rx="27" fill="#F2B441"/>
+    <text x="217" y="831" text-anchor="middle" fill="#231A05" font-weight="600">Chalein?</text>
+    <text x="330" y="831" font-size="20" fill="#66735F" font-family="Consolas, monospace">ANDROID &#183; FREE FOR FRIEND GROUPS</text>
+  </g>
+
+  <text x="134" y="930" font-size="18" letter-spacing="2" fill="#66735F" font-family="Consolas, monospace">REACT NATIVE &#183; EXPO SDK 56 &#183; FIREBASE ASIA-SOUTH1 &#183; MAPLIBRE &#183; TYPESCRIPT STRICT</text>
+
+  <!-- ============ RIGHT: three phones ============ -->
+
+  <!-- PHONE 2 (left, tilted): LIVE MAP -->
+  <g transform="translate(1020,220) rotate(-6)" filter="url(#phoneShadow)">
+    <rect x="-12" y="-12" width="324" height="644" rx="44" fill="#0A0F0C" stroke="#2A362E" stroke-width="2"/>
+    <g clip-path="url(#scr1)">
+      <rect width="300" height="620" fill="url(#mapNight)"/>
+      <!-- roads -->
+      <path d="M-20 140 Q 120 180 320 90" stroke="#22322A" stroke-width="10" fill="none"/>
+      <path d="M60 -20 Q 90 300 30 640" stroke="#22322A" stroke-width="8" fill="none"/>
+      <path d="M-20 420 Q 160 380 320 470" stroke="#22322A" stroke-width="12" fill="none"/>
+      <path d="M200 -20 Q 230 250 300 400" stroke="#1D2B24" stroke-width="6" fill="none"/>
+      <!-- dhaga route -->
+      <path d="M70 480 Q 130 380 190 300 T 235 150" stroke="#D96A50" stroke-width="3.5" stroke-dasharray="8 7" fill="none"/>
+      <!-- friend pins -->
+      <circle cx="70" cy="480" r="12" fill="#7FBF8E" filter="url(#glow)"/>
+      <circle cx="70" cy="480" r="5" fill="#0A0F0C"/>
+      <circle cx="235" cy="150" r="12" fill="#D96A50" filter="url(#glow)"/>
+      <circle cx="235" cy="150" r="5" fill="#0A0F0C"/>
+      <circle cx="180" cy="330" r="9" fill="#F2B441"/>
+      <circle cx="180" cy="330" r="4" fill="#0A0F0C"/>
+      <!-- header pill -->
+      <rect x="20" y="24" width="260" height="44" rx="22" fill="#0F1713" opacity="0.92"/>
+      <text x="40" y="52" font-size="17" fill="#EFE9DA">Kahan Ho &#183; <tspan fill="#7FBF8E">3 nearby</tspan></text>
+      <!-- bottom sheet -->
+      <rect x="14" y="500" width="272" height="120" rx="18" fill="#15201A"/>
+      <rect x="126" y="512" width="48" height="5" rx="2.5" fill="#66735F"/>
+      <circle cx="46" cy="556" r="14" fill="#D96A50"/>
+      <text x="46" y="562" font-size="14" text-anchor="middle" fill="#0A0F0C" font-weight="700">R</text>
+      <text x="72" y="552" font-size="16" fill="#EFE9DA">Rohan &#183; Anjuna Shack</text>
+      <text x="72" y="574" font-size="13" fill="#9BA894">850 m away &#183; pin expires 3h 12m</text>
+    </g>
+  </g>
+
+  <!-- PHONE 3 (right, tilted): SETTLE / UPI -->
+  <g transform="translate(1660,250) rotate(6)" filter="url(#phoneShadow)">
+    <rect x="-12" y="-12" width="324" height="644" rx="44" fill="#0A0F0C" stroke="#2A362E" stroke-width="2"/>
+    <g clip-path="url(#scr3)">
+      <rect width="300" height="620" fill="#0F1713"/>
+      <text x="24" y="52" font-size="21" font-weight="700" fill="#EFE9DA">Settle up</text>
+      <text x="24" y="78" font-size="14" fill="#9BA894">Goa Squad &#183; netted to 2 transfers</text>
+      <!-- transfer card 1 -->
+      <rect x="18" y="102" width="264" height="108" rx="14" fill="#15201A" stroke="#2A362E"/>
+      <circle cx="52" cy="140" r="16" fill="#F2B441"/><text x="52" y="146" font-size="15" text-anchor="middle" fill="#231A05" font-weight="700">Y</text>
+      <text x="80" y="136" font-size="15" fill="#EFE9DA">You &#8594; Priya</text>
+      <text x="80" y="158" font-size="13" fill="#9BA894">clears shack tab + tickets</text>
+      <text x="262" y="146" font-size="19" text-anchor="end" fill="#EFE9DA" font-family="Consolas, monospace">&#8377;2,880</text>
+      <rect x="34" y="176" width="232" height="1" fill="#2A362E"/>
+      <text x="150" y="199" font-size="13" text-anchor="middle" fill="#7FBF8E">Pay via GPay &#183; PhonePe &#183; Paytm</text>
+      <!-- transfer card 2 -->
+      <rect x="18" y="226" width="264" height="108" rx="14" fill="#15201A" stroke="#2A362E"/>
+      <circle cx="52" cy="264" r="16" fill="#D96A50"/><text x="52" y="270" font-size="15" text-anchor="middle" fill="#0A0F0C" font-weight="700">R</text>
+      <text x="80" y="260" font-size="15" fill="#EFE9DA">Rohan &#8594; Aisha</text>
+      <text x="80" y="282" font-size="13" fill="#9BA894">clears fuel + groceries</text>
+      <text x="262" y="270" font-size="19" text-anchor="end" fill="#EFE9DA" font-family="Consolas, monospace">&#8377;1,240</text>
+      <rect x="34" y="300" width="232" height="1" fill="#2A362E"/>
+      <text x="150" y="323" font-size="13" text-anchor="middle" fill="#7FBF8E">UPI opens with exact amount</text>
+      <!-- stamp -->
+      <g transform="translate(70,380) rotate(-7)">
+        <rect width="160" height="48" rx="7" fill="none" stroke="#7FBF8E" stroke-width="3"/>
+        <text x="80" y="31" font-size="17" text-anchor="middle" letter-spacing="2" fill="#7FBF8E" font-family="Consolas, monospace">SAB BARABAR</text>
+      </g>
+      <text x="150" y="470" font-size="13" text-anchor="middle" fill="#66735F">12 cross-debts &#8594; 2 payments</text>
+      <!-- CTA -->
+      <rect x="18" y="540" width="264" height="56" rx="28" fill="#F2B441"/>
+      <text x="150" y="575" font-size="17" text-anchor="middle" fill="#231A05" font-weight="700">Settle all &#183; 2 UPI taps</text>
+    </g>
+  </g>
+
+  <!-- PHONE 1 (center, front): GROUP HOME / POTLI -->
+  <g transform="translate(1340,160)" filter="url(#phoneShadow)">
+    <rect x="-14" y="-14" width="328" height="648" rx="46" fill="#0A0F0C" stroke="#3A463E" stroke-width="2.5"/>
+    <g clip-path="url(#scr2)">
+      <rect width="300" height="620" fill="#0F1713"/>
+      <!-- status bar + notch -->
+      <rect x="110" y="10" width="80" height="22" rx="11" fill="#0A0F0C"/>
+      <!-- header -->
+      <text x="24" y="70" font-size="22" font-weight="700" fill="#EFE9DA">Goa Squad</text>
+      <text x="24" y="94" font-size="14" fill="#9BA894">4 friends &#183; Day 3 of 6</text>
+      <circle cx="232" cy="72" r="13" fill="#F2B441"/><circle cx="256" cy="72" r="13" fill="#7FBF8E"/><circle cx="244" cy="88" r="13" fill="#D96A50"/>
+      <!-- you are owed card -->
+      <rect x="18" y="116" width="264" height="96" rx="14" fill="#15201A" stroke="#2A362E"/>
+      <rect x="30" y="132" width="5" height="64" rx="2.5" fill="#7FBF8E"/>
+      <text x="50" y="152" font-size="13" letter-spacing="1" fill="#9BA894">YOU ARE OWED</text>
+      <text x="50" y="192" font-size="30" fill="#7FBF8E" font-family="Consolas, monospace">&#8377;2,340</text>
+      <!-- potli -->
+      <text x="24" y="248" font-size="13" letter-spacing="2" fill="#66735F">POTLI &#183; TRIP BUDGET</text>
+      <rect x="18" y="260" width="264" height="12" rx="6" fill="#1B2A21"/>
+      <rect x="18" y="260" width="212" height="12" rx="6" fill="url(#potli)"/>
+      <text x="18" y="296" font-size="13" fill="#9BA894">&#8377;48,320 of &#8377;60,000 &#183; <tspan fill="#7FBF8E">&#8377;11,680 left</tspan></text>
+      <!-- activity rows -->
+      <rect x="18" y="318" width="264" height="62" rx="12" fill="#15201A"/>
+      <circle cx="46" cy="349" r="14" fill="#1B2A21" stroke="#F2B441"/><text x="46" y="354" font-size="13" text-anchor="middle" fill="#F2B441">&#127860;</text>
+      <text x="70" y="344" font-size="15" fill="#EFE9DA">Rooftop dinner</text>
+      <text x="70" y="364" font-size="12" fill="#9BA894">Priya paid &#183; split 4 ways</text>
+      <text x="266" y="352" font-size="15" text-anchor="end" fill="#EFE9DA" font-family="Consolas, monospace">&#8377;2,400</text>
+      <rect x="18" y="390" width="264" height="62" rx="12" fill="#15201A"/>
+      <circle cx="46" cy="421" r="14" fill="#1B2A21" stroke="#7FBF8E"/><text x="46" y="426" font-size="13" text-anchor="middle" fill="#7FBF8E">&#9981;</text>
+      <text x="70" y="416" font-size="15" fill="#EFE9DA">Scooter fuel</text>
+      <text x="70" y="436" font-size="12" fill="#9BA894">Rohan paid &#183; split 4 ways</text>
+      <text x="266" y="424" font-size="15" text-anchor="end" fill="#EFE9DA" font-family="Consolas, monospace">&#8377;800</text>
+      <rect x="18" y="462" width="264" height="62" rx="12" fill="#15201A"/>
+      <circle cx="46" cy="493" r="14" fill="#1B2A21" stroke="#D96A50"/><text x="46" y="498" font-size="13" text-anchor="middle" fill="#D96A50">&#128247;</text>
+      <text x="70" y="488" font-size="15" fill="#EFE9DA">38 photos added</text>
+      <text x="70" y="508" font-size="12" fill="#9BA894">Taweez &#183; Aisha + 2 phones</text>
+      <!-- FAB -->
+      <circle cx="248" cy="566" r="30" fill="#F2B441" filter="url(#glow)"/>
+      <text x="248" y="577" font-size="30" text-anchor="middle" fill="#231A05">+</text>
+      <!-- tab bar hint -->
+      <rect x="18" y="596" width="200" height="10" rx="5" fill="#15201A"/>
+    </g>
+  </g>
+
+  <!-- ============ BOTTOM: track ============ -->
+  <line x1="0" y1="964" x2="2000" y2="964" stroke="#EFE9DA" stroke-opacity="0.2" stroke-width="3"/>
+  <line x1="0" y1="984" x2="2000" y2="984" stroke="#EFE9DA" stroke-opacity="0.2" stroke-width="3"/>
+  <g stroke="#EFE9DA" stroke-opacity="0.1" stroke-width="4">
+    <line x1="30" y1="958" x2="30" y2="990"/><line x1="110" y1="958" x2="110" y2="990"/><line x1="190" y1="958" x2="190" y2="990"/>
+    <line x1="270" y1="958" x2="270" y2="990"/><line x1="350" y1="958" x2="350" y2="990"/><line x1="430" y1="958" x2="430" y2="990"/>
+    <line x1="510" y1="958" x2="510" y2="990"/><line x1="590" y1="958" x2="590" y2="990"/><line x1="670" y1="958" x2="670" y2="990"/>
+    <line x1="750" y1="958" x2="750" y2="990"/><line x1="830" y1="958" x2="830" y2="990"/><line x1="910" y1="958" x2="910" y2="990"/>
+    <line x1="990" y1="958" x2="990" y2="990"/><line x1="1070" y1="958" x2="1070" y2="990"/><line x1="1150" y1="958" x2="1150" y2="990"/>
+    <line x1="1230" y1="958" x2="1230" y2="990"/><line x1="1310" y1="958" x2="1310" y2="990"/><line x1="1390" y1="958" x2="1390" y2="990"/>
+    <line x1="1470" y1="958" x2="1470" y2="990"/><line x1="1550" y1="958" x2="1550" y2="990"/><line x1="1630" y1="958" x2="1630" y2="990"/>
+    <line x1="1710" y1="958" x2="1710" y2="990"/><line x1="1790" y1="958" x2="1790" y2="990"/><line x1="1870" y1="958" x2="1870" y2="990"/>
+    <line x1="1950" y1="958" x2="1950" y2="990"/>
+  </g>
+  <text x="30" y="945" font-size="15" letter-spacing="3" fill="#66735F" font-family="Consolas, monospace">KM 0 &#183; APNA JUNCTION</text>
+  <text x="1970" y="945" font-size="15" letter-spacing="3" text-anchor="end" fill="#66735F" font-family="Consolas, monospace">KM &#8734; &#183; WHEREVER SQUAD GOES</text>
+</svg>
