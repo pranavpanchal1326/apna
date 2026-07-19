@@ -10,110 +10,121 @@
 <title>Apna Junction — one trip, one coach, everyone's in</title>
 <style>
   /* ============================================================
-   APNA JUNCTION — night-train system
-   night coach-green ground · marigold signal accent ·
-   vermilion kept ONLY for the dhaga mark · chalk cream text
+   APNA JUNCTION — TRUCK-ART system  (bh​ai, horn OK please)
+   deep indigo night ground · marigold + rani-pink + emerald
+   painted banners · scalloped toran borders · mirror-work
    ============================================================ */
   :root {
-    --night: #0F1713;
-    --coach: #15201A;
-    --panel: #1B2A21;
-    --signal: #F2B441;
-    --on-signal: #231A05;
-    --lamp: #E8C97E;
-    --mark: #D96A50;
-    /* the dhaga stays madder — logo law */
-    --go: #7FBF8E;
-    --halt: #D96A50;
-    --cream: #EFE9DA;
-    --dim: #9BA894;
-    --faint: #66735F;
-    --hairline: rgba(239, 233, 218, 0.08);
-    --track: rgba(239, 233, 218, 0.22);
-    --board: #F2B441;
-    --board-ink: #191204;
-    --ticket: #F4EDDC;
-    --ticket-ink: #241E10;
-    --ticket-rule: rgba(36, 30, 16, 0.16);
-    --knot: #EFE9DA;
-    --star: rgba(239, 233, 218, 0.5);
+    --night: #10182E;      /* deep indigo lorry-cabin night */
+    --coach: #182545;      /* raised panel */
+    --panel: #1F2E54;      /* card / inset */
+    --signal: #FFB627;     /* marigold — primary paint */
+    --on-signal: #2A1A00;
+    --lamp: #FFD46B;
+    --mark: #FF3D6E;       /* rani pink — the dhaga + hot accent */
+    --rani: #FF3D6E;
+    --emerald: #1FC98E;    /* parrot-green truck stripe */
+    --vermilion: #FF5A2C;  /* sindoor orange-red */
+    --go: #1FC98E;
+    --halt: #FF5A2C;
+    --cream: #FFF3DD;      /* painted off-white text */
+    --dim: #C6B9E0;        /* lilac-tinted dim */
+    --faint: #8C86B8;
+    --hairline: rgba(255, 212, 107, 0.18);
+    --track: rgba(255, 243, 221, 0.28);
+    --board: #FFB627;      /* number-plate marigold */
+    --board-ink: #2A1A00;
+    --ticket: #FFF3DD;
+    --ticket-ink: #241026;
+    --ticket-rule: rgba(36, 16, 38, 0.18);
+    --knot: #FFF3DD;
+    --star: rgba(255, 243, 221, 0.55);
     color-scheme: dark;
   }
 
   @media (prefers-color-scheme:light) {
     :root {
-      --night: #EDE7D4;
-      --coach: #E3DCC5;
-      --panel: #DAD2B7;
-      --signal: #9A6D0C;
-      --on-signal: #FFF6E0;
-      --lamp: #8A6A1F;
-      --mark: #B0402F;
-      --go: #3E6B50;
-      --halt: #B0402F;
-      --cream: #221E12;
-      --dim: #5D5A44;
-      --faint: #8A8568;
-      --hairline: rgba(34, 30, 18, 0.12);
-      --track: rgba(34, 30, 18, 0.3);
-      --board: #F2B441;
-      --board-ink: #191204;
-      --ticket: #FBF6E8;
-      --ticket-ink: #241E10;
-      --ticket-rule: rgba(36, 30, 16, 0.16);
-      --knot: #221E12;
-      --star: rgba(34, 30, 18, 0.0);
+      --night: #FFEFC7;     /* turmeric cream ground */
+      --coach: #FFE3A6;
+      --panel: #FFD98C;
+      --signal: #C4361A;    /* on light ground, vermilion leads */
+      --on-signal: #FFF3DD;
+      --lamp: #B4550C;
+      --mark: #D11F5A;
+      --rani: #D11F5A;
+      --emerald: #0E8F63;
+      --vermilion: #C4361A;
+      --go: #0E8F63;
+      --halt: #C4361A;
+      --cream: #2A1226;
+      --dim: #6B3A5C;
+      --faint: #9A6A44;
+      --hairline: rgba(42, 18, 38, 0.16);
+      --track: rgba(42, 18, 38, 0.32);
+      --board: #FFB627;
+      --board-ink: #2A1A00;
+      --ticket: #FFFAF0;
+      --ticket-ink: #241026;
+      --ticket-rule: rgba(36, 16, 38, 0.18);
+      --knot: #2A1226;
+      --star: rgba(42, 18, 38, 0.0);
       color-scheme: light;
     }
   }
 
   :root[data-theme="dark"] {
-    --night: #0F1713;
-    --coach: #15201A;
-    --panel: #1B2A21;
-    --signal: #F2B441;
-    --on-signal: #231A05;
-    --lamp: #E8C97E;
-    --mark: #D96A50;
-    --go: #7FBF8E;
-    --halt: #D96A50;
-    --cream: #EFE9DA;
-    --dim: #9BA894;
-    --faint: #66735F;
-    --hairline: rgba(239, 233, 218, 0.08);
-    --track: rgba(239, 233, 218, 0.22);
-    --board: #F2B441;
-    --board-ink: #191204;
-    --ticket: #F4EDDC;
-    --ticket-ink: #241E10;
-    --ticket-rule: rgba(36, 30, 16, 0.16);
-    --knot: #EFE9DA;
-    --star: rgba(239, 233, 218, 0.5);
+    --night: #10182E;
+    --coach: #182545;
+    --panel: #1F2E54;
+    --signal: #FFB627;
+    --on-signal: #2A1A00;
+    --lamp: #FFD46B;
+    --mark: #FF3D6E;
+    --rani: #FF3D6E;
+    --emerald: #1FC98E;
+    --vermilion: #FF5A2C;
+    --go: #1FC98E;
+    --halt: #FF5A2C;
+    --cream: #FFF3DD;
+    --dim: #C6B9E0;
+    --faint: #8C86B8;
+    --hairline: rgba(255, 212, 107, 0.18);
+    --track: rgba(255, 243, 221, 0.28);
+    --board: #FFB627;
+    --board-ink: #2A1A00;
+    --ticket: #FFF3DD;
+    --ticket-ink: #241026;
+    --ticket-rule: rgba(36, 16, 38, 0.18);
+    --knot: #FFF3DD;
+    --star: rgba(255, 243, 221, 0.55);
     color-scheme: dark;
   }
 
   :root[data-theme="light"] {
-    --night: #EDE7D4;
-    --coach: #E3DCC5;
-    --panel: #DAD2B7;
-    --signal: #9A6D0C;
-    --on-signal: #FFF6E0;
-    --lamp: #8A6A1F;
-    --mark: #B0402F;
-    --go: #3E6B50;
-    --halt: #B0402F;
-    --cream: #221E12;
-    --dim: #5D5A44;
-    --faint: #8A8568;
-    --hairline: rgba(34, 30, 18, 0.12);
-    --track: rgba(34, 30, 18, 0.3);
-    --board: #F2B441;
-    --board-ink: #191204;
-    --ticket: #FBF6E8;
-    --ticket-ink: #241E10;
-    --ticket-rule: rgba(36, 30, 16, 0.16);
-    --knot: #221E12;
-    --star: rgba(34, 30, 18, 0.0);
+    --night: #FFEFC7;
+    --coach: #FFE3A6;
+    --panel: #FFD98C;
+    --signal: #C4361A;
+    --on-signal: #FFF3DD;
+    --lamp: #B4550C;
+    --mark: #D11F5A;
+    --rani: #D11F5A;
+    --emerald: #0E8F63;
+    --vermilion: #C4361A;
+    --go: #0E8F63;
+    --halt: #C4361A;
+    --cream: #2A1226;
+    --dim: #6B3A5C;
+    --faint: #9A6A44;
+    --hairline: rgba(42, 18, 38, 0.16);
+    --track: rgba(42, 18, 38, 0.32);
+    --board: #FFB627;
+    --board-ink: #2A1A00;
+    --ticket: #FFFAF0;
+    --ticket-ink: #241026;
+    --ticket-rule: rgba(36, 16, 38, 0.18);
+    --knot: #2A1226;
+    --star: rgba(42, 18, 38, 0.0);
     color-scheme: light;
   }
 
@@ -202,9 +213,9 @@
     background: var(--board);
     color: var(--board-ink);
     padding: 12px 22px 13px;
-    border-radius: 4px;
+    border-radius: 6px;
     position: relative;
-    box-shadow: 0 6px 24px -10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 6px 24px -10px rgba(0, 0, 0, 0.5), inset 0 0 0 2px var(--vermilion), inset 0 0 0 4px var(--board);
     transform: rotate(-0.6deg);
   }
 
@@ -261,55 +272,384 @@
     height: 18px;
   }
 
-  /* ---------- AGENCY MOTION SYSTEM ---------- */
-  .tilt-card {
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
-    transform-style: preserve-3d;
+  /* ============================================================
+   TRUCK-ART ORNAMENT SYSTEM
+   ============================================================ */
+
+  /* painted running banner — "HORN OK PLEASE" ribbon */
+  .horn {
     position: relative;
+    background:
+      repeating-linear-gradient(45deg, var(--vermilion) 0 14px, var(--signal) 14px 28px);
+    color: var(--on-signal);
+    text-align: center;
     overflow: hidden;
   }
-  .tilt-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), color-mix(in srgb, var(--signal) 15%, transparent), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    z-index: 10;
+  .horn .horn-inner {
+    background: var(--night);
+    margin: 4px 0;
+    padding: 7px 0;
+    border-top: 2px solid var(--signal);
+    border-bottom: 2px solid var(--rani);
   }
-  .tilt-card:hover::after {
-    opacity: 1;
-  }
-
-  .btn-magnetic {
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s ease, box-shadow 0.2s ease;
+  .horn-track {
+    display: inline-flex;
+    gap: 30px;
+    white-space: nowrap;
+    font-family: "CabinetGrotesk", sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--signal);
+    animation: hornScroll 26s linear infinite;
     will-change: transform;
   }
-
-  @keyframes signalPulse {
-    0%, 100% { box-shadow: 0 0 10px 1px color-mix(in srgb, var(--go) 40%, transparent); transform: scale(1); }
-    50% { box-shadow: 0 0 24px 6px color-mix(in srgb, var(--go) 80%, transparent); transform: scale(1.18); }
-  }
-  .stn.in .sig {
-    animation: signalPulse 3s infinite ease-in-out;
-  }
-
-  @keyframes floatBadge {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
-  }
-  .board {
-    animation: floatBadge 6s ease-in-out infinite;
+  .horn-track span { color: var(--cream); }
+  .horn-track b { color: var(--rani); font-weight: 800; }
+  .horn-track i { color: var(--emerald); font-style: normal; }
+  @keyframes hornScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
   }
 
+  /* toran — hanging garland of marigold + mango leaves */
+  .toran {
+    display: block;
+    width: 100%;
+    height: 34px;
+    color: var(--signal);
+    opacity: 0.92;
+  }
+  .toran .leaf { fill: var(--emerald); }
+  .toran .fl { fill: var(--signal); }
+  .toran .fl2 { fill: var(--vermilion); }
+  .toran .fl3 { fill: var(--rani); }
+  .toran .str { stroke: var(--hairline); }
+
+  /* mirror-work dot row (shisha) */
+  .shisha {
+    height: 14px;
+    background-image: radial-gradient(circle at 7px 50%, var(--signal) 2.6px, transparent 3.2px),
+                      radial-gradient(circle at 7px 50%, transparent 4px, var(--rani) 4px 5px, transparent 5.4px);
+    background-size: 20px 14px;
+    background-repeat: repeat-x;
+    opacity: 0.75;
+  }
+
+  /* scalloped painted frame — the truck-art card border */
+  .scallop {
+    position: relative;
+    border: 2px solid var(--signal);
+    border-radius: 14px;
+    background: var(--coach);
+  }
+  .scallop::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1.5px dashed var(--rani);
+    border-radius: 9px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  /* section header ornaments: little painted diamonds */
+  .sec-head { position: relative; }
+  .sec-head::before, .sec-head::after {
+    content: "❖";
+    color: var(--rani);
+    font-size: 18px;
+    align-self: center;
+    opacity: 0.8;
+    margin: 0 18px;
+  }
+
+  /* ---------- restrained motion system ---------- */
   .sv {
     transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
   }
   .sv:hover {
     transform: translateY(-4px);
     background: color-mix(in srgb, var(--coach) 85%, var(--panel));
+  }
+
+  /* ---------- HERO PHONE — the app, alive ---------- */
+  .hero-visual {
+    position: relative;
+    justify-self: end;
+    align-self: center;
+  }
+
+  .phone {
+    position: relative;
+    width: clamp(250px, 24vw, 305px);
+    aspect-ratio: 305 / 620;
+    background: #0B100D;
+    border: 2px solid #3A463E;
+    border-radius: 44px;
+    padding: 10px;
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.6);
+    animation: phoneFloat 7s ease-in-out infinite;
+    will-change: transform;
+    z-index: 2;
+  }
+
+  @keyframes phoneFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+
+  .phone .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #0F1713;
+    border-radius: 34px;
+    overflow: hidden;
+    color: #EFE9DA;
+  }
+
+  /* screen sheen sweep */
+  .phone .screen::after {
+    content: "";
+    position: absolute;
+    inset: -60%;
+    background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.05) 50%, transparent 58%);
+    transform: translateX(-70%);
+    animation: sheen 7s ease-in-out infinite 2s;
+    pointer-events: none;
+  }
+
+  @keyframes sheen {
+    0%, 60% { transform: translateX(-70%); }
+    80%, 100% { transform: translateX(70%); }
+  }
+
+  .phone .notch {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 74px;
+    height: 20px;
+    border-radius: 9999px;
+    background: #0B100D;
+    z-index: 3;
+  }
+
+  .ph-pad { padding: 40px 16px 0; }
+
+  .ph-title {
+    font-family: "CabinetGrotesk", sans-serif;
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+
+  .ph-sub { font-size: 10.5px; color: #9BA894; margin-top: 2px; }
+
+  .ph-avatars {
+    position: absolute;
+    top: 38px;
+    right: 16px;
+    display: flex;
+  }
+
+  .ph-avatars span {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #0A0F0C;
+    margin-left: -6px;
+    border: 2px solid #0F1713;
+  }
+
+  .ph-card {
+    margin: 12px 16px 0;
+    background: #15201A;
+    border: 1px solid #2A362E;
+    border-radius: 14px;
+    padding: 12px 14px;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .6s cubic-bezier(0.22, 0.9, 0.36, 1), transform .6s cubic-bezier(0.22, 0.9, 0.36, 1);
+  }
+
+  .phone.in .ph-card { opacity: 1; transform: none; }
+  .phone.in .ph-card:nth-of-type(2) { transition-delay: .12s; }
+  .phone.in .ph-card:nth-of-type(3) { transition-delay: .24s; }
+  .phone.in .ph-card:nth-of-type(4) { transition-delay: .36s; }
+  .phone.in .ph-card:nth-of-type(5) { transition-delay: .48s; }
+
+  .ph-owed-label { font-size: 8.5px; letter-spacing: 0.22em; color: #9BA894; }
+
+  .ph-owed-amt {
+    font-family: "SplineSansMono", monospace;
+    font-size: 24px;
+    color: #7FBF8E;
+    margin-top: 2px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .ph-owed-amt .settle {
+    font-family: "GeneralSans", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: #231A05;
+    background: #F2B441;
+    border-radius: 9999px;
+    padding: 4px 11px;
+    margin-left: auto;
+  }
+
+  .ph-potli-track {
+    height: 7px;
+    background: #1B2A21;
+    border-radius: 9999px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .ph-potli-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #F2B441, #7FBF8E);
+    border-radius: 9999px;
+    transition: width 1.4s cubic-bezier(0.22, 0.9, 0.36, 1) .5s;
+  }
+
+  .phone.in .ph-potli-fill { width: 80%; }
+
+  .ph-map {
+    position: relative;
+    height: 92px;
+    border-radius: 12px;
+    background: #12222E;
+    overflow: hidden;
+    margin-top: 2px;
+  }
+
+  .ph-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .ph-route {
+    stroke: #D96A50;
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+    fill: none;
+    animation: routeFlow 2.6s linear infinite;
+  }
+
+  @keyframes routeFlow {
+    to { stroke-dashoffset: -22; }
+  }
+
+  .ph-pin {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+  }
+
+  .ph-pin::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 9999px;
+    background: inherit;
+    opacity: 0.35;
+    animation: pinPulse 2.4s ease-out infinite;
+  }
+
+  @keyframes pinPulse {
+    0% { transform: scale(0.5); opacity: 0.5; }
+    80%, 100% { transform: scale(2); opacity: 0; }
+  }
+
+  .ph-row { display: flex; align-items: center; gap: 10px; }
+
+  .ph-ico {
+    width: 26px;
+    height: 26px;
+    border-radius: 9999px;
+    flex: none;
+    background: #1B2A21;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+  }
+
+  .ph-row .t1 { font-size: 11.5px; font-weight: 500; }
+  .ph-row .t2 { font-size: 9.5px; color: #9BA894; margin-top: 1px; }
+
+  .ph-row .amt-r {
+    margin-left: auto;
+    font-family: "SplineSansMono", monospace;
+    font-size: 11.5px;
+  }
+
+  .ph-fab {
+    position: absolute;
+    right: 16px;
+    bottom: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    background: #F2B441;
+    color: #231A05;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: 600;
+    box-shadow: 0 0 0 0 rgba(242, 180, 65, 0.5);
+    animation: fabGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes fabGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(242, 180, 65, 0.45); }
+    50% { box-shadow: 0 0 22px 4px rgba(242, 180, 65, 0.35); }
+  }
+
+  .ph-home {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 74px;
+    height: 4px;
+    border-radius: 9999px;
+    background: #3A463E;
+  }
+
+  /* departures board tucks behind the phone on wide screens */
+  .hero-visual .depart {
+    position: absolute;
+    right: calc(100% - 64px);
+    bottom: 26px;
+    transform: rotate(-4deg) scale(0.94);
+    z-index: 1;
+    box-shadow: 0 24px 44px -20px rgba(0, 0, 0, 0.6);
+  }
+
+  @media (max-width:940px) {
+    .hero-visual {
+      justify-self: center;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .hero-visual .depart {
+      position: static;
+      transform: none;
+    }
   }
 
   /* ---------- top bar ---------- */
@@ -509,10 +849,11 @@
     justify-self: end;
     align-self: start;
     background: var(--coach);
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
+    border: 2px solid var(--signal);
+    border-radius: 12px;
     padding: 20px 22px;
     min-width: 270px;
+    box-shadow: inset 0 0 0 4px var(--coach), inset 0 0 0 5.5px color-mix(in srgb, var(--rani) 55%, transparent);
   }
 
   .depart .caps {
@@ -998,16 +1339,28 @@
   .souvenir {
     margin-top: 56px;
     background: var(--coach);
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
+    border: 2px solid var(--signal);
+    border-radius: 12px;
     overflow: hidden;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    box-shadow: inset 0 0 0 4px var(--coach), inset 0 0 0 5.5px color-mix(in srgb, var(--rani) 45%, transparent);
+  }
+
+  .mirror-divide {
+    height: 14px;
+    margin: 8px 0 -6px;
+    background-image: radial-gradient(circle at 10px 50%, var(--signal) 3px, transparent 3.6px),
+                      radial-gradient(circle at 20px 50%, var(--rani) 2.4px, transparent 3px);
+    background-size: 40px 14px, 40px 14px;
+    background-position: 0 0, 0 0;
+    background-repeat: repeat-x;
+    opacity: 0.7;
   }
 
   .sv {
     padding: 36px 26px;
-    border-right: 1px dashed var(--hairline);
+    border-right: 2px dashed color-mix(in srgb, var(--signal) 45%, transparent);
     position: relative;
   }
 
@@ -1232,30 +1585,46 @@
       <a href="#line">Modules</a>
       <a href="#wrapsec">Trip Wrap</a>
     </nav>
-    <button class="toggle" id="audioToggle" aria-label="Toggle train audio" title="Play Train Horn (Web Audio)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-      </svg>
-    </button>
     <button class="toggle" id="themeToggle" aria-label="Switch theme" title="Switch theme">
       <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
     </button>
-    <a class="btn btn-primary" href="#get">Start a Group</a>
+    <a class="btn btn-primary" href="https://github.com/pranavpanchal1326/apna" target="_blank" rel="noopener">Get the App</a>
   </div>
 </header>
 
-<!-- HUD SPEEDOMETER -->
-<div id="speedHud" class="mono" style="position: fixed; bottom: 20px; left: 20px; z-index: 90; padding: 6px 14px; background: rgba(15,23,19,0.85); backdrop-filter: blur(12px); border: 1px solid var(--hairline); border-radius: 9999px; font-size: 11px; letter-spacing: 0.05em; pointer-events: none; display: flex; align-items: center; gap: 8px;">
-  <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--go); box-shadow: 0 0 8px var(--go);"></span>
-  <span>SPEED: <b id="speedVal" style="color: var(--signal);">0</b> KM/H</span>
+<span id="top"></span>
+
+<!-- ============================ HORN BANNER ============================ -->
+<div class="horn" aria-hidden="true">
+  <div class="horn-inner">
+    <div class="horn-track" id="hornTrack">
+      <span>HORN <b>OK</b> PLEASE</span> ❖ <span>APNA JUNCTION</span> ❖ <span><i>देखो मगर प्यार से</i></span> ❖ <span>SPLIT · SETTLE · SAFAR</span> ❖ <span>HORN <b>OK</b> PLEASE</span> ❖ <span>बुरी नज़र वाले तेरा मुँह काला</span> ❖ <span>ONE APP · <i>APNA</i> SQUAD</span> ❖
+      <span>HORN <b>OK</b> PLEASE</span> ❖ <span>APNA JUNCTION</span> ❖ <span><i>देखो मगर प्यार से</i></span> ❖ <span>SPLIT · SETTLE · SAFAR</span> ❖ <span>HORN <b>OK</b> PLEASE</span> ❖ <span>बुरी नज़र वाले तेरा मुँह काला</span> ❖ <span>ONE APP · <i>APNA</i> SQUAD</span> ❖
+    </div>
+  </div>
 </div>
 
-<!-- DHAGA THREAD CANVAS -->
-<canvas id="dhagaCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 80;"></canvas>
-<span id="top"></span>
+<!-- ============================ TORAN GARLAND ============================ -->
+<svg class="toran" width="100%" height="34" aria-hidden="true">
+  <defs>
+    <pattern id="garland" width="44" height="34" patternUnits="userSpaceOnUse">
+      <path d="M0 4 Q 22 13 44 4" fill="none" class="str" stroke-width="1.5" />
+      <path d="M22 10 q -9 4 -7 15 q 9 -2 7 -15" class="leaf" />
+      <path d="M22 10 q 9 4 7 15 q -9 -2 -7 -15" class="leaf" />
+      <circle cx="22" cy="20" r="6.5" class="fl" />
+      <circle cx="22" cy="20" r="3.2" class="fl2" />
+      <circle cx="22" cy="31" r="2" class="fl3" />
+    </pattern>
+    <pattern id="garland2" width="44" height="34" patternUnits="userSpaceOnUse" patternTransform="translate(22 0)">
+      <circle cx="22" cy="20" r="6.5" class="fl3" />
+      <circle cx="22" cy="20" r="3.2" class="fl" />
+      <circle cx="22" cy="31" r="2" class="fl2" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="34" fill="url(#garland)" />
+  <rect width="100%" height="34" fill="url(#garland2)" />
+</svg>
 
 <!-- ============================ HERO ============================ -->
 <section class="hero">
@@ -1268,18 +1637,73 @@
       <h1 class="hero-title display">One app for the squad that asks <span class="y">&ldquo;kahan hai tu?&rdquo;</span></h1>
       <p class="hero-lede">WhatsApp has the chat. Splitwise has the math. Google Photos has the memories. <b>Nobody stitched them together for how Indian friend groups actually live. Apna does.</b></p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="#get">Start a Group &mdash; Free</a>
+        <a class="btn btn-primary btn-lg" href="https://github.com/pranavpanchal1326/apna" target="_blank" rel="noopener">Get the App &mdash; Free</a>
         <a class="btn btn-ghost btn-lg" href="#chart">See How It Works</a>
       </div>
     </div>
 
-    <aside class="depart" aria-label="active trips">
+    <div class="hero-visual">
+      <div class="phone" id="heroPhone" aria-label="apna app preview">
+        <span class="notch" aria-hidden="true"></span>
+        <div class="screen">
+          <div class="ph-pad">
+            <div class="ph-title">Goa Squad</div>
+            <div class="ph-sub">4 friends &middot; Day 3 of 6 &middot; Anjuna</div>
+            <div class="ph-avatars" aria-hidden="true">
+              <span style="background:#F2B441">P</span>
+              <span style="background:#7FBF8E">A</span>
+              <span style="background:#D96A50">R</span>
+            </div>
+          </div>
+          <div class="ph-card">
+            <div class="ph-owed-label">YOU ARE OWED</div>
+            <div class="ph-owed-amt">+&#8377;2,340 <span class="settle">Settle</span></div>
+          </div>
+          <div class="ph-card">
+            <div class="ph-owed-label">POTLI &middot; TRIP BUDGET</div>
+            <div class="ph-potli-track"><div class="ph-potli-fill"></div></div>
+            <div class="ph-sub" style="margin-top:6px">&#8377;48,320 of &#8377;60,000 &middot; <span style="color:#7FBF8E">&#8377;11,680 left</span></div>
+          </div>
+          <div class="ph-card" style="padding:8px">
+            <div class="ph-map" aria-hidden="true">
+              <svg viewBox="0 0 260 92" preserveAspectRatio="none">
+                <path d="M-8 58 Q 70 74 150 42 T 270 34" stroke="#22322A" stroke-width="7" fill="none"/>
+                <path d="M40 100 Q 70 48 130 44" stroke="#1D2B24" stroke-width="4" fill="none"/>
+                <path class="ph-route" d="M38 70 Q 100 58 150 42 T 226 22"/>
+              </svg>
+              <span class="ph-pin" style="left:33px;top:65px;background:#7FBF8E"></span>
+              <span class="ph-pin" style="left:145px;top:37px;background:#F2B441"></span>
+              <span class="ph-pin" style="left:220px;top:17px;background:#D96A50"></span>
+              <span class="mono" style="position:absolute;left:8px;top:7px;font-size:9px;background:rgba(15,23,19,.9);border-radius:9999px;padding:3px 9px;">Kahan Ho &middot; <span style="color:#7FBF8E">3 live</span></span>
+            </div>
+          </div>
+          <div class="ph-card">
+            <div class="ph-row">
+              <span class="ph-ico" style="border:1px solid #F2B441;color:#F2B441">&#9832;</span>
+              <span><span class="t1">Rooftop dinner</span><br><span class="t2">Priya paid &middot; split 4 ways</span></span>
+              <span class="amt-r">&#8377;2,400</span>
+            </div>
+          </div>
+          <div class="ph-card">
+            <div class="ph-row">
+              <span class="ph-ico" style="border:1px solid #D96A50;color:#D96A50">&#9737;</span>
+              <span><span class="t1">38 photos &#8594; Taweez</span><br><span class="t2">from 3 phones &middot; auto-albumed</span></span>
+              <span class="amt-r" style="color:#7FBF8E">NEW</span>
+            </div>
+          </div>
+          <span class="ph-fab" aria-hidden="true">+</span>
+          <span class="ph-home" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <aside class="depart" aria-label="active trips">
       <span class="caps">Squad Departures &middot; Tonight</span>
       <div class="drow"><span class="t mono">21:40</span><span class="d">Goa Trip &mdash; 4 friends</span><span class="s go">Boarding</span></div>
       <div class="drow"><span class="t mono">22:15</span><span class="d">Jaipur &mdash; Day 2 Fort</span><span class="s">En route</span></div>
       <div class="drow"><span class="t mono">23:05</span><span class="d">Sunday Hike &mdash; 5 going</span><span class="s">Confirmed</span></div>
       <div class="drow"><span class="t mono">--:--</span><span class="d">Your Trip</span><span class="s go">Now</span></div>
-    </aside>
+      </aside>
+    </div>
   </div>
 
   <!-- full-bleed track; the train rides your scroll -->
@@ -1493,7 +1917,7 @@
     <h2 class="display"><span class="y">Chalein?</span></h2>
     <p>Create your squad group in 10 seconds, share a 6-character invite code, and bring your people aboard. Free forever for friend groups.</p>
     <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" href="#top">Create Your Squad Group</a>
+      <a class="btn btn-primary btn-lg" href="https://github.com/pranavpanchal1326/apna" target="_blank" rel="noopener">Get the App on GitHub</a>
       <a class="btn btn-ghost btn-lg" href="#top">Back to Top</a>
     </div>
   </div>
@@ -1648,9 +2072,39 @@
   if (reduce) {
     document.querySelectorAll('.stn').forEach(e => e.classList.add('in'));
     const t = document.getElementById('ticket'); if (t) t.classList.add('in');
+    const hp = document.getElementById('heroPhone'); if (hp) hp.classList.add('in');
   } else {
     observe('.stn', el => el.classList.add('in'), 0.35);
     observe('#ticket', el => el.classList.add('in'), 0.45);
+    observe('#heroPhone', el => el.classList.add('in'), 0.3);
+  }
+
+  /* ---------- HERO PHONE: parallax + pointer tilt ---------- */
+  const heroPhone = document.getElementById('heroPhone');
+  const heroVisual = document.querySelector('.hero-visual');
+  if (heroPhone && heroVisual && !reduce) {
+    const phoneReveal = () => {
+      const r = heroPhone.getBoundingClientRect();
+      if (r.top < innerHeight * 0.85 && r.bottom > 0) heroPhone.classList.add('in');
+    };
+    phoneReveal();
+
+    addEventListener('scroll', () => {
+      heroVisual.style.transform = `translateY(${Math.min(scrollY, 900) * -0.06}px)`;
+      if (!heroPhone.classList.contains('in')) phoneReveal();
+    }, { passive: true });
+
+    heroPhone.addEventListener('mousemove', e => {
+      const r = heroPhone.getBoundingClientRect();
+      const rx = ((e.clientY - r.top) / r.height - 0.5) * -3.5;
+      const ry = ((e.clientX - r.left) / r.width - 0.5) * 3.5;
+      heroPhone.style.animationPlayState = 'paused';
+      heroPhone.style.transform = `perspective(1100px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    });
+    heroPhone.addEventListener('mouseleave', () => {
+      heroPhone.style.transform = '';
+      heroPhone.style.animationPlayState = 'running';
+    });
   }
 
   /* Animated Number Count-Up for Souvenirs & Balances */
@@ -1686,43 +2140,6 @@
     green.animate([{ opacity: 0.25 }, { opacity: 0.25 }, { opacity: 1 }], { duration: 1200, fill: 'forwards' });
     green.animate([{ filter: 'drop-shadow(0 0 0px transparent)' }, { filter: 'drop-shadow(0 0 10px ' + cv('--go') + ')' }], { duration: 600, delay: 900, fill: 'forwards' });
   }, 0.5);
-
-  /* ---------- AGENCY INTERACTION: 3D TILT & MAGNETIC BUTTONS ---------- */
-  if (!reduce) {
-    // Attach 3D tilt class to key cards
-    const tiltTargets = document.querySelectorAll('.ticket, .depart, .sv, .stn .sbody, .panel');
-    tiltTargets.forEach(card => card.classList.add('tilt-card'));
-
-    tiltTargets.forEach(card => {
-      card.addEventListener('mousemove', e => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left, y = e.clientY - rect.top;
-        const cx = rect.width / 2, cy = rect.height / 2;
-        const rx = ((y - cy) / cy) * -6; // max 6deg
-        const ry = ((x - cx) / cx) * 6;  // max 6deg
-        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`;
-        card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
-        card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
-      });
-    });
-
-    // Magnetic buttons
-    const magneticBtns = document.querySelectorAll('.btn-primary, .btn-ghost, .toggle');
-    magneticBtns.forEach(btn => {
-      btn.addEventListener('mousemove', e => {
-        const rect = btn.getBoundingClientRect();
-        const dx = e.clientX - (rect.left + rect.width / 2);
-        const dy = e.clientY - (rect.top + rect.height / 2);
-        btn.style.transform = `translate(${dx * 0.18}px, ${dy * 0.18}px)`;
-      });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = 'translate(0px, 0px)';
-      });
-    });
-  }
 
   /* ---------- INTERACTIVE DEMO: LIVE EXPENSE NETTING SIMULATOR ---------- */
   const baseBalances = { Priya: 3180, Rohan: -1240, Aisha: 940, You: -2880 };
@@ -1816,127 +2233,6 @@
     });
   }
 
-  /* ---------- UNFORGETTABLE DETAIL 1: WEB AUDIO TRAIN HORN SYNTHESIZER ---------- */
-  let audioCtx = null;
-  function playTrainHorn() {
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-
-      const freqs = [370, 466, 554]; // F# - A# - C# chord
-      freqs.forEach(f => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-        
-        // Lowpass filter for warm analog tone
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(1400, audioCtx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + 1.25);
-      });
-    } catch (e) {
-      console.log('Audio not supported', e);
-    }
-  }
-
-  const audioBtn = document.getElementById('audioToggle');
-  if (audioBtn) {
-    audioBtn.addEventListener('click', () => {
-      playTrainHorn();
-      audioBtn.style.transform = 'scale(1.2) rotate(15deg)';
-      setTimeout(() => { audioBtn.style.transform = 'scale(1) rotate(0deg)'; }, 300);
-    });
-  }
-
-  /* ---------- UNFORGETTABLE DETAIL 2: DYNAMIC SCROLL SPEEDOMETER ---------- */
-  let lastScrollY = window.scrollY;
-  let lastScrollTime = performance.now();
-  let currentSpeed = 0;
-  const speedVal = document.getElementById('speedVal');
-
-  window.addEventListener('scroll', () => {
-    const now = performance.now();
-    const dt = (now - lastScrollTime) / 1000;
-    if (dt > 0.016) {
-      const dy = Math.abs(window.scrollY - lastScrollY);
-      const instantSpeed = Math.min(Math.round((dy / dt) * 0.15), 140);
-      currentSpeed = currentSpeed * 0.7 + instantSpeed * 0.3;
-      if (speedVal) speedVal.innerText = Math.round(currentSpeed);
-      lastScrollY = window.scrollY;
-      lastScrollTime = now;
-    }
-  }, { passive: true });
-
-  setInterval(() => {
-    if (performance.now() - lastScrollTime > 150 && currentSpeed > 0) {
-      currentSpeed = Math.max(0, currentSpeed * 0.8 - 1);
-      if (speedVal) speedVal.innerText = Math.round(currentSpeed);
-    }
-  }, 100);
-
-  /* ---------- UNFORGETTABLE DETAIL 3: DHAGA SILK THREAD MOUSE PHYSICS ---------- */
-  const canvas = document.getElementById('dhagaCanvas');
-  if (canvas && !reduce) {
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    });
-
-    const numPoints = 12;
-    const points = Array.from({ length: numPoints }, () => ({ x: width / 2, y: height / 2 }));
-    let mouse = { x: width / 2, y: height / 2, active: false };
-
-    window.addEventListener('mousemove', e => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.active = true;
-    });
-
-    function renderDhaga() {
-      ctx.clearRect(0, 0, width, height);
-      if (mouse.active) {
-        points[0].x += (mouse.x - points[0].x) * 0.35;
-        points[0].y += (mouse.y - points[0].y) * 0.35;
-
-        for (let i = 1; i < numPoints; i++) {
-          points[i].x += (points[i - 1].x - points[i].x) * 0.4;
-          points[i].y += (points[i - 1].y - points[i].y) * 0.4;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < numPoints - 1; i++) {
-          const xc = (points[i].x + points[i + 1].x) / 2;
-          const yc = (points[i].y + points[i + 1].y) / 2;
-          ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-        }
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--mark').trim() || '#D96A50';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.globalAlpha = 0.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1.0;
-      }
-      requestAnimationFrame(renderDhaga);
-    }
-    requestAnimationFrame(renderDhaga);
-  }
 })();
 </script>
 </body>
