@@ -73,7 +73,7 @@ export function GroupEditForm({ group, isAdmin, onSave }: Props) {
     fontSize: 15,
     color: colors.textPrimary,
     backgroundColor: isAdmin ? colors.bgTertiary : 'transparent',
-    borderColor: isAdmin ? colors.border : 'transparent',
+    borderColor: isAdmin ? colors.hairline : 'transparent',
     borderWidth: 1,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
@@ -106,7 +106,7 @@ export function GroupEditForm({ group, isAdmin, onSave }: Props) {
               styles.emojiBtn,
               {
                 backgroundColor: emoji === e ? colors.accentPrimary + '20' : colors.bgTertiary,
-                borderColor:     emoji === e ? colors.accentPrimary       : colors.border,
+                borderColor:     emoji === e ? colors.accentPrimary       : colors.hairline,
                 borderWidth:     1,
                 borderRadius:    radius.md,
                 width:           40,

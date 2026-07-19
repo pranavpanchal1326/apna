@@ -51,7 +51,7 @@ export const CategoryPicker = memo(function CategoryPicker({ selected, onSelect 
                 borderWidth:     isSelected ? 1.5 : 1,
                 borderColor:     isSelected
                   ? colors.accentPrimary
-                  : colors.border,
+                  : colors.hairline,
                 paddingHorizontal: spacing.md,
                 paddingVertical:   spacing.sm,
                 minHeight:         44,

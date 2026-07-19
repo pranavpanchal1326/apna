@@ -27,7 +27,7 @@ export function BudgetCategoryList({ items, currency = 'INR' }: BudgetCategoryLi
 
   if (activeItems.length === 0) {
     return (
-      <View style={[styles.emptyContainer, { padding: spacing.xl, backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.border }]}>
+      <View style={[styles.emptyContainer, { padding: spacing.xl, backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.hairline }]}>
         <Text style={[text.body.sm, { color: colors.textSecondary, textAlign: 'center' }]}>
           No category spend recorded yet.
         </Text>

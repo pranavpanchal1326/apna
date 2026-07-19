@@ -66,6 +66,7 @@
     "firebase-admin": "^13.10.0",
     "firebase-tools": "^15.24.0",
     "jest": "~29.7.0",
+    "sharp": "^0.35.3",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -77,6 +78,7 @@
     "test:coverage": "jest --coverage",
     "test:rules": "node scripts/test-rules.js",
     "lint:design": "node scripts/lint-design.js",
+    "export:screens": "node scripts/export-screens.js",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint:design && npm run test",
     "emulators": "node scripts/start-emulators.js"

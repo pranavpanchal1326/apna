@@ -79,7 +79,7 @@ export const ItineraryPins = memo(function ItineraryPins({
                       ? colors.accentPrimary
                       : isNext
                       ? colors.accentPrimary
-                      : colors.border,
+                      : colors.hairline,
                     borderWidth: isActive || isNext ? 2 : 1,
                   },
                   isActive && shadows.accentGlow,
@@ -98,7 +98,7 @@ export const ItineraryPins = memo(function ItineraryPins({
                         ? colors.positive // Checked-in / Completed
                         : item.isConfirmed
                         ? colors.accentPrimary // Confirmed Planned
-                        : colors.accentGold, // Tentative Planned
+                        : colors.warning, // Tentative Planned
                       borderColor: colors.bgSecondary,
                     },
                   ]}
@@ -110,7 +110,7 @@ export const ItineraryPins = memo(function ItineraryPins({
                 style={[
                   styles.pinTail,
                   {
-                    borderTopColor: isActive || isNext ? colors.accentPrimary : colors.border,
+                    borderTopColor: isActive || isNext ? colors.accentPrimary : colors.hairline,
                   },
                 ]}
               />

@@ -118,7 +118,7 @@ export function PublicRecapLandingScreen({ slug, onClose }: PublicRecapLandingSc
           </View>
         </View>
 
-        <View style={[styles.statsCard, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.border, padding: spacing.lg }]}>
+        <View style={[styles.statsCard, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.hairline, padding: spacing.lg }]}>
           <StatRow label="Friends" value={String(recap.memberCount)} colors={colors} text={text} />
           <StatRow label="Memories" value={String(recap.memoriesCount)} colors={colors} text={text} />
           <StatRow label="Places" value={String(recap.placesCount)} colors={colors} text={text} />
@@ -164,7 +164,7 @@ function StatRow({
         justifyContent: 'space-between',
         paddingVertical: 8,
         borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
-        borderBottomColor: colors.border,
+        borderBottomColor: colors.hairline,
       }}
     >
       <Text style={[text.body.sm, { color: colors.textSecondary }]}>{label}</Text>

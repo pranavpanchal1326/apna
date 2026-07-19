@@ -13,7 +13,7 @@ export function BudgetTrendSparkline({ points }: BudgetTrendSparklineProps) {
   if (points.length < 2) {
     return (
       <View style={[styles.placeholder, { backgroundColor: colors.bgTertiary, borderRadius: radius.sm }]}>
-        <View style={[styles.placeholderLine, { backgroundColor: colors.border }]} />
+        <View style={[styles.placeholderLine, { backgroundColor: colors.hairline }]} />
       </View>
     )
   }

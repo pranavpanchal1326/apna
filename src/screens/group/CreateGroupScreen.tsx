@@ -168,7 +168,7 @@ export function CreateGroupScreen() {
           style={[
             styles.progressTrack,
             {
-              backgroundColor: colors.border,
+              backgroundColor: colors.hairline,
               marginHorizontal: spacing.lg,
               marginTop: spacing.md,
             },
@@ -238,7 +238,7 @@ export function CreateGroupScreen() {
                         backgroundColor: emoji === e ? colors.bgTertiary : 'transparent',
                         borderRadius:    radius.md,
                         borderWidth:     emoji === e ? 1.5 : 1,
-                        borderColor:     emoji === e ? colors.accentPrimary : colors.border,
+                        borderColor:     emoji === e ? colors.accentPrimary : colors.hairline,
                         width:           52,
                         height:          52,
                       },
@@ -329,7 +329,7 @@ export function CreateGroupScreen() {
                   {
                     backgroundColor: colors.bgSecondary,
                     borderRadius:    radius.lg,
-                    borderColor:     colors.border,
+                    borderColor:     colors.hairline,
                     padding:         spacing.lg,
                     ...shadows.card,
                   },
@@ -366,7 +366,7 @@ export function CreateGroupScreen() {
                 </View>
 
                 {(startDate || endDate) && (
-                  <View style={[styles.reviewRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md, marginBottom: spacing.md }]}>
+                  <View style={[styles.reviewRow, { borderTopWidth: 1, borderTopColor: colors.hairline, paddingTop: spacing.md, marginBottom: spacing.md }]}>
                     <Text style={[text.label.md, { color: colors.textSecondary, flex: 1 }]}>Dates</Text>
                     <Text style={[text.body.md, { color: colors.textPrimary }]}>
                       {startDate || '—'} to {endDate || '—'}
@@ -375,7 +375,7 @@ export function CreateGroupScreen() {
                 )}
 
                 {budget && (
-                  <View style={[styles.reviewRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }]}>
+                  <View style={[styles.reviewRow, { borderTopWidth: 1, borderTopColor: colors.hairline, paddingTop: spacing.md }]}>
                     <Text style={[text.label.md, { color: colors.textSecondary, flex: 1 }]}>Budget</Text>
                     <Text style={[text.body.md, { color: colors.textPrimary }]}>
                       ₹{parseFloat(budget).toLocaleString('en-IN')}
@@ -390,7 +390,7 @@ export function CreateGroupScreen() {
         {/* Footer actions */}
         <View style={[styles.footer, { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, paddingTop: spacing.xs }]}>
           {error && (
-            <Text style={[text.body.sm, { color: colors.accentDanger, marginBottom: spacing.md, textAlign: 'center' }]}>
+            <Text style={[text.body.sm, { color: colors.negative, marginBottom: spacing.md, textAlign: 'center' }]}>
               {error}
             </Text>
           )}

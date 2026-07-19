@@ -31,9 +31,9 @@ export function BudgetHeroCard({
   if (health.tone === 'positive') {
     accentColor = colors.accentPrimary
   } else if (health.tone === 'warning') {
-    accentColor = colors.accentGold
+    accentColor = colors.warning
   } else if (health.tone === 'danger') {
-    accentColor = colors.accentDanger
+    accentColor = colors.negative
   }
 
   const hasBudget = totalBudget !== null && totalBudget > 0
@@ -43,7 +43,7 @@ export function BudgetHeroCard({
       style={styles.card}
       contentStyle={{
         ...styles.cardContent,
-        borderColor: health.tone === 'danger' ? `${colors.accentDanger}44` : colors.border,
+        borderColor: health.tone === 'danger' ? `${colors.negative}44` : colors.hairline,
         padding: spacing.xl,
       }}
     >
@@ -88,7 +88,7 @@ export function BudgetHeroCard({
             {overspend > 0 ? (
               <View>
                 <Text style={[text.body.sm, { color: colors.textSecondary }]}>Over by</Text>
-                <Text style={[text.body.sm, { color: colors.accentDanger, fontWeight: 'bold' }]}>
+                <Text style={[text.body.sm, { color: colors.negative, fontWeight: 'bold' }]}>
                   {formatBudgetAmount(overspend, currency)}
                 </Text>
               </View>

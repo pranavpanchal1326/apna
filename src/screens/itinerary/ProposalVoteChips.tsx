@@ -27,8 +27,8 @@ export function ProposalVoteChips({ myVote, onVote, disabled }: ProposalVoteChip
 
   const options: Array<{ vote: VoteValue; label: string; emoji: string; activeColor: string }> = [
     { vote: 'yes',   label: 'Going',     emoji: '👍', activeColor: colors.accentPrimary },
-    { vote: 'maybe', label: 'Maybe',     emoji: '💬', activeColor: colors.accentGold },
-    { vote: 'no',    label: 'Not going', emoji: '👎', activeColor: colors.accentDanger },
+    { vote: 'maybe', label: 'Maybe',     emoji: '💬', activeColor: colors.warning },
+    { vote: 'no',    label: 'Not going', emoji: '👎', activeColor: colors.negative },
   ]
 
   return (
@@ -45,7 +45,7 @@ export function ProposalVoteChips({ myVote, onVote, disabled }: ProposalVoteChip
                 backgroundColor: isActive
                   ? `${activeColor}18`
                   : colors.bgTertiary,
-                borderColor: isActive ? activeColor : colors.border,
+                borderColor: isActive ? activeColor : colors.hairline,
                 borderRadius: radius.md,
                 paddingHorizontal: spacing.md,
                 paddingVertical: spacing.sm - 2,

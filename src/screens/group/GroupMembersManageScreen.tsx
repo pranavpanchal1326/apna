@@ -217,7 +217,7 @@ export function GroupMembersManageScreen({ route, navigation }: Props) {
             style={{
               backgroundColor: colors.bgSecondary,
               borderRadius: radius.lg,
-              borderColor: colors.border,
+              borderColor: colors.hairline,
               borderWidth: 1,
               padding: spacing.lg,
               marginHorizontal: spacing.xl,
@@ -240,7 +240,7 @@ export function GroupMembersManageScreen({ route, navigation }: Props) {
               style={{
                 color: colors.textPrimary,
                 backgroundColor: colors.bgTertiary,
-                borderColor: colors.border,
+                borderColor: colors.hairline,
                 borderWidth: 1,
                 borderRadius: radius.md,
                 padding: spacing.md,

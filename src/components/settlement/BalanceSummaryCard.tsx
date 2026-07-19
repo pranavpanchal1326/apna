@@ -30,7 +30,7 @@ export function BalanceSummaryCard({
   const accentColor = isCreditor
     ? colors.accentPrimary    // Teal — you are owed
     : isDebtor
-      ? colors.accentDanger   // Coral — you owe
+      ? colors.negative   // Coral — you owe
       : colors.settled        // Muted — settled
 
   const headline = isSettled

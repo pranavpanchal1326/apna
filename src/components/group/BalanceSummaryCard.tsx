@@ -78,7 +78,7 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
           backgroundColor: colors.bgSecondary,
           borderRadius:    radius.xl,
           borderColor:     isSettled
-            ? colors.border
+            ? colors.hairline
             : isOwed
             ? `${colors.positive}30`
             : `${colors.negative}30`,
@@ -152,7 +152,7 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
           <View
             style={[
               styles.divider,
-              { backgroundColor: colors.border, marginBottom: spacing.md },
+              { backgroundColor: colors.hairline, marginBottom: spacing.md },
             ]}
           />
 
@@ -194,7 +194,7 @@ export const BalanceSummaryCard = memo(function BalanceSummaryCard({
                     {
                       backgroundColor: colors.bgTertiary,
                       borderRadius:    radius.sm,
-                      borderColor:     colors.border,
+                      borderColor:     colors.hairline,
                       borderWidth:     1,
                       paddingHorizontal: spacing.sm,
                       paddingVertical:   4,

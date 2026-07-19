@@ -16,7 +16,7 @@ export function DangerZoneCard({ children }: DangerZoneCardProps) {
         styles.card,
         {
           backgroundColor: colors.bgSecondary,
-          borderColor:     `${colors.accentDanger}44`,
+          borderColor:     `${colors.negative}44`,
           borderWidth:     1,
           borderRadius:    radius.lg,
           padding:         spacing.lg,
@@ -25,7 +25,7 @@ export function DangerZoneCard({ children }: DangerZoneCardProps) {
         },
       ]}
     >
-      <Text style={[text.label.md, { color: colors.accentDanger, marginBottom: spacing.md, fontWeight: '700' }]}>
+      <Text style={[text.label.md, { color: colors.negative, marginBottom: spacing.md, fontWeight: '700' }]}>
         DANGER ZONE
       </Text>
       <View style={styles.content}>{children}</View>

@@ -157,7 +157,7 @@ export function HangoutDetailScreen() {
           paddingHorizontal: spacing.lg,
           paddingBottom:     spacing.md,
           backgroundColor:   colors.bgSecondary,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.hairline,
           borderBottomWidth: 1,
         },
       ]}>
@@ -204,13 +204,13 @@ export function HangoutDetailScreen() {
         {/* ── Canceled banner ─────────────────────────────────────────── */}
         {canceled && (
           <View style={[styles.confirmedBanner, {
-            backgroundColor:   colors.accentDanger + '15',
-            borderBottomColor: colors.accentDanger + '33',
+            backgroundColor:   colors.negative + '15',
+            borderBottomColor: colors.negative + '33',
             borderBottomWidth: 1,
             paddingHorizontal: spacing.lg,
             paddingVertical:   spacing.md,
           }]}>
-            <Text style={[text.body.md, { color: colors.accentDanger, fontFamily: 'Outfit-SemiBold', textAlign: 'center' }]}>
+            <Text style={[text.body.md, { color: colors.negative, fontFamily: 'Outfit-SemiBold', textAlign: 'center' }]}>
               Canceled
             </Text>
           </View>
@@ -220,7 +220,7 @@ export function HangoutDetailScreen() {
         <View style={[styles.detailCard, {
           backgroundColor:  colors.bgSecondary,
           borderRadius:     radius.lg,
-          borderColor:      colors.border,
+          borderColor:      colors.hairline,
           borderWidth:      1,
           margin:           spacing.lg,
           padding:          spacing.lg,
@@ -240,7 +240,7 @@ export function HangoutDetailScreen() {
           <View style={[styles.quorumCard, {
             backgroundColor: colors.bgSecondary,
             borderRadius:    radius.md,
-            borderColor:     quorumReached ? colors.positive + '55' : colors.border,
+            borderColor:     quorumReached ? colors.positive + '55' : colors.hairline,
             borderWidth:     1,
             padding:         spacing.md,
           }]}>

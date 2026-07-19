@@ -73,7 +73,7 @@ export const MoveItemSheet = forwardRef<MoveItemSheetRef, MoveItemSheetProps>(
         snapPoints={snapPoints}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.bgSecondary }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 36 }}
+        handleIndicatorStyle={{ backgroundColor: colors.hairline, width: 36 }}
       >
         <BottomSheetView style={{ flex: 1 }}>
           {/* Header */}
@@ -82,7 +82,7 @@ export const MoveItemSheet = forwardRef<MoveItemSheetRef, MoveItemSheetProps>(
               paddingHorizontal: spacing.lg,
               paddingBottom:     spacing.md,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.hairline,
             }}
           >
             <Text style={[text.heading.sm, { color: colors.textPrimary }]}>
@@ -109,7 +109,7 @@ export const MoveItemSheet = forwardRef<MoveItemSheetRef, MoveItemSheetProps>(
                       backgroundColor: isSelected
                         ? `${colors.accentPrimary}12`
                         : colors.bgTertiary,
-                      borderColor:  isSelected ? colors.accentPrimary : colors.border,
+                      borderColor:  isSelected ? colors.accentPrimary : colors.hairline,
                       borderRadius: radius.md,
                       borderWidth:  1,
                       padding:      spacing.md,
@@ -133,7 +133,7 @@ export const MoveItemSheet = forwardRef<MoveItemSheetRef, MoveItemSheetProps>(
                     style={[
                       styles.radio,
                       {
-                        borderColor: isSelected ? colors.accentPrimary : colors.border,
+                        borderColor: isSelected ? colors.accentPrimary : colors.hairline,
                         justifyContent: 'center',
                         alignItems: 'center',
                       },
@@ -158,7 +158,7 @@ export const MoveItemSheet = forwardRef<MoveItemSheetRef, MoveItemSheetProps>(
             style={{
               padding:        spacing.lg,
               borderTopWidth: 1,
-              borderTopColor: colors.border,
+              borderTopColor: colors.hairline,
               flexDirection:  'row',
               gap:            spacing.md,
             }}

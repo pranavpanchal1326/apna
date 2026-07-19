@@ -24,16 +24,16 @@ export function Badge({
 
   const bgColorMap: Record<BadgeVariant, string> = {
     primary:  `${colors.accentPrimary}20`,
-    danger:   `${colors.accentDanger}20`,
-    gold:     `${colors.accentGold}20`,
+    danger:   `${colors.negative}20`,
+    gold:     `${colors.warning}20`,
     muted:    colors.bgTertiary,
     category: category ? colors.category[category].tint : colors.bgTertiary,
   }
 
   const textColorMap: Record<BadgeVariant, string> = {
     primary:  colors.accentPrimary,
-    danger:   colors.accentDanger,
-    gold:     colors.accentGold,
+    danger:   colors.negative,
+    gold:     colors.warning,
     muted:    colors.textSecondary,
     category: colors.textSecondary, // §2.1.5 — category text stays textSecondary
   }
@@ -80,7 +80,7 @@ export function CountBadge({ count, style }: CountBadgeProps) {
       style={[
         styles.countBadge,
         {
-          backgroundColor: colors.accentDanger,
+          backgroundColor: colors.negative,
           borderRadius: radius.full,
           minWidth: 18,
           height: 18,

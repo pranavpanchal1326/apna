@@ -87,7 +87,7 @@ export function MapCallout({
           bottom:          '35%',   // Float above vertical center of map
           width:           CALLOUT_WIDTH,
           backgroundColor: colors.bgSecondary,
-          borderColor:     colors.borderAccent,
+          borderColor:     'transparent',
           borderRadius:    radius.lg,
           borderWidth:     1,
           padding:         spacing.md,

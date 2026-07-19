@@ -93,7 +93,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
         snapPoints={snapPoints}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.bgSecondary }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 36 }}
+        handleIndicatorStyle={{ backgroundColor: colors.hairline, width: 36 }}
       >
         <BottomSheetView style={{ flex: 1 }}>
           {/* Header */}
@@ -102,7 +102,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
               paddingHorizontal: spacing.lg,
               paddingBottom:     spacing.md,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.hairline,
               flexDirection:     'row',
               justifyContent:    'space-between',
               alignItems:        'center',
@@ -138,7 +138,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
                       backgroundColor: isSelected
                         ? `${colors.accentPrimary}12`
                         : colors.bgTertiary,
-                      borderColor:  isSelected ? colors.accentPrimary : colors.border,
+                      borderColor:  isSelected ? colors.accentPrimary : colors.hairline,
                       borderRadius: radius.md,
                       borderWidth:  1,
                       padding:      spacing.md,
@@ -153,7 +153,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
                     style={[
                       styles.checkbox,
                       {
-                        borderColor:     isSelected ? colors.accentPrimary : colors.border,
+                        borderColor:     isSelected ? colors.accentPrimary : colors.hairline,
                         backgroundColor: isSelected ? colors.accentPrimary : 'transparent',
                         borderRadius:    4,
                       },
@@ -201,7 +201,7 @@ export const LinkExpenseSheet = forwardRef<LinkExpenseSheetRef, LinkExpenseSheet
             style={{
               padding:        spacing.lg,
               borderTopWidth: 1,
-              borderTopColor: colors.border,
+              borderTopColor: colors.hairline,
             }}
           >
             <Button

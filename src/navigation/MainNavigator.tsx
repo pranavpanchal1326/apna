@@ -79,7 +79,7 @@ function DhagaTabBar({ state, navigation }: BottomTabBarProps) {
           height: layout.tabBarHeight + layout.safeAreaBottom,
           paddingBottom: layout.safeAreaBottom,
           backgroundColor: colors.tabBar,
-          borderTopColor: colors.border,
+          borderTopColor: colors.hairline,
         },
       ]}
     >
@@ -126,7 +126,7 @@ function DhagaTabBar({ state, navigation }: BottomTabBarProps) {
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: isFocused ? colors.tabDot : 'transparent',
+                    backgroundColor: isFocused ? colors.tabStitch : 'transparent',
                     marginTop: spacing.xs,
                   },
                 ]}

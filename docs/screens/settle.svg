@@ -1,0 +1,65 @@
+<svg width="300" height="620" viewBox="0 0 300 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna settle up screen">
+  <defs>
+    <clipPath id="scr3"><rect x="14" y="14" width="272" height="592" rx="30"/></clipPath>
+    <style>
+      .mono{font-family:'Spline Sans Mono','JetBrains Mono',monospace;}
+      .sans{font-family:'General Sans','Segoe UI',sans-serif;}
+      .disp{font-family:'Cabinet Grotesk','Segoe UI',sans-serif;font-weight:800;}
+    </style>
+  </defs>
+  <rect x="6" y="6" width="288" height="608" rx="38" fill="#0C0B09"/>
+  <rect x="10" y="10" width="280" height="600" rx="34" fill="#161512" stroke="#26231D" stroke-width="1.5"/>
+  <g clip-path="url(#scr3)">
+    <rect x="14" y="14" width="272" height="592" fill="#161512"/>
+    <text x="30" y="40" class="mono" font-size="11" fill="#A39B89">9:41</text>
+    <text x="30" y="80" class="disp" font-size="21" fill="#EFEAE0">Settle up</text>
+    <text x="30" y="98" class="sans" font-size="11" fill="#A39B89">Shortest path · 3 transfers clear everything</text>
+
+    <!-- graph of who pays whom -->
+    <text x="30" y="134" class="sans" font-size="11" fill="#736D5E" letter-spacing="1">MINIMISED TRANSFERS</text>
+    <g class="sans" font-size="12">
+      <!-- transfer 1 -->
+      <rect x="26" y="146" width="248" height="58" rx="16" fill="#1D1B17"/>
+      <circle cx="52" cy="175" r="14" fill="#7FA0B8"/><text x="52" y="179" class="mono" font-size="10" fill="#2A0E06" text-anchor="middle">R</text>
+      <text x="74" y="171" fill="#EFEAE0">Rohan</text>
+      <text x="74" y="187" fill="#A39B89" font-size="10">pays you</text>
+      <line x1="120" y1="175" x2="176" y2="175" stroke="#D96A50" stroke-width="2" stroke-dasharray="7 5"/>
+      <path d="M176 175 l-7 -4 v8 z" fill="#D96A50"/>
+      <text x="256" y="180" class="mono" font-size="16" fill="#8FAE9A" text-anchor="end">₹1,200</text>
+
+      <!-- transfer 2 -->
+      <rect x="26" y="212" width="248" height="58" rx="16" fill="#1D1B17"/>
+      <circle cx="52" cy="241" r="14" fill="#A98BB8"/><text x="52" y="245" class="mono" font-size="10" fill="#2A0E06" text-anchor="middle">M</text>
+      <text x="74" y="237" fill="#EFEAE0">Meera</text>
+      <text x="74" y="253" fill="#A39B89" font-size="10">pays you</text>
+      <line x1="120" y1="241" x2="176" y2="241" stroke="#D96A50" stroke-width="2" stroke-dasharray="7 5"/>
+      <path d="M176 241 l-7 -4 v8 z" fill="#D96A50"/>
+      <text x="256" y="246" class="mono" font-size="16" fill="#8FAE9A" text-anchor="end">₹840</text>
+
+      <!-- transfer 3 -->
+      <rect x="26" y="278" width="248" height="58" rx="16" fill="#1D1B17"/>
+      <circle cx="52" cy="307" r="14" fill="#8FAE9A"/><text x="52" y="311" class="mono" font-size="10" fill="#2A0E06" text-anchor="middle">Y</text>
+      <text x="74" y="303" fill="#EFEAE0">You pay</text>
+      <text x="74" y="319" fill="#A39B89" font-size="10">Aisha</text>
+      <line x1="120" y1="307" x2="176" y2="307" stroke="#736D5E" stroke-width="2" stroke-dasharray="7 5"/>
+      <path d="M176 307 l-7 -4 v8 z" fill="#736D5E"/>
+      <text x="256" y="312" class="mono" font-size="16" fill="#D96A50" text-anchor="end">₹300</text>
+    </g>
+
+    <line x1="30" y1="360" x2="270" y2="360" stroke="#D96A50" stroke-width="2" stroke-dasharray="9 6" opacity="0.55"/>
+
+    <!-- UPI pay card -->
+    <rect x="26" y="378" width="248" height="150" rx="18" fill="#1D1B17"/>
+    <text x="44" y="406" class="sans" font-size="11" fill="#A39B89">Pay Aisha via UPI</text>
+    <text x="44" y="440" class="mono" font-size="28" fill="#EFEAE0">₹300.00</text>
+    <text x="44" y="460" class="mono" font-size="10" fill="#736D5E">aisha@okhdfcbank</text>
+    <g class="sans" font-size="11" text-anchor="middle">
+      <rect x="44" y="476" width="66" height="34" rx="17" fill="#26231D"/><text x="77" y="497" fill="#EFEAE0">GPay</text>
+      <rect x="118" y="476" width="66" height="34" rx="17" fill="#26231D"/><text x="151" y="497" fill="#EFEAE0">PhonePe</text>
+      <rect x="192" y="476" width="62" height="34" rx="17" fill="#26231D"/><text x="223" y="497" fill="#EFEAE0">Paytm</text>
+    </g>
+    <!-- mark settled -->
+    <rect x="26" y="544" width="248" height="42" rx="21" fill="#D96A50"/>
+    <text x="150" y="570" class="sans" font-size="13" font-weight="700" fill="#2A0E06" text-anchor="middle">Record as settled</text>
+  </g>
+</svg>

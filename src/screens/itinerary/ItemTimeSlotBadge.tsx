@@ -24,7 +24,7 @@ export function ItemTimeSlotBadge({ timeSlot }: ItemTimeSlotBadgeProps) {
         styles.badge,
         {
           backgroundColor: colors.bgTertiary,
-          borderColor:     colors.border,
+          borderColor:     colors.hairline,
           borderRadius:    radius.sm,
           paddingHorizontal: spacing.sm,
           paddingVertical:   spacing.xs - 2,  // 2dp vertical

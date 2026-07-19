@@ -60,7 +60,7 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
     <BottomSheet visible={visible} onClose={onClose} title="Location Privacy">
       <View style={{ padding: spacing.md, gap: spacing.md }}>
         {/* Session Status Summary */}
-        <View style={[styles.statusBox, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, padding: spacing.md, borderColor: colors.border }]}>
+        <View style={[styles.statusBox, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, padding: spacing.md, borderColor: colors.hairline }]}>
           <Text style={[text.label.sm, { color: colors.textSecondary }]}>SESSION STATUS</Text>
           <Text style={[text.heading.sm, { color: isSharing ? colors.positive : colors.textPrimary, marginTop: 4 }]}>
             {getRemainingTimeText()}
@@ -73,7 +73,7 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
         {/* Ghost Mode Row */}
         <Pressable
           onPress={handleToggleGhost}
-          style={[styles.row, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, padding: spacing.md, borderColor: colors.border }]}
+          style={[styles.row, { backgroundColor: colors.bgSecondary, borderRadius: radius.md, padding: spacing.md, borderColor: colors.hairline }]}
         >
           <View style={{ flex: 1 }}>
             <Text style={[text.label.md, { color: colors.textPrimary }]}>Ghost Mode</Text>
@@ -81,7 +81,7 @@ export function PrivacyQuickSheet({ visible, onClose, groupId }: PrivacyQuickShe
               See friends on map, but keep yourself hidden
             </Text>
           </View>
-          <View style={[styles.switchTrack, { backgroundColor: isGhostMode ? colors.accentPrimary + '30' : colors.border, borderRadius: radius.full }]}>
+          <View style={[styles.switchTrack, { backgroundColor: isGhostMode ? colors.accentPrimary + '30' : colors.hairline, borderRadius: radius.full }]}>
             <View style={[styles.switchThumb, { backgroundColor: isGhostMode ? colors.accentPrimary : colors.textSecondary, alignSelf: isGhostMode ? 'flex-end' : 'flex-start', borderRadius: radius.full }]} />
           </View>
         </Pressable>

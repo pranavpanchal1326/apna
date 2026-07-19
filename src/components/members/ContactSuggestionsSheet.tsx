@@ -62,27 +62,27 @@ function SkeletonRow() {
       <Animated.View
         style={[
           styles.skeletonAvatar,
-          { backgroundColor: colors.border, borderRadius: radius.full, opacity: pulseAnim },
+          { backgroundColor: colors.hairline, borderRadius: radius.full, opacity: pulseAnim },
         ]}
       />
       <View style={styles.skeletonDetails}>
         <Animated.View
           style={[
             styles.skeletonName,
-            { backgroundColor: colors.border, borderRadius: radius.sm, opacity: pulseAnim },
+            { backgroundColor: colors.hairline, borderRadius: radius.sm, opacity: pulseAnim },
           ]}
         />
         <Animated.View
           style={[
             styles.skeletonPhone,
-            { backgroundColor: colors.border, borderRadius: radius.sm, opacity: pulseAnim, marginTop: 6 },
+            { backgroundColor: colors.hairline, borderRadius: radius.sm, opacity: pulseAnim, marginTop: 6 },
           ]}
         />
       </View>
       <Animated.View
         style={[
           styles.skeletonButton,
-          { backgroundColor: colors.border, borderRadius: radius.full, opacity: pulseAnim },
+          { backgroundColor: colors.hairline, borderRadius: radius.full, opacity: pulseAnim },
         ]}
       />
     </View>
@@ -156,7 +156,7 @@ export function ContactSuggestionsSheet({
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       {/* Header */}
-      <View style={[styles.header, { paddingHorizontal: spacing.lg, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingHorizontal: spacing.lg, borderBottomColor: colors.hairline }]}>
         <Text
           style={[
             text.heading.sm,
@@ -276,7 +276,7 @@ export function ContactSuggestionsSheet({
           style={[
             styles.footer,
             {
-              borderTopColor: colors.border,
+              borderTopColor: colors.hairline,
               paddingBottom: layout.safeAreaBottom + spacing.sm,
               paddingTop: spacing.sm,
             },

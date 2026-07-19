@@ -75,7 +75,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
         snapPoints={snapPoints}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.bgSecondary }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 36 }}
+        handleIndicatorStyle={{ backgroundColor: colors.hairline, width: 36 }}
       >
         <BottomSheetView style={styles.sheetContainer}>
           <ScrollView
@@ -111,7 +111,7 @@ export const PlaceDetailsSheet = forwardRef<PlaceDetailsSheetRef, PlaceDetailsSh
                     text.body.md,
                     styles.input,
                     {
-                      borderColor: colors.border,
+                      borderColor: colors.hairline,
                       borderRadius: radius.md,
                       color: colors.textPrimary,
                       backgroundColor: colors.bgTertiary,

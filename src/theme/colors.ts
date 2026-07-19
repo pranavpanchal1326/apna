@@ -8,10 +8,9 @@
 // - Color encodes meaning only; decoration is done with neutrals.
 // - Dark (Ink) and light (Kora) are the same design at different times of day.
 //
-// LEGACY ALIASES: `accentDanger`, `accentGold`, `border`, `borderAccent`,
-// `threadLine`, `tabDot` survive only as deprecated aliases per migration map
-// §2.1.7 so Phase 1 re-skins without touching 123 consumer files. The Phase 2
-// sweep deletes them. Do NOT use them in new code — use the canonical tokens.
+// The migration-map aliases (§2.1.7 — accentDanger, accentGold, border,
+// borderAccent, threadLine, tabDot) were deleted in the Phase 2 sweep
+// (19 Jul 2026). Only canonical tokens exist now.
 
 export const InkColors = {
   // ── Fabric ──────────────────────────────────────────────
@@ -66,20 +65,6 @@ export const InkColors = {
     shopping:   { icon: 'Bag',       tint: 'rgba(201,139,107,0.14)' },
     misc:       { icon: 'Needle',    tint: 'rgba(163,155,137,0.14)' },
   },
-
-  // ── DEPRECATED aliases (migration map §2.1.7 — delete in Phase 2) ──
-  /** @deprecated use `negative` */
-  accentDanger: '#D96A50',
-  /** @deprecated use `warning` */
-  accentGold:   '#C9A24B',
-  /** @deprecated use `hairline` (prefer stitch or whitespace) */
-  border:       'rgba(239,234,224,0.08)',
-  /** @deprecated accent borders are banned — renders nothing */
-  borderAccent: 'transparent',
-  /** @deprecated use `stitch` / `stitchDim` */
-  threadLine:   'rgba(217,106,80,0.55)',
-  /** @deprecated use `tabStitch` */
-  tabDot:       '#D96A50',
 } as const
 
 export const KoraColors = {
@@ -135,20 +120,6 @@ export const KoraColors = {
     shopping:   { icon: 'Bag',       tint: 'rgba(143,82,50,0.12)' },
     misc:       { icon: 'Needle',    tint: 'rgba(110,103,90,0.12)' },
   },
-
-  // ── DEPRECATED aliases (delete in Phase 2) ──────────────
-  /** @deprecated use `negative` */
-  accentDanger: '#B0402F',
-  /** @deprecated use `warning` */
-  accentGold:   '#8A6A1F',
-  /** @deprecated use `hairline` */
-  border:       'rgba(28,26,21,0.09)',
-  /** @deprecated accent borders are banned — renders nothing */
-  borderAccent: 'transparent',
-  /** @deprecated use `stitch` / `stitchDim` */
-  threadLine:   'rgba(176,64,47,0.6)',
-  /** @deprecated use `tabStitch` */
-  tabDot:       '#B0402F',
 } as const
 
 // Fallback avatar colour + native accent (notifications, widgets) for
@@ -161,11 +132,5 @@ export type ColorScheme = 'dark' | 'light'
 export type InkColorsType  = typeof InkColors
 export type KoraColorsType = typeof KoraColors
 export type AppColors = InkColorsType | KoraColorsType
-
-// Transitional re-exports — ThemeProvider historically imported these names.
-/** @deprecated use InkColors */
-export const DarkColors = InkColors
-/** @deprecated use KoraColors */
-export const LightColors = KoraColors
 export type DarkColorsType = InkColorsType
 export type LightColorsType = KoraColorsType

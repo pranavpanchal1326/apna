@@ -51,7 +51,7 @@ function SuggestionChip({
         styles.chip,
         {
           backgroundColor: colors.bgTertiary,
-          borderColor:     colors.borderAccent,
+          borderColor:     'transparent',
           borderRadius:    radius.lg,
           padding:         spacing.md,
           marginRight:     spacing.sm,

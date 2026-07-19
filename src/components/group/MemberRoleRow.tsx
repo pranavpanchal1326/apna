@@ -45,7 +45,7 @@ export function MemberRoleRow({
         styles.container,
         {
           paddingVertical: spacing.md,
-          borderColor:     colors.border,
+          borderColor:     colors.hairline,
           borderBottomWidth: 1,
         },
       ]}
@@ -58,8 +58,8 @@ export function MemberRoleRow({
               {nickname ?? name} {isSelf && '(you)'}
             </Text>
             {isCreator && (
-              <View style={[styles.badge, { backgroundColor: colors.accentGold + '22', borderColor: colors.accentGold }]}>
-                <Text style={[text.label.sm, { color: colors.accentGold, fontSize: 10 }]}>Creator</Text>
+              <View style={[styles.badge, { backgroundColor: colors.warning + '22', borderColor: colors.warning }]}>
+                <Text style={[text.label.sm, { color: colors.warning, fontSize: 10 }]}>Creator</Text>
               </View>
             )}
             {isAdmin && !isCreator && (
@@ -85,7 +85,7 @@ export function MemberRoleRow({
             styles.actionBtn,
             {
               backgroundColor: colors.bgTertiary,
-              borderColor:     colors.border,
+              borderColor:     colors.hairline,
               borderRadius:    radius.sm,
               paddingHorizontal: spacing.sm,
               paddingVertical:   4,
@@ -109,7 +109,7 @@ export function MemberRoleRow({
                 styles.actionBtn,
                 {
                   backgroundColor: colors.bgTertiary,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   4,
@@ -128,7 +128,7 @@ export function MemberRoleRow({
                 styles.actionBtn,
                 {
                   backgroundColor: colors.bgTertiary,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   4,
@@ -146,8 +146,8 @@ export function MemberRoleRow({
               style={[
                 styles.actionBtn,
                 {
-                  backgroundColor: `${colors.accentDanger}15`,
-                  borderColor:     colors.accentDanger,
+                  backgroundColor: `${colors.negative}15`,
+                  borderColor:     colors.negative,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   4,
@@ -156,7 +156,7 @@ export function MemberRoleRow({
               accessibilityRole="button"
               accessibilityLabel={`Remove ${name} from group`}
             >
-              <Text style={[text.label.sm, { color: colors.accentDanger, fontSize: 11 }]}>Remove</Text>
+              <Text style={[text.label.sm, { color: colors.negative, fontSize: 11 }]}>Remove</Text>
             </Pressable>
           )}
         </View>

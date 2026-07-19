@@ -244,7 +244,7 @@ export function MemoryDetailScreen() {
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: idx === photoIndex ? colors.accentPrimary : colors.border,
+                    backgroundColor: idx === photoIndex ? colors.accentPrimary : colors.hairline,
                     width: idx === photoIndex ? 18 : 6,
                   },
                 ]}
@@ -265,7 +265,7 @@ export function MemoryDetailScreen() {
                 size="sm"
               />
             ) : (
-              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.border }]} />
+              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.hairline }]} />
             )}
             <View style={{ marginLeft: spacing.sm }}>
               <Text style={[text.label.md, { color: colors.textPrimary }]}>
@@ -295,7 +295,7 @@ export function MemoryDetailScreen() {
           ) : null}
 
           {/* Interactive Emoji Reaction Bar */}
-          <View style={[styles.reactionsBar, { borderColor: colors.border, marginTop: spacing.xl }]}>
+          <View style={[styles.reactionsBar, { borderColor: colors.hairline, marginTop: spacing.xl }]}>
             {REACTION_EMOJIS.map((emoji) => {
               const isActive = activeReaction === emoji
               return (
@@ -332,7 +332,7 @@ export function MemoryDetailScreen() {
                 styles.countsRow,
                 {
                   backgroundColor: colors.bgSecondary,
-                  borderColor: colors.border,
+                  borderColor: colors.hairline,
                   borderRadius: radius.lg,
                   padding: spacing.sm,
                   marginTop: spacing.md,
@@ -368,7 +368,7 @@ export function MemoryDetailScreen() {
             if (!reactor) return null
 
             return (
-              <View key={uid} style={[styles.reactorRow, { borderBottomColor: colors.border, paddingVertical: spacing.md }]}>
+              <View key={uid} style={[styles.reactorRow, { borderBottomColor: colors.hairline, paddingVertical: spacing.md }]}>
                 <View style={styles.reactorLeft}>
                   <Avatar
                     name={reactor.name}

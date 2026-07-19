@@ -64,7 +64,7 @@ export function LocationPermissionGate({ visible, onClose }: LocationPermissionG
             onPress={onClose}
             variant="ghost"
             style={{ width: '100%', marginTop: spacing.xs }}
-            textStyle={{ color: colors.accentDanger }}
+            textStyle={{ color: colors.negative }}
           />
         </View>
       </View>

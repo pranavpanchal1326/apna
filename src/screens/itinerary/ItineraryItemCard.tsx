@@ -91,8 +91,8 @@ export function ItineraryItemCard({
       borderColor:      confirmed
         ? colors.accentPrimary
         : rejected
-          ? colors.border
-          : colors.border,
+          ? colors.hairline
+          : colors.hairline,
       borderStyle:      (tentative || rejected) ? 'dashed' as const : 'solid' as const,
       opacity:          rejected ? 0.65 : tentative ? 0.88 : 1,
     },
@@ -111,7 +111,7 @@ export function ItineraryItemCard({
           {
             left:            spacing.xl,           // 24dp from screen edge
             backgroundColor: colors.bgTertiary,
-            borderColor:     confirmed ? colors.accentPrimary : colors.border,
+            borderColor:     confirmed ? colors.accentPrimary : colors.hairline,
             borderWidth:     confirmed ? 1.5 : 1,
           },
         ]}
@@ -186,13 +186,13 @@ export function ItineraryItemCard({
                     backgroundColor: isProposalConfirmed
                       ? `${colors.accentPrimary}15`
                       : isProposalRejected
-                        ? `${colors.accentDanger}15`
-                        : `${colors.accentGold}15`,
+                        ? `${colors.negative}15`
+                        : `${colors.warning}15`,
                     borderColor: isProposalConfirmed
                       ? colors.accentPrimary
                       : isProposalRejected
-                        ? colors.accentDanger
-                        : colors.accentGold,
+                        ? colors.negative
+                        : colors.warning,
                   },
                 ]}
               >
@@ -248,7 +248,7 @@ export function ItineraryItemCard({
           {/* Footer row: cost + rating + linked expenses */}
           <View style={[styles.footerRow, { marginTop: spacing.sm }]}>
             {costLabel && (
-              <Text style={[text.mono.sm, { color: colors.accentGold }]}>
+              <Text style={[text.mono.sm, { color: colors.warning }]}>
                 {costLabel}
               </Text>
             )}
@@ -279,7 +279,7 @@ export function ItineraryItemCard({
                   backgroundColor: `${colors.warning}12`,
                   borderColor: rainAlert.level === 'strong'
                     ? `${colors.warning}66`
-                    : colors.border,
+                    : colors.hairline,
                   marginTop: spacing.sm,
                   borderRadius: radius.sm,
                   paddingHorizontal: spacing.sm,
@@ -300,7 +300,7 @@ export function ItineraryItemCard({
                 Votes: {summary.yesCount} Going · {summary.maybeCount} Maybe · {summary.noCount} Not Going
               </Text>
               
-              <View style={[styles.tallyBarBackground, { backgroundColor: colors.border }]}>
+              <View style={[styles.tallyBarBackground, { backgroundColor: colors.hairline }]}>
                 {summary.yesCount > 0 && (
                   <View
                     style={[
@@ -317,7 +317,7 @@ export function ItineraryItemCard({
                     style={[
                       styles.tallySegment,
                       {
-                        backgroundColor: colors.accentGold,
+                        backgroundColor: colors.warning,
                         flex: summary.maybeCount,
                       },
                     ]}
@@ -328,7 +328,7 @@ export function ItineraryItemCard({
                     style={[
                       styles.tallySegment,
                       {
-                        backgroundColor: colors.accentDanger,
+                        backgroundColor: colors.negative,
                         flex: summary.noCount,
                       },
                     ]}

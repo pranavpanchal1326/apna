@@ -217,7 +217,7 @@ export function JoinGroupScreen() {
                 {
                   backgroundColor: colors.bgSecondary,
                   borderRadius:    radius.lg,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   padding:         spacing.lg,
                   marginTop:       spacing.xl,
                   ...shadows.card,
@@ -258,7 +258,7 @@ export function JoinGroupScreen() {
                 </View>
               </View>
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: colors.hairline, paddingTop: spacing.md }}>
                 <Text style={[text.label.md, { color: colors.textSecondary }]}>Members</Text>
                 <Text style={[text.body.md, { color: colors.textPrimary }]}>
                   {groupPreview.memberIds.length} / 20

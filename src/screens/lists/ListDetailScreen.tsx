@@ -195,7 +195,7 @@ export function ListDetailScreen() {
           paddingHorizontal: spacing.lg,
           paddingBottom:    spacing.md,
           backgroundColor:  colors.bgSecondary,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.hairline,
           borderBottomWidth: 1,
         },
       ]}>
@@ -355,7 +355,7 @@ function EditItemAlert({
           borderTopLeftRadius:  radius.xl,
           borderTopRightRadius: radius.xl,
         }]}>
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={[styles.handle, { backgroundColor: colors.hairline }]} />
 
           <Text style={[textStyles.label.lg, { color: colors.textPrimary, marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.md }]}>
             Edit item
@@ -371,7 +371,7 @@ function EditItemAlert({
               backgroundColor:  colors.bgTertiary,
               borderRadius:     radius.md,
               borderWidth:      1,
-              borderColor:      colors.border,
+              borderColor:      colors.hairline,
               paddingHorizontal: spacing.md,
               paddingVertical:  12,
               marginHorizontal: spacing.lg,
@@ -391,7 +391,7 @@ function EditItemAlert({
               backgroundColor:  colors.bgTertiary,
               borderRadius:     radius.md,
               borderWidth:      1,
-              borderColor:      colors.border,
+              borderColor:      colors.hairline,
               paddingHorizontal: spacing.md,
               paddingVertical:  12,
               marginHorizontal: spacing.lg,

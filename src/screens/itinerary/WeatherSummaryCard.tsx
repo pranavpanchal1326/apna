@@ -30,7 +30,7 @@ export function WeatherSummaryCard({
         styles.card,
         {
           backgroundColor: colors.bgSecondary,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           borderRadius: radius.md,
           marginHorizontal: spacing.lg,
           marginTop: spacing.md,
@@ -55,7 +55,7 @@ export function WeatherSummaryCard({
           styles.refresh,
           {
             backgroundColor: `${colors.accentPrimary}14`,
-            borderColor: colors.borderAccent,
+            borderColor: 'transparent',
             borderRadius: radius.full,
             opacity: isRefreshing ? 0.7 : 1,
           },

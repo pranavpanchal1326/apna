@@ -123,7 +123,7 @@ export function NotificationSettingsScreen() {
               styles.hoursCard,
               {
                 backgroundColor: colors.bgSecondary,
-                borderColor: colors.border,
+                borderColor: colors.hairline,
                 borderRadius: radius.lg,
                 padding: spacing.lg,
                 marginBottom: spacing.xl,
@@ -141,7 +141,7 @@ export function NotificationSettingsScreen() {
                     styles.hourChip,
                     {
                       backgroundColor: colors.bgTertiary,
-                      borderColor: colors.border,
+                      borderColor: colors.hairline,
                       borderRadius: radius.md,
                       paddingHorizontal: spacing.md,
                       paddingVertical: spacing.sm,

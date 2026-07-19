@@ -34,7 +34,7 @@ export function LocationSharingToggle() {
             backgroundColor: colors.bgSecondary,
             borderRadius: radius.md,
             padding: spacing.md,
-            borderColor: colors.border,
+            borderColor: colors.hairline,
             borderWidth: 1,
           },
         ]}
@@ -55,7 +55,7 @@ export function LocationSharingToggle() {
             Broadcast location to group in the background for 4 hours
           </Text>
         </View>
-        <View style={[styles.switchTrack, { backgroundColor: isSharing ? colors.positive + '30' : colors.border, borderRadius: radius.full }]}>
+        <View style={[styles.switchTrack, { backgroundColor: isSharing ? colors.positive + '30' : colors.hairline, borderRadius: radius.full }]}>
           <View style={[styles.switchThumb, { backgroundColor: isSharing ? colors.positive : colors.textSecondary, alignSelf: isSharing ? 'flex-end' : 'flex-start', borderRadius: radius.full }]} />
         </View>
       </Pressable>

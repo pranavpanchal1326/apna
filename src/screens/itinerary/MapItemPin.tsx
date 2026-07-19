@@ -79,7 +79,7 @@ export const MapItemPin = memo(function MapItemPin({
               height:          PIN_SIZE,
               borderRadius:    PIN_SIZE / 2,
               backgroundColor: colors.bgTertiary,
-              borderColor:     isActive ? colors.accentPrimary : colors.border,
+              borderColor:     isActive ? colors.accentPrimary : colors.hairline,
               borderWidth:     isActive ? 2 : 1,
             },
             isActive && shadows.accentGlow,
@@ -96,7 +96,7 @@ export const MapItemPin = memo(function MapItemPin({
               {
                 backgroundColor: item.isConfirmed
                   ? colors.accentPrimary
-                  : colors.accentGold,
+                  : colors.warning,
                 borderColor:     colors.bgSecondary,
               },
             ]}
@@ -108,7 +108,7 @@ export const MapItemPin = memo(function MapItemPin({
           style={[
             styles.pinTail,
             {
-              borderTopColor: isActive ? colors.accentPrimary : colors.border,
+              borderTopColor: isActive ? colors.accentPrimary : colors.hairline,
             },
           ]}
         />

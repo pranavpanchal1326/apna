@@ -24,7 +24,7 @@ export function InviteCodeCard({
         {
           backgroundColor: colors.bgSecondary,
           borderRadius:    radius.lg,
-          borderColor:     colors.borderAccent,
+          borderColor:     'transparent',
           borderWidth:     1,
           padding:         spacing.lg,
           ...shadows.card,
@@ -46,7 +46,7 @@ export function InviteCodeCard({
           {
             backgroundColor: colors.bgTertiary,
             borderRadius:    radius.md,
-            borderColor:     colors.border,
+            borderColor:     colors.hairline,
             borderWidth:     1,
             paddingHorizontal: spacing.lg,
             paddingVertical:   spacing.md,
@@ -98,7 +98,7 @@ export function InviteCodeCard({
               styles.btn,
               styles.btnSecondary,
               {
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 borderRadius:    radius.md,
                 paddingVertical: spacing.md,
                 marginTop:       spacing.xs,

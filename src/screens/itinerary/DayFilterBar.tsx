@@ -90,7 +90,7 @@ export function DayFilterBar({
                   backgroundColor: isActive
                     ? colors.accentPrimary
                     : `${colors.bgTertiary}CC`,  // CC = 80% opacity
-                  borderColor:  isActive ? colors.accentPrimary : colors.border,
+                  borderColor:  isActive ? colors.accentPrimary : colors.hairline,
                   borderRadius: radius.full,
                   borderWidth:  1,
                   paddingHorizontal: spacing.md,

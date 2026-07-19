@@ -95,7 +95,7 @@ export const MemberAvatarRow = memo(function MemberAvatarRow({
               {
                 backgroundColor: colors.bgTertiary,
                 borderRadius:    radius.full,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 borderWidth:     1,
                 width:           44,
                 height:          44,

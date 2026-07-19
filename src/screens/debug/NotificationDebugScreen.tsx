@@ -49,12 +49,12 @@ export function NotificationDebugScreen() {
     <Screen>
       <Header title="Notification Debug" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
-        <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md }]}>
+        <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md }]}>
           <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.xs }]}>Permission State</Text>
           <Text style={[text.body.sm, { color: colors.textSecondary }]}>{permState}</Text>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md }]}>
+        <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md }]}>
           <Text style={[text.heading.sm, { color: colors.textPrimary, marginBottom: spacing.xs }]}>Token Info</Text>
           <Text style={[text.body.sm, { color: colors.textSecondary, marginBottom: spacing.xs }]}>Registered: {token ? 'Yes' : 'No'}</Text>
           <Text style={[text.body.sm, { color: colors.textSecondary, fontFamily: 'monospace' }]}>{token || 'none'}</Text>

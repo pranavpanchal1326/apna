@@ -102,7 +102,7 @@ export function DangerZoneSection({
         {
           backgroundColor: colors.bgSecondary,
           borderRadius: radius.lg,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           borderWidth: 1,
           padding: spacing.lg,
           marginBottom: spacing.md,
@@ -121,7 +121,7 @@ export function DangerZoneSection({
           style={[
             styles.btn,
             {
-              borderColor: colors.accentDanger + '60',
+              borderColor: colors.negative + '60',
               borderWidth: 1.5,
               borderRadius: radius.md,
               paddingVertical: spacing.sm + 2,
@@ -134,7 +134,7 @@ export function DangerZoneSection({
           accessibilityRole="button"
           accessibilityLabel="Leave group"
         >
-          <Text style={[text.body.sm, { color: colors.accentDanger }]}>
+          <Text style={[text.body.sm, { color: colors.negative }]}>
             {loadingLeave ? 'Leaving…' : 'Leave Group'}
           </Text>
         </Pressable>
@@ -145,14 +145,14 @@ export function DangerZoneSection({
         <View style={[
           styles.section,
           {
-            backgroundColor: colors.accentDanger + '08',
+            backgroundColor: colors.negative + '08',
             borderRadius: radius.lg,
-            borderColor: colors.accentDanger + '30',
+            borderColor: colors.negative + '30',
             borderWidth: 1.5,
             padding: spacing.lg,
           },
         ]}>
-          <Text style={[text.label.md, { color: colors.accentDanger, marginBottom: spacing.sm, letterSpacing: 0.5 }]}>
+          <Text style={[text.label.md, { color: colors.negative, marginBottom: spacing.sm, letterSpacing: 0.5 }]}>
             DANGER ZONE
           </Text>
           <Text style={[text.body.sm, { color: colors.textSecondary, marginBottom: spacing.md }]}>
@@ -174,7 +174,7 @@ export function DangerZoneSection({
                   fontSize: 15,
                   color: colors.textPrimary,
                   backgroundColor: colors.bgTertiary,
-                  borderColor: colors.accentDanger + '40',
+                  borderColor: colors.negative + '40',
                   borderWidth: 1,
                   borderRadius: radius.md,
                   paddingHorizontal: spacing.md,
@@ -193,7 +193,7 @@ export function DangerZoneSection({
                   }}
                   style={{
                     flex: 1,
-                    borderColor: colors.border,
+                    borderColor: colors.hairline,
                     borderWidth: 1,
                     borderRadius: radius.md,
                     paddingVertical: spacing.sm,
@@ -223,7 +223,7 @@ export function DangerZoneSection({
                   disabled={loadingDelete || confirmName.trim() !== groupName.trim()}
                   style={{
                     flex: 1,
-                    backgroundColor: colors.accentDanger,
+                    backgroundColor: colors.negative,
                     borderRadius: radius.md,
                     paddingVertical: spacing.sm,
                     alignItems: 'center',
@@ -245,7 +245,7 @@ export function DangerZoneSection({
               style={[
                 styles.btn,
                 {
-                  backgroundColor: colors.accentDanger,
+                  backgroundColor: colors.negative,
                   borderRadius: radius.md,
                   paddingVertical: spacing.sm + 2,
                   alignItems: 'center',

@@ -66,7 +66,7 @@ export function DayTabBar({
         {
           backgroundColor: colors.bgSecondary,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.hairline,
         },
       ]}
     >

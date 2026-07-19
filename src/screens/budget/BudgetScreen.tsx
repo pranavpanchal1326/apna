@@ -220,7 +220,7 @@ export function BudgetScreen() {
       <Screen>
         <Header title="Budget" />
         <View style={styles.center}>
-          <Text style={[text.body.md, { color: colors.accentDanger, textAlign: 'center', marginBottom: spacing.md }]}>
+          <Text style={[text.body.md, { color: colors.negative, textAlign: 'center', marginBottom: spacing.md }]}>
             {error}
           </Text>
           <Button variant="primary" label="Retry" onPress={refresh} />

@@ -32,7 +32,7 @@ export const LiveMemberPins = memo(function LiveMemberPins({
         const isGhostPin = loc.sharing === false
 
         // Determine border color based on status
-        let statusColor: string = colors.border
+        let statusColor: string = colors.hairline
         if (isGhostPin) {
           statusColor = colors.accentPrimary
         } else if (loc.status === 'live') {

@@ -100,7 +100,7 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
         snapPoints={snapPoints}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.bgSecondary }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 36 }}
+        handleIndicatorStyle={{ backgroundColor: colors.hairline, width: 36 }}
       >
         <BottomSheetView style={{ flex: 1 }}>
           {/* Sheet header */}
@@ -111,7 +111,7 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
                 paddingHorizontal: spacing.lg,
                 paddingBottom:     spacing.md,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.hairline,
               },
             ]}
           >
@@ -143,7 +143,7 @@ export const AddItemSheet = forwardRef<AddItemSheetRef, AddItemSheetProps>(
                       backgroundColor: isActive
                         ? `${colors.accentPrimary}18`
                         : colors.bgTertiary,
-                      borderColor:   isActive ? colors.accentPrimary : colors.border,
+                      borderColor:   isActive ? colors.accentPrimary : colors.hairline,
                       borderRadius:  radius.sm,
                       paddingVertical:   spacing.sm,
                       paddingHorizontal: spacing.md,

@@ -2,29 +2,38 @@
 
 <br />
 
-```
- ██████╗ ██████╗ ███╗   ██╗ █████╗
-██╔══██╗██╔══██╗████╗  ██║██╔══██╗
-███████║██████╔╝██╔██╗ ██║███████║
-██╔══██║██╔═══╝ ██║╚██╗██║██╔══██║
-██║  ██║██║     ██║ ╚████║██║  ██║
-╚═╝  ╚═╝╚═╝     ╚═╝  ╚═══╝╚═╝  ╚═╝
-```
+<img src="assets/brand/apna-wordmark-ink.svg" alt="apna" width="220" />
 
-**_yeh sirf ek app nahi hai. yeh apna hai._**
+<br />
+<br />
+
+**One app for the whole squad — money, memories, maps, and moments, permanently connected.**
 
 <br />
 
-[![Platform](https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://play.google.com/store)
-[![React Native](https://img.shields.io/badge/React_Native-Expo-0ea5e9?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![License](https://img.shields.io/badge/license-Proprietary-FF6B6B?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://play.google.com/store)
+[![Expo](https://img.shields.io/badge/Expo_SDK_56-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev)
+[![React Native](https://img.shields.io/badge/React_Native_0.85-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-asia--south1-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 
 <br />
 
-> **WhatsApp has the chat. Splitwise has the money. Google Photos has the memories.**
-> **Nobody has stitched them together for a friend group. apna does.**
+> WhatsApp has the chat. Splitwise has the money. Google Photos has the memories.
+> Nobody stitched them together for a friend group. **apna does.**
+
+<br />
+
+<table border="0">
+  <tr>
+    <td align="center"><img src="docs/screens/balance.svg" width="190" alt="Group balance" /><br /><sub><b>Group balance</b></sub></td>
+    <td align="center"><img src="docs/screens/add-expense.svg" width="190" alt="Add expense" /><br /><sub><b>Add expense</b></sub></td>
+    <td align="center"><img src="docs/screens/settle.svg" width="190" alt="Settle up" /><br /><sub><b>Settle up (UPI)</b></sub></td>
+    <td align="center"><img src="docs/screens/map.svg" width="190" alt="Live map" /><br /><sub><b>Live map</b></sub></td>
+  </tr>
+</table>
+
+<sub>Screens rendered in the <b>Ink</b> theme. Mockups, not marketing — they mirror the shipped Kora &amp; Ink components.</sub>
 
 <br />
 
@@ -32,1102 +41,586 @@
 
 ---
 
-## What is apna?
+## Contents
 
-**apna** is the group life app built from scratch for Indian Gen Z and millennials — the squad that goes on trips together, splits bills daily, shares moments, and asks "kahan hai tu?" more than any other question.
-
-It is not a trip planner. It is not an expense tracker. It is not a photo album. It is all three, permanently connected, with live location on top, designed for the way Indian friend groups actually live — not the way Western product teams imagine they do.
-
-The core insight: your squad already has WhatsApp, Splitwise, Google Maps, and a shared album. They switch between five apps on every trip. apna replaces all five with one that knows the context every other app ignores. The ₹840 dinner connects to the photo from that rooftop. The itinerary stop appears as a pin on the map. The settlement clears with one UPI tap.
-
-**Five apps. Zero connection. Total context loss. That ends here.**
-
----
-
-## Table of Contents
-
-- [The Problem We Solve](#the-problem-we-solve)
+- [What apna is](#what-apna-is)
+- [The problem](#the-problem)
+- [Screens](#screens)
 - [Features](#features)
-- [Design System — Dhaga](#design-system--dhaga)
+- [How settlement works](#how-settlement-works)
+- [Kora and Ink — the design system](#kora-and-ink--the-design-system)
 - [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Data Models](#data-models)
-- [Security & Privacy](#security--privacy)
-- [Getting Started](#getting-started)
-- [Environment Setup](#environment-setup)
-- [Running the App](#running-the-app)
-- [Project Structure](#project-structure)
-- [Firebase Setup](#firebase-setup)
+- [Real-time data flow](#real-time-data-flow)
+- [Data model](#data-model)
+- [Tech stack](#tech-stack)
+- [Security and privacy](#security-and-privacy)
+- [Getting started](#getting-started)
+- [Environment](#environment)
+- [Running the app](#running-the-app)
+- [Project structure](#project-structure)
 - [Cloud Functions](#cloud-functions)
 - [Testing](#testing)
-- [Build & Deployment](#build--deployment)
+- [Build and release](#build-and-release)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
 ---
 
-## The Problem We Solve
+## What apna is
 
-A typical Indian friend group on a trip uses:
+**apna** is the group-life app built from scratch for Indian friend groups — the squad that travels together, splits bills daily, shares moments, and asks *"kahan hai tu?"* more than any other question.
 
-| App | What they use it for | The pain |
-|-----|---------------------|----------|
-| WhatsApp | Everything — coordination, plans, "who paid for lunch?" | Context buried in thousands of messages |
-| Splitwise | Expense tracking | Cold and transactional — no context, no memories |
-| Google Maps | Navigation | No friend layer — "kahan hai tu?" still sent via WhatsApp |
-| Google Photos | Shared album | Disconnected from everything else — who even has those photos? |
-| Notes app | Itinerary | Private, not shared, never updated |
+It is not a trip planner. It is not an expense tracker. It is not a photo album. It is all three, permanently connected, with live location on top — designed for the way Indian friend groups actually live.
 
-**Five apps. Zero connection. Total context loss.**
+The core insight: your squad already runs on WhatsApp, Splitwise, Google Maps, and a shared album. They switch between five apps on every trip. apna replaces all five with one that carries the context every other app throws away. The ₹840 dinner links to the rooftop photo from that night. The itinerary stop shows up as a pin on the map. The settlement clears with one UPI tap.
 
-apna collapses all five into one — with every layer knowing about every other layer.
+---
+
+## The problem
+
+A typical friend group on a trip juggles five disconnected apps:
+
+| App | Used for | The pain |
+| --- | --- | --- |
+| WhatsApp | Coordination, "who paid for lunch?" | Context buried in thousands of messages |
+| Splitwise | Expense tracking | Cold and transactional — no memories attached |
+| Google Maps | Navigation | No friend layer — location still shared over chat |
+| Google Photos | Shared album | Disconnected from the trip and the spend |
+| Notes | Itinerary | Private, never updated, never shared |
+
+```mermaid
+flowchart LR
+    subgraph Before["Five apps, zero connection"]
+        direction LR
+        W[WhatsApp] ~~~ S[Splitwise] ~~~ M[Maps] ~~~ P[Photos] ~~~ N[Notes]
+    end
+    Before ==> A(("apna"))
+    A --> Money[Money]
+    A --> Places[Places]
+    A --> Memories[Memories]
+    A --> Live[Live location]
+```
+
+### How apna compares
+
+| | WhatsApp | Splitwise | Google Maps | Google Photos | **apna** |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| Split bills | — | Yes | — | — | **Yes** |
+| Shortest-path settle | — | Partial | — | — | **Yes** |
+| UPI one-tap pay | — | — | — | — | **Yes** |
+| Live friend location | Manual | — | — | — | **Yes** |
+| Shared trip album | — | — | — | Yes | **Yes** |
+| Itinerary + voting | — | — | Saved lists | — | **Yes** |
+| Everything, one context | — | — | — | — | **Yes** |
+
+---
+
+## Screens
+
+<table border="0">
+  <tr>
+    <td width="33%" align="center"><img src="docs/screens/balance.svg" width="100%" alt="Group balance" /></td>
+    <td width="33%" align="center"><img src="docs/screens/add-expense.svg" width="100%" alt="Add expense" /></td>
+    <td width="33%" align="center"><img src="docs/screens/settle.svg" width="100%" alt="Settle up" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Group balance</b><br />Owed / owes at a glance</sub></td>
+    <td align="center"><sub><b>Add expense</b><br />Five split types</sub></td>
+    <td align="center"><sub><b>Settle up</b><br />Fewest transfers, UPI pay</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" align="center"><img src="docs/screens/map.svg" width="100%" alt="Live map" /></td>
+    <td width="33%" align="center"><img src="docs/screens/itinerary.svg" width="100%" alt="Itinerary" /></td>
+    <td width="33%" align="center"><img src="docs/screens/memories.svg" width="100%" alt="Memories" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Live map</b><br />Pins, route, ghost, SOS</sub></td>
+    <td align="center"><sub><b>Itinerary</b><br />Day plan, votes, buffer warnings</sub></td>
+    <td align="center"><sub><b>Memories</b><br />Timeline linked to spend</sub></td>
+  </tr>
+</table>
+
+> A wide [social-preview banner](docs/screens/social-preview.svg) (1280×640) ships in `docs/screens/`. GitHub's share-card slot accepts PNG/JPG only, so export first:
+>
+> ```bash
+> npm i -D sharp        # one-time, on demand
+> npm run export:screens   # writes PNGs to docs/screens/png/ at 2x
+> ```
+>
+> Then upload `docs/screens/png/social-preview.png` under **Settings → General → Social preview**. The same command also produces PNGs of every screen for app-store listings and decks.
 
 ---
 
 ## Features
 
-### 💰 Budget & Finance Engine
+### Money and settlement
 
-The smartest expense splitting engine built for Indian friend groups.
+- **Every split type** — equal, equal-subset, custom amounts, percentage, and by-item line-by-line restaurant bills.
+- **Shortest-path settlement** — the balance engine minimises the number of transactions mathematically. N expenses across a group collapse to the fewest possible transfers.
+- **Multi-currency** — INR default, with USD, EUR, AED, THB. The exchange rate is locked at entry time and never retroactively recalculated.
+- **Receipt photos** — attach a bill to any expense, compressed to 2 MB, member-only access.
+- **UPI deep links** — Settle Up opens GPay / PhonePe / Paytm with the amount pre-filled. One tap to actually pay.
+- **Export** — formatted PDF report or raw CSV, with category breakdown and per-person summary.
 
-- **All split types** — Equal, Equal subset, Custom amounts, Percentage, By item (line-by-line restaurant bills)
-- **Shortest-path settlement** — Minimises transactions mathematically. 4 people, N expenses → minimum transactions, guaranteed
-- **Multi-currency** — INR default, supports USD, EUR, AED, THB (common Indian travel destinations). Exchange rate locked at entry time, never retroactively recalculated
-- **Receipt photos** — Attach a photo of the bill to any expense. Compressed to ≤2MB, stored in Firebase Storage, accessible only to group members
-- **UPI deep links** — Settle up opens GPay/PhonePe/Paytm with pre-filled amount. One tap to actually pay
-- **Export** — PDF formatted expense report or CSV raw data. Category breakdown, per-person summary, settlement instructions
-- **Recurring expenses** — Roommate mode. Monthly rent, Netflix split, gym membership auto-created on schedule
-- **Real-time balance updates** — Every expense triggers a Cloud Function that recalculates all balances and pushes to every member instantly
+### Live location
+
+- **Off by default.** Every share is an explicit opt-in session.
+- Friend pins on a custom map, updated every 15 seconds over Firebase Realtime Database.
+- **Ghost mode** — see others while hiding yourself.
+- **SOS** — a one-time high-priority location broadcast that works even when sharing is off, and is never stored.
+- Every location auto-expires after four hours.
+
+### Memories, itinerary, and trip wrap
+
+- Shared photo timeline, grid, and map view — each memory can carry a caption, a place, and a trip day.
+- Day-by-day itinerary with venue search, voting, and buffer-time warnings.
+- **Trip Wrap** — a Cloud Function aggregates trip stats and top memories into a recap when the trip ends.
+
+### Group life
+
+- Activity feed and push notifications for every meaningful event.
+- QR and 6-character invite codes.
+- Privacy-preserving contact sync (hashes only — see below).
+- Android home-screen widgets for balance and map, built natively with Jetpack Compose Glance.
+
+---
+
+## How settlement works
+
+The engine turns a tangle of "who paid what" into the **fewest possible transfers**. First it nets every expense into one balance per person; then it greedily matches the largest creditor to the largest debtor until everyone is at zero.
+
+Take four friends in Goa:
+
+| Expense | Paid by | Amount | Split |
+| --- | --- | --- | --- |
+| Beach shack dinner | Aisha | ₹4,200 | equal / 4 |
+| Scooter rental | You | ₹1,600 | equal / 4 |
+| Souvenirs | Rohan | ₹900 | equal / 4 |
+
+Netting each person against their fair share of ₹1,675 gives:
 
 ```
-Settlement Algorithm — Shortest Path:
-
-4 members: Pranav +₹1,375 | Riya -₹125 | Arjun -₹3,125 | Sneha +₹1,875
-
-Naive approach: 6 transactions
-apna:           3 transactions
-
-Arjun → Sneha:  ₹1,875
-Arjun → Pranav: ₹1,250
-Riya  → Pranav: ₹125
-
-Every person pays exactly their fair share.
-Nobody is penalised for who they paid.
+Aisha  +2,525      Rohan  -775
+You     -75        Meera  -1,675
 ```
 
----
+A naive approach settles debt-by-debt (up to 6 transfers). apna reduces it to **3**:
 
-### 📍 Live Location
-
-Real-time friend location with privacy built in from day one.
-
-- **Live map** — Custom Mapbox dark/light style. Friend pins with avatar initials and color. Solid ring = live (<30s), dimmed ring = recent (30s–5min), no ring = offline (>5min)
-- **Background location** — Expo TaskManager keeps sharing even when app is backgrounded. Auto-expires after exactly 4 hours
-- **Ghost mode** — See everyone else's location, hide your own. Background task keeps running (for SOS), pin just disappears
-- **SOS** — Hold 2 seconds to activate. Triple haptic feedback. Instant push notification to every group member with a maps deeplink to your last known location. Bypasses all notification rules — always delivers immediately
-- **Check-in** — Tap your location on the map, search via Mapbox Places, check in. Appears in activity feed and pins to the memories map view
-- **Trip route overlay** — Every itinerary stop appears as a pin on the live map. Dashed polyline connects them in order. "On the way to [Next Stop]" card appears near departure time
-- **Privacy first** — Location sharing is OFF by default. No location stored in Firestore — only in Firebase Realtime Database. Auto-deleted after 4 hours. No background tracking without explicit permission
-
----
-
-### 📸 Memories
-
-Not a photo dump. A contextual timeline that knows where you were, when, and what you spent.
-
-- **Add from camera or gallery** — Native camera with live viewfinder, burst mode, flash toggle. Gallery multi-select up to 10 photos
-- **Client-side compression** — Every photo compressed to ≤2MB before upload. Three-pass algorithm: 82% → 65% → 50% quality floor
-- **Three views** — Timeline (grouped by day with day headers), Grid (3-column masonry), Map (photos pinned to GPS coordinates, clustered)
-- **Full-screen viewer** — Swipe left/right within day, swipe up for reactions and "who was there", linked expense chip if a related expense exists
-- **Reactions** — ❤️ 😂 🔥 😮 👏 — tap to react, tap again to remove
-- **Offline queuing** — Photos captured offline queued in MMKV, shown in timeline immediately with "uploading" indicator, synced when connectivity returns
-- **On This Day** — Push notification on trip anniversary: "1 year ago in Jaipur 🏰". Resurfaces the memory reel for that day
-
----
-
-### 🗓 Trip Itinerary & Smart Day Planning
-
-A real trip planner, not a notes app with dates.
-
-- **Mapbox Places search** — Search any venue, auto-fills name, address, coordinates
-- **Drag-to-reorder** — Reorder items within a day. Order synced to Firestore for all members instantly
-- **Activity voting** — Any member proposes an activity. Vote ✅ Yes / 🤔 Maybe / ❌ No. Majority auto-confirms and adds to itinerary
-- **Weather per day** — OpenWeatherMap 7-day forecast. Rain alert overlaid on outdoor activities
-- **Buffer time warnings** — Mapbox Directions API checks travel time between consecutive stops. "⚠️ Only 20 min between Amber Fort and Jal Mahal — Mapbox says 35 min drive"
-- **Bird's-eye map** — Full-screen Mapbox map showing all stops across the trip, connected by dashed polyline, filterable by day. Camera auto-fits to visible pins
-- **Mark complete** — Completed items struck through, moved to bottom. Group sees progress in real time
-
----
-
-### 🏁 Trip Wrap
-
-Auto-generated at trip end. No effort required.
-
-- **By the numbers** — Total group spend, days, members, memories added, places visited, distance traveled
-- **Top memories** — Auto-selected 6 photos (most reacted + 1 per day minimum)
-- **Expense breakdown** — Pie chart by category with Dhaga palette colors
-- **Per-person summary** — Who paid most, who gets back most
-- **Settlement instructions** — Final minimum transactions to close all debts
-- **Memory reel** — Auto-generated 30–60 second MP4 slideshow. Exportable, shareable to Instagram Stories and WhatsApp Status
-- **Shareable recap card** — Single image: trip name, dates, top 4 photos, spend total. "Made with apna" watermark. Screenshot-optimised
-
----
-
-### 📋 Shared Lists & Hangout Planner
-
-Daily utility beyond the trip.
-
-- **Shared lists** — Packing, Grocery, Task. Anyone adds items, anyone claims them. Only claimer or admin can uncheck. Completed items collapse to bottom
-- **Task assignments** — Assign any list item to a member with an optional deadline. Push reminder 1 day before. Completion visible in activity feed
-- **Hangout planner** — "Anyone free Friday?" with proposed venue, time range, budget estimate. RSVP Yes/Maybe/No. Auto-confirm when quorum reached. Reminder 2 hours before
-
----
-
-### 🔔 Activity Feed & Notifications
-
-The pulse of the group. Every action, surfaced in real time.
-
-| Action | Feed item |
-|--------|-----------|
-| Expense added | "Pranav added ₹840 for Dinner · Jaipur" |
-| Memory posted | "Riya posted 4 photos · Amber Fort" |
-| Member joined | "Arjun joined apna 👋" |
-| Check-in | "Sneha checked in at Jal Mahal" |
-| Settlement | "Arjun settled ₹3,125 with Pranav" |
-| Itinerary added | "Pranav added Amber Fort to Day 1" |
-| List item claimed | "Riya claimed: Book train tickets" |
-| Hangout confirmed | "Friday dinner is confirmed — 6 going" |
-
-**Notification rules that respect your sleep:**
-- Max 3 per group per hour — excess is batched
-- Silent hours 11pm–8am — configurable per user
-- SOS bypasses every rule — always immediate, always delivers
-
----
-
-### 📲 Home Screen Widgets (Android)
-
-Glance at your home screen. Know your balance and who is live — without opening the app.
-
-- **Balance widget** — Group name, your net balance in teal (owed) or red (owes), last updated time. Tap to open Budget
-- **Map widget** — Group name, up to 3 live member chips with teal rings, "N live now". Tap to open Map
-- Updates within 5 seconds of app foreground and on every background location write
-- Built with Jetpack Compose Glance API — native Android, zero React inside
-
----
-
-### 👥 Contact Sync
-
-Find friends already on apna without giving away your contact list.
-
-- Reads contacts with name + phone only — no email, no addresses, no photos
-- SHA-256 hashes every phone number client-side — raw numbers never leave your device
-- Only truncated 16-character hashes sent to the server for matching
-- Results show masked numbers (+91XXXXX12345) — never full numbers
-- Matched contacts appear as one-tap suggestions in the invite flow
-- Cache valid for 5 minutes — clears on logout
-
----
-
-### 📷 QR Invite System
-
-Joining a group looks like scanning a festival pass.
-
-- Full-bleed screen with group accent color
-- Large, high-contrast QR code
-- Group name in Outfit 700
-- Member avatar stack below QR
-- Invite code displayed: `APNA·26` format
-- Copy link or Share natively
-- Case-insensitive code entry
-- 30-day expiry, regeneratable by admin
-
----
-
-## Design System — Dhaga
-
-*Dhaga* — Hindi for thread. The visual metaphor is a single thread connecting people, money, places, and moments.
-
-### Color Palette
-
-#### Dark Mode (Default)
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `bgPrimary` | `#080C14` | Main background — deep ocean |
-| `bgSecondary` | `#0D1220` | Card backgrounds |
-| `bgTertiary` | `#141A2C` | Elevated surfaces, inputs |
-| `accentPrimary` | `#4ECDC4` | CTA, positive balances, active states |
-| `accentDanger` | `#FF6B6B` | Debt, danger, SOS |
-| `accentGold` | `#FFD166` | Highlights, warmth, memories |
-| `textPrimary` | `#F0F4FF` | Primary text |
-| `textSecondary` | `#8A94B0` | Labels, metadata |
-| `textMuted` | `#4A5468` | Timestamps, hints |
-| `border` | `rgba(255,255,255,0.06)` | Subtle card borders |
-
-#### Light Mode
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `bgPrimary` | `#F8FAFF` | Main background |
-| `bgSecondary` | `#FFFFFF` | Card backgrounds |
-| `accentPrimary` | `#1A9E96` | CTA (darkened for contrast) |
-| `accentDanger` | `#D94F4F` | Debt, danger |
-| `textPrimary` | `#0A0E1A` | Primary text |
-
-### Typography
-
-| Role | Font | Weight | Size |
-|------|------|--------|------|
-| Display | Outfit | 700 | 32–48px |
-| Heading | Outfit | 600 | 20–28px |
-| Body | Outfit | 400 | 14–16px |
-| Label | Outfit | 500 | 10–12px |
-| **Mono** | **JetBrains Mono** | **500** | **13–16px** |
-
-Every monetary amount, invite code, and timestamp uses JetBrains Mono. Numbers feel precise and financial, not decorative.
-
-### Motion
-
-```
-Transitions:    200–280ms ease-out
-Expense spring: cubic-bezier(0.34, 1.56, 0.64, 1)
-Minimum:        12ms — nothing is instant
-Haptics:        expense added · settle up · SOS · QR scan
+```mermaid
+flowchart LR
+    M["Meera<br/>-1,675"] -- "₹1,675" --> A["Aisha<br/>+2,525"]
+    R["Rohan<br/>-775"] -- "₹775" --> A
+    Y["You<br/>-75"] -- "₹75" --> A
+    classDef pos fill:#26231D,stroke:#8FAE9A,color:#EFEAE0;
+    classDef neg fill:#26231D,stroke:#D96A50,color:#EFEAE0;
+    class A pos; class M,R,Y neg;
 ```
 
-### Map Style
+For *n* people the result is at most *n − 1* transfers, always. The engine is pure and deterministic, lives in [`src/lib/budget`](src/lib/budget), and is covered to 100% by [`src/tests/settlement.test.ts`](src/tests/settlement.test.ts).
 
-Custom Mapbox dark style:
+---
 
-```
-Roads:    #1A2236
-Water:    #0D1824
-Land:     #0F1520
-Labels:   #4A5468 — Outfit 10px
-Parks:    #141E14
-```
+## Kora and Ink — the design system
+
+The system is named for two states of the same cloth: **Ink** (dark) and **Kora**, unbleached cotton (light). Both are the same design at different times of day. One dyed accent — *madder* — carries all meaning; everything else is warm neutral. The running-stitch motif (a dashed thread) recurs from the logo to the active tab indicator.
+
+<table border="0">
+  <tr>
+    <td align="center"><img src="docs/screens/balance.svg" width="210" alt="Ink theme" /><br /><sub><b>Ink</b> — the default, evening</sub></td>
+    <td align="center"><img src="docs/screens/balance-kora.svg" width="210" alt="Kora theme" /><br /><sub><b>Kora</b> — daylight, unbleached cotton</sub></td>
+  </tr>
+</table>
+
+The same screen, the same tokens — only the fabric changes.
+
+### Palette
+
+<img src="docs/screens/palette-ink.svg" width="100%" alt="Ink palette" />
+
+<img src="docs/screens/palette-kora.svg" width="100%" alt="Kora palette" />
+
+| Token | Role | Ink | Kora |
+| --- | --- | --- | --- |
+| `bgPrimary` | Main surface — the cloth | `#161512` | `#F3EEE4` |
+| `bgSecondary` | Grouped rows, tab bar | `#1D1B17` | `#ECE5D6` |
+| `bgTertiary` | Inputs, sheets, chips | `#26231D` | `#E4DCC9` |
+| `accentPrimary` | Madder — the dyed thread | `#D96A50` | `#B0402F` |
+| `positive` | Leaf — owed to you, settled | `#8FAE9A` | `#3E5C50` |
+| `warning` | Haldi — budget nearing | `#C9A24B` | `#8A6A1F` |
+| `textPrimary` | Primary text | `#EFEAE0` | `#1C1A15` |
+| `textSecondary` | Labels, metadata | `#A39B89` | `#6E675A` |
+
+### Type and motion
+
+| Role | Typeface | Notes |
+| --- | --- | --- |
+| Display / heading | Cabinet Grotesk (Bold, Extrabold) | The wordmark and section titles |
+| Body / label | General Sans (Regular, Medium) | Everything read at length |
+| Numerals | Spline Sans Mono (Medium) | Every amount, invite code, and timestamp — precise, financial |
+
+Colour encodes meaning only; decoration is done with neutrals. Amounts are always monospaced so money never looks decorative.
 
 ---
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     React Native (Expo)                         │
-│              Android First · iOS Phase 6                        │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │
-           ┌───────────────────┼───────────────────┐
-           ▼                   ▼                   ▼
-    Firebase Auth        Firestore DB        Realtime DB
-    (Phone OTP)        (Primary data)    (Location — WebSocket)
-    JWT · 1hr TTL      Offline-first      /groups/{id}/locations
-    Token revocation   Security rules     Auto-deleted 4h
-           │                   │                   │
-           └───────────────────┼───────────────────┘
-                               │
-                    ┌──────────┼──────────┐
-                    ▼          ▼          ▼
-             Cloud         Firebase    Firebase
-             Functions     Storage     Cloud
-             (asia-south1) (Photos)    Messaging
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-    Mapbox      OpenWeather   PostHog
-    (Maps,      (Forecast)    (Analytics)
-    Places,
-    Directions)
+```mermaid
+flowchart TD
+    App["React Native · Expo SDK 56<br/>Android first · iOS Phase 6"]
+
+    App --> Auth["Firebase Auth<br/>Phone OTP · JWT 1h TTL"]
+    App --> FS["Cloud Firestore<br/>Primary data · offline-first"]
+    App --> RTDB["Realtime Database<br/>Live location · ephemeral 4h"]
+    App --> Store["Firebase Storage<br/>Photos · receipts · member-only"]
+
+    FS --> CF["Cloud Functions<br/>asia-south1"]
+    RTDB --> CF
+    CF --> FCM["Cloud Messaging<br/>Push · incl. SOS"]
+
+    App --> Map["MapLibre<br/>custom Ink/Kora map style"]
+    App -.-> Obs["Sentry · PostHog"]
+
+    classDef fb fill:#26231D,stroke:#D96A50,color:#EFEAE0;
+    classDef ext fill:#1D1B17,stroke:#8FAE9A,color:#EFEAE0;
+    class Auth,FS,RTDB,Store,CF,FCM fb;
+    class Map,Obs ext;
 ```
 
-### Real-Time Data Flow
+Every Firebase service runs in **asia-south1 (Mumbai)** — never us-central1. State is Zustand persisted to MMKV; Firestore offline persistence means reads come from cache and writes are queued while offline.
 
-```
-User adds expense
-       │
-       ▼
-Firestore write → expenses/{expenseId}
-       │
-       ▼
-Cloud Function: onExpenseCreate
-       ├── Recalculate all balances (shortest-path algorithm)
-       ├── Write to balances/{groupId} (atomic batch)
-       ├── Create activity feed item
-       └── Send FCM push to all members (their individual share)
-```
+---
 
-```
-User shares location
-       │
-       ▼
-expo-location watchPositionAsync / TaskManager (background)
-       │ every 15 seconds
-       ▼
-Firebase Realtime DB write
-path: /groups/{groupId}/locations/{userId}
-{ lat, lng, accuracy, timestamp, sharing: true }
-       │
-       ▼
-All group members via onValue() listener → re-render pins
-       │
-       ▼
-Auto-deleted by cleanupExpiredLocations (every 5min scheduled function)
-when timestamp > 4 hours old
+## Real-time data flow
+
+**Adding an expense** — the client writes once; the server does the maths.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FS as Firestore
+    participant CF as onExpenseCreate
+    participant FCM as Cloud Messaging
+    U->>FS: write expenses/{id}
+    FS-->>CF: onCreate trigger
+    CF->>CF: recompute balances (shortest-path)
+    CF->>FS: atomic batch → balances/{groupId}
+    CF->>FS: append activity feed item
+    CF->>FCM: push each member their share
+    FS-->>U: balances update via listener
 ```
 
-### Offline Strategy
+**Sharing location** — ephemeral, listener-driven, self-deleting.
 
-```
-Firestore:  Offline persistence enabled — reads from cache, writes queued
-Photos:     MMKV upload queue — shown immediately, synced on reconnect
-Location:   Suspended when offline — resumes automatically on reconnect
-Functions:  Idempotent — safe to retry on reconnect
+```mermaid
+sequenceDiagram
+    participant U as User (foreground/background task)
+    participant RTDB as Realtime DB
+    participant M as Group members
+    participant Cron as cleanupExpiredLocations
+    loop every 15s while sharing
+        U->>RTDB: /groups/{gid}/locations/{uid}
+        RTDB-->>M: onValue → re-render pins
+    end
+    Cron->>RTDB: delete entries older than 4h (every 5 min)
 ```
 
 ---
 
-## Tech Stack
+## Data model
 
-### Core
+```mermaid
+erDiagram
+    USER ||--o{ GROUP : "member of"
+    GROUP ||--o{ EXPENSE : contains
+    GROUP ||--|| BALANCES : "has one"
+    GROUP ||--o{ MEMORY : contains
+    GROUP ||--o{ ITINERARY_ITEM : contains
+    GROUP ||--o{ LOCATION : "ephemeral (RTDB)"
 
-| Layer | Technology | Why |
-|-------|------------|-----|
-| Framework | React Native + Expo Managed | Fastest path to production-quality native Android |
-| Language | TypeScript (strict mode) | Zero `any` — every type is explicit |
-| State | Zustand | Lightweight, no boilerplate, MMKV persistence |
-| Navigation | React Navigation v6 | Industry standard, deep link support |
-| Local storage | **MMKV** | 10× faster than AsyncStorage for real-time data |
-
-### Firebase (all asia-south1)
-
-| Service | Usage |
-|---------|-------|
-| Firebase Auth | Phone OTP authentication. No passwords. No email. |
-| Cloud Firestore | Primary database — groups, expenses, memories, itinerary |
-| Firebase Realtime Database | Live location only — WebSocket, low latency, ephemeral |
-| Firebase Storage | Photos, receipts, group covers — CDN-backed |
-| Cloud Functions | Settlement engine, trip wrap, notifications, scheduled tasks |
-| Firebase Cloud Messaging | Push notifications — all types including SOS |
-
-### Maps & Location
-
-| Service | Usage |
-|---------|-------|
-| Mapbox Maps SDK | Custom dark/light map style, friend pins, trip route |
-| Mapbox Places API | Venue search for itinerary and check-in |
-| Mapbox Directions API | Travel time for buffer warnings, ETA |
-| expo-location | Foreground + background location (Expo TaskManager) |
-
-### Native Modules
-
-| Module | Usage |
-|--------|-------|
-| expo-camera | Native camera with live viewfinder, burst mode |
-| expo-haptics | Physical feedback on 4 PRD-mandated triggers |
-| expo-task-manager | Background location task with 4-hour auto-expire |
-| expo-contacts | Contact sync for member suggestions |
-| expo-crypto | SHA-256 hashing for contact matching |
-| Jetpack Compose Glance | Android home screen widgets (native Kotlin) |
-
-### Observability
-
-| Tool | Usage |
-|------|-------|
-| Sentry | Real-time error tracking, background task breadcrumbs, crash reports |
-| PostHog | Product analytics, session recording, funnel analysis |
-
----
-
-## Data Models
-
-```typescript
-interface User {
-  uid: string
-  phone: string           // +91XXXXXXXXXX (E.164)
-  phoneHash: string       // truncated SHA-256 for contact matching
-  name: string
-  avatarColor: string     // hex from Dhaga 8-color palette
-  createdAt: Timestamp
-  groups: string[]        // group IDs
-}
-
-interface Group {
-  id: string
-  name: string
-  coverPhotoUrl?: string
-  members: {
-    [userId: string]: {
-      role: 'admin' | 'co-admin' | 'member'
-      joinedAt: Timestamp
+    USER {
+        string uid PK
+        string phone "E.164"
+        string phoneHash "truncated SHA-256"
+        string name
+        string avatarColor
     }
-  }
-  inviteCode: string      // 6-char alphanumeric
-  inviteCodeExpiry: Timestamp
-  tripMode: {
-    active: boolean
-    startDate?: string    // YYYY-MM-DD
-    endDate?: string
-    destination?: string
-  }
-  baseCurrency: string    // 'INR'
-  createdAt: Timestamp
-  createdBy: string
-}
-
-interface Expense {
-  id: string
-  groupId: string
-  description: string
-  amount: number
-  currency: string
-  exchangeRateToBase: number    // locked at entry — never recalculated
-  category: 'food' | 'stay' | 'transport' | 'activities' | 'shopping' | 'misc'
-  paidBy: string
-  splitType: 'equal' | 'equal_subset' | 'custom' | 'percentage' | 'by_item'
-  splits: { [userId: string]: number }
-  receiptUrl?: string
-  date: string            // YYYY-MM-DD
-  createdAt: Timestamp
-  createdBy: string
-}
-
-interface GroupBalances {
-  groupId: string
-  lastCalculated: Timestamp
-  netBalances: { [userId: string]: number }   // positive = owed, negative = owes
-  settlements: Array<{
-    from: string          // userId who owes
-    to: string            // userId who is owed
-    amount: number
-  }>
-}
-
-interface Memory {
-  id: string
-  groupId: string
-  photos: Array<{
-    url: string
-    thumbnail: string
-    width: number
-    height: number
-  }>
-  caption?: string        // max 200 chars
-  location?: { lat: number; lng: number; placeName: string }
-  tripDay?: number        // 1-indexed
-  reactions: { [userId: string]: string }
-  addedBy: string
-  createdAt: Timestamp
-}
-
-interface ItineraryItem {
-  id: string
-  groupId: string
-  day: number             // 1-indexed
-  date: string            // YYYY-MM-DD
-  title: string
-  placeName?: string
-  location?: { lat: number; lng: number; placeId: string }
-  startTime: string       // HH:MM
-  durationMinutes: number
-  category: 'food' | 'stay' | 'activity' | 'transport' | 'other'
-  votes: { [userId: string]: 'yes' | 'maybe' | 'no' }
-  completed: boolean
-  order: number
-}
-
-// Realtime DB only — ephemeral, auto-deleted at 4h
-// Path: /groups/{groupId}/locations/{userId}
-interface LocationUpdate {
-  lat: number
-  lng: number
-  accuracy: number
-  timestamp: number       // Unix ms
-  sharing: boolean
-}
+    GROUP {
+        string id PK
+        string inviteCode "6-char"
+        string baseCurrency "INR"
+        object tripMode
+    }
+    EXPENSE {
+        string id PK
+        number amount
+        number exchangeRateToBase "locked at entry"
+        string splitType "equal|custom|percentage|by_item"
+        string paidBy FK
+    }
+    BALANCES {
+        object netBalances "positive=owed"
+        array settlements "from→to→amount"
+    }
+    MEMORY {
+        array photos
+        string caption
+        number tripDay
+    }
+    ITINERARY_ITEM {
+        number day
+        string startTime
+        object votes
+    }
+    LOCATION {
+        number lat
+        number lng
+        number timestamp "auto-deleted 4h"
+    }
 ```
+
+Full TypeScript interfaces live in [`src/lib/types/`](src/lib/types) (one `*.types.ts` per domain), with Firestore collection refs and converters in [`src/lib/firebase/`](src/lib/firebase).
 
 ---
 
-## Security & Privacy
+## Tech stack
 
-### Authentication
+| Layer | Choice | Why |
+| --- | --- | --- |
+| Framework | React Native 0.85 + Expo SDK 56 | Fastest path to production-quality native Android |
+| Language | TypeScript, strict mode | Zero `any` — every type explicit |
+| State | Zustand + MMKV | Lightweight, no boilerplate, ~10× faster than AsyncStorage |
+| Navigation | React Navigation v7 | Deep-link support, native stack |
+| Data | Cloud Firestore | Offline-first primary store |
+| Live location | Realtime Database | WebSocket, low latency, ephemeral |
+| Maps | MapLibre (`@maplibre/maplibre-react-native`) | Open, self-styled Ink/Kora map |
+| Backend | Cloud Functions (asia-south1) | Settlement engine, notifications, cron |
+| Validation | Zod | Runtime schema safety at boundaries |
+| Observability | Sentry + PostHog | Crash tracking and product analytics |
 
-- Phone OTP only — no passwords to steal, no email to phish
-- Firebase Auth JWT tokens — 1-hour expiry with silent refresh
-- Token revocation on logout across all devices simultaneously
-- No session persisted beyond explicit login
-
-### Firestore Security Rules
-
-```javascript
-// Core principle: no user can read data from groups they are not in
-// Activity feed and balances: write-blocked client-side — Cloud Functions only
-
-match /groups/{groupId}/activity/{activityId} {
-  allow read: if isGroupMember(groupId);
-  allow write: if false;   // server-side only
-}
-
-match /groups/{groupId}/balances/{doc} {
-  allow read: if isGroupMember(groupId);
-  allow write: if false;   // server-side only
-}
-```
-
-### Location Privacy
-
-- **OFF by default** — users explicitly opt in to every share session
-- **No Firestore storage** — location exists only in Realtime DB (ephemeral)
-- **Auto-deleted** after 4 hours by scheduled Cloud Function
-- **Ghost mode** — see others, hide yourself; background task continues for SOS
-- **SOS one-time share** — sends location even when sharing is off; never stored
-
-### Contact Matching
-
-- Phone numbers hashed client-side with SHA-256 before any network call
-- Only truncated 16-character hashes sent to Cloud Function
-- Raw phone numbers never transmitted to any server
-- Results return only masked numbers: `+91XXXXX12345`
-
-### Photo Storage
-
-- Firebase Storage with member-only security rules
-- No public read access on any path
-- Signed URLs with 24-hour expiry for external sharing
-- Client-side compression before upload (≤2MB enforced)
-
-### Data Deletion
-
-Account deletion triggers a Cloud Function that:
-- Removes user from all group members maps
-- Keeps expense records (balance integrity) but marks as "Deleted User"
-- Deletes all uploaded photos from Firebase Storage
-- Deletes user profile document
-- Revokes FCM tokens on all devices
-- Clears all MMKV on device
+Native modules of note: `expo-camera`, `expo-haptics`, `expo-task-manager` (background location, 4-hour auto-expire), `expo-contacts`, `expo-crypto` (contact hashing), and a custom Expo config plugin for Jetpack Compose Glance widgets.
 
 ---
 
-## Getting Started
+## Security and privacy
+
+- **Phone OTP only** — no passwords to steal, no email to phish. JWTs expire hourly with silent refresh; logout revokes tokens across all devices.
+- **Server-authoritative balances** — the activity feed and balances collections are write-blocked client-side (`allow write: if false`) and only ever written by Cloud Functions.
+- **No cross-group reads** — the core Firestore rule is that no user can read data from a group they are not a member of.
+- **Location is ephemeral** — it lives only in Realtime DB, never Firestore, and is auto-deleted after four hours. SOS shares are never stored.
+- **Contact matching is hashed** — phone numbers are SHA-256 hashed on-device; only truncated hashes reach the server, and results come back masked (`+91XXXXX12345`). Raw numbers never leave the phone.
+- **Photos are member-only** — no public read on any Storage path; external shares use signed URLs with 24-hour expiry.
+- **Account deletion** removes the user from every group map, deletes their photos and profile, revokes FCM tokens, and clears on-device MMKV — while preserving expense records (marked "Deleted User") for balance integrity.
+
+Rules are versioned in [`firestore.rules`](firestore.rules), [`storage.rules`](storage.rules), and [`database.rules.json`](database.rules.json), and covered by tests (`npm run test:rules`).
+
+---
+
+## Getting started
 
 ### Prerequisites
 
 ```
-Node.js          >= 18.0.0
-npm              >= 9.0.0
-Expo CLI         >= 6.0.0
-Android Studio   (for emulator) or physical Android device
-Java JDK         >= 17 (for Gradle build)
+Node.js         >= 18
+npm             >= 9
+Java JDK        >= 17          # Gradle build
+Android Studio  or a USB-debug Android device
+Firebase CLI    npm i -g firebase-tools
 ```
 
-### Clone and Install
+### Install
 
 ```bash
-git clone https://github.com/your-org/apna.git
+git clone <repo-url>
 cd apna
 npm install
+cp .env.example .env          # then fill in the values below
 ```
 
 ---
 
-## Environment Setup
+## Environment
 
-Create a `.env` file in the project root. **Never commit this file.**
+Create `.env` in the project root — it is git-ignored, never commit it.
 
 ```env
-# Firebase Configuration
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
-EXPO_PUBLIC_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.asia-southeast1.firebasedatabase.app
+# Firebase
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+EXPO_PUBLIC_FIREBASE_DATABASE_URL=
 
-# Mapbox
-EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.your_mapbox_token
+# Maps, weather, analytics, crash
+EXPO_PUBLIC_MAP_STYLE_URL=
+EXPO_PUBLIC_OPENWEATHER_API_KEY=
+EXPO_PUBLIC_POSTHOG_KEY=
+EXPO_PUBLIC_POSTHOG_HOST=
+EXPO_PUBLIC_SENTRY_DSN=
 
-# OpenWeatherMap
-EXPO_PUBLIC_OPENWEATHER_API_KEY=your_openweather_key
-
-# PostHog Analytics
-EXPO_PUBLIC_POSTHOG_KEY=phc_your_posthog_key
-EXPO_PUBLIC_POSTHOG_HOST=https://eu.posthog.com
-
-# Sentry
-EXPO_PUBLIC_SENTRY_DSN=https://your_key@sentry.io/your_project
-
-# Environment
 EXPO_PUBLIC_ENV=development
 ```
 
-> **Android emulator note:** Firebase emulators are accessible at `10.0.2.2`, not `localhost`. The app handles this automatically in development mode.
+> On the Android emulator, Firebase emulators are reached at `10.0.2.2`, not `localhost`. The app handles this automatically in development.
 
-### Firebase Emulators (Development)
+### Firebase emulators
 
 ```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Login
 firebase login
-
-# Start all emulators
 firebase emulators:start
-
-# Emulator ports:
-# Auth:      localhost:9099
-# Firestore: localhost:8080
-# Storage:   localhost:9199
-# Functions: localhost:5001
-# RTDB:      localhost:9000
+# Auth 9099 · Firestore 8080 · Storage 9199 · Functions 5001 · RTDB 9000
 ```
 
 ---
 
-## Running the App
-
-### Development Build (Recommended)
+## Running the app
 
 ```bash
-# First time — builds native code (~10 minutes)
+# First run — compiles native code (~10 min)
 npx expo run:android
 
-# Subsequent runs — hot reload only (seconds)
+# Subsequent runs — hot reload
 npx expo start --android
+
+# Type check — must be zero errors (strict, no `any`)
+npm run typecheck
 ```
 
-### On Physical Device
-
-```bash
-# Enable USB debugging on your Android phone:
-# Settings → About Phone → tap Build Number 7 times
-# Settings → Developer Options → USB Debugging ON
-
-# Connect via USB, then:
-npx expo run:android
-```
-
-### TypeScript Check
-
-```bash
-npx tsc --noEmit
-```
-
-**Target: zero errors.** The codebase runs TypeScript strict mode with zero `any` permitted.
+On a physical device: enable Developer Options (tap Build Number seven times), turn on USB debugging, connect, then run `npx expo run:android`.
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 apna/
-├── src/
-│   ├── components/              # Shared UI components
-│   │   ├── budget/              # Expense, settlement, balance components
-│   │   ├── camera/              # NativeCameraSheet, MediaPicker, PhotoThumbnailStrip
-│   │   ├── location/            # LocationSharingToggle, SOS, Banner
-│   │   ├── members/             # ContactSuggestions, MemberRow, AvatarStack
-│   │   └── ui/                  # Button, Input, BottomSheet, Avatar, Card, FAB
-│   │
-│   ├── screens/                 # Screen components
-│   │   ├── auth/                # Splash, PhoneEntry, OTP, NameAvatar
-│   │   ├── budget/              # Budget, AddExpense, SettleUp, Export
-│   │   ├── groups/              # GroupHome, QR, Settings, AddMembers
-│   │   ├── itinerary/           # ItineraryScreen, Map, ItemDetail, AddItem
-│   │   ├── map/                 # MapScreen, CheckIn
-│   │   ├── memories/            # Timeline, Grid, MapView, FullScreen, AddMemory
-│   │   └── profile/             # Profile, NotificationSettings, ThemeSettings
-│   │
-│   ├── navigation/              # React Navigation setup
-│   │   ├── RootNavigator.tsx    # Auth gate + main navigator
-│   │   ├── MainNavigator.tsx    # Bottom tab navigator
-│   │   └── deeplink/            # Deep link resolver and handler
-│   │
-│   ├── lib/
-│   │   ├── firebase/            # Firebase SDK wrappers (v10 modular only)
-│   │   │   ├── config.ts        # Firebase initialization
-│   │   │   ├── auth.ts          # Auth helpers
-│   │   │   ├── firestore.ts     # Typed collection refs
-│   │   │   ├── storage.ts       # Upload pipeline + signed URLs
-│   │   │   └── location.ts      # RTDB location write/read
-│   │   ├── budget/              # Settlement engine, calculators, currency
-│   │   ├── camera/              # Compression, permissions, upload queue
-│   │   ├── contacts/            # Reader, hasher, matcher, cache
-│   │   ├── haptics/             # Engine + named patterns
-│   │   ├── location/            # Background task, permissions, session timer
-│   │   ├── navigation/          # Deep link builder
-│   │   ├── notifications/       # Rules, batching, FCM token management
-│   │   └── widget/              # Data writer, refresh trigger, types
-│   │
-│   ├── hooks/                   # Custom React hooks
-│   │   ├── useBackgroundLocation.ts
-│   │   ├── useBudgetForecast.ts
-│   │   ├── useCameraPermissions.ts
-│   │   ├── useContactSuggestions.ts
-│   │   ├── usePhotoUpload.ts
-│   │   ├── useWidgetSync.ts
-│   │   └── ...
-│   │
-│   ├── store/                   # Zustand stores (MMKV-persisted)
-│   │   ├── authStore.ts
-│   │   ├── groupStore.ts
-│   │   ├── balanceStore.ts
-│   │   ├── locationStore.ts
-│   │   └── ...
-│   │
-│   ├── tasks/
-│   │   └── backgroundLocation.task.ts   # Expo TaskManager — must be root import
-│   │
-│   ├── theme/                   # Dhaga design system
-│   │   ├── colors.ts            # Full token set dark + light
-│   │   ├── typography.ts        # Outfit + JetBrains Mono scale
-│   │   ├── spacing.ts           # Space and radius tokens
-│   │   └── motion.ts            # Animation constants
-│   │
-│   └── tests/                   # Unit + integration tests
-│       ├── settlement.test.ts
-│       ├── phoneNormaliser.test.ts
-│       ├── budgetCalculator.test.ts
-│       ├── hapticEngine.test.ts
-│       ├── widgetDataBuilder.test.ts
-│       ├── compressionPipeline.test.ts
-│       ├── contactHasher.test.ts
-│       ├── sessionTimer.test.ts
-│       ├── notificationRules.test.ts
-│       ├── deepLinking.test.ts
-│       ├── multiCurrency.test.ts
-│       └── groupLimits.test.ts
-│
-├── functions/                   # Firebase Cloud Functions
-│   └── src/
-│       ├── triggers/            # Firestore + RTDB event triggers
-│       │   ├── onExpenseCreate.ts
-│       │   ├── onExpenseDelete.ts
-│       │   ├── onMemberJoin.ts
-│       │   └── onGroupBudgetUpdated.ts
-│       ├── callable/            # HTTPS callable functions
-│       │   ├── onSOSTriggered.ts
-│       │   ├── generateTripWrap.ts
-│       │   └── matchContactsByHash.ts
-│       └── scheduled/           # Cron-style functions
-│           ├── cleanupExpiredLocations.ts    # every 5 minutes
-│           ├── sendItineraryReminders.ts     # every hour
-│           └── sendOnThisDay.ts              # daily 8am IST
-│
-├── plugins/
-│   └── withApnaWidgets.ts       # Expo config plugin — Android Glance widgets
-│
-├── android/                     # Generated by expo prebuild
-│   └── app/src/main/java/com/apna/widget/
-│       ├── BalanceWidget.kt
-│       ├── MapWidget.kt
-│       └── WidgetDataReader.kt
-│
-├── app.config.ts                # Expo config with all plugins
-├── firestore.rules              # Firestore security rules
-├── storage.rules                # Firebase Storage security rules
-├── database.rules.json          # Realtime DB security rules
-├── firestore.indexes.json       # Composite index definitions
-└── firebase.json                # Firebase project config
+├─ src/
+│  ├─ components/        UI primitives + budget / camera / location / members
+│  ├─ screens/          auth · budget · groups · itinerary · map · memories · profile
+│  ├─ navigation/       RootNavigator (auth gate) · MainNavigator (tabs) · deeplink
+│  ├─ lib/
+│  │  ├─ firebase/      config · auth · firestore · storage · location
+│  │  ├─ budget/        settlement engine · calculators · currency
+│  │  ├─ contacts/      reader · hasher · matcher
+│  │  ├─ location/      background task · permissions · session timer
+│  │  └─ notifications/ rules · batching · FCM tokens
+│  ├─ hooks/            useBackgroundLocation · usePhotoUpload · useWidgetSync · …
+│  ├─ stores/           Zustand stores, MMKV-persisted
+│  ├─ tasks/            backgroundLocation.task.ts (root import)
+│  ├─ theme/            Kora & Ink — colors · typography · spacing · motion
+│  └─ tests/            settlement · budget · contacts · notifications · …
+├─ functions/src/       triggers · callable · scheduled (asia-south1)
+├─ plugins/             withApnaWidgets.ts — Android Glance config plugin
+├─ android/             expo prebuild output (incl. widget Kotlin)
+├─ docs/                DESIGN_BLUEPRINT · DESIGN_PRD · accessibility-audit
+├─ firestore.rules · storage.rules · database.rules.json · firestore.indexes.json
+└─ app.config.ts
 ```
-
----
-
-## Firebase Setup
-
-### 1. Create Project
-
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. Create new project — name it `apna-prod`
-3. **Set region: `asia-south1` (Mumbai)** — every service, never us-central1
-
-### 2. Enable Services
-
-```
-Authentication → Sign-in method → Phone
-Firestore Database → Create database → Production mode → asia-south1
-Realtime Database → Create database → asia-south1
-Storage → Get started → asia-south1
-Functions → Get started → Node.js 20
-```
-
-### 3. Deploy Security Rules
-
-```bash
-firebase deploy --only firestore:rules
-firebase deploy --only storage
-firebase deploy --only database
-```
-
-### 4. Deploy Functions
-
-```bash
-cd functions
-npm install
-npm run build
-cd ..
-firebase deploy --only functions
-```
-
-### 5. Required Indexes
-
-```bash
-firebase deploy --only firestore:indexes
-```
-
-Key indexes in `firestore.indexes.json`:
-- `users` → `phoneHash` (single field — contact matching)
-- `groups/{id}/expenses` → `date DESC, createdAt DESC`
-- `groups/{id}/memories` → `tripDay ASC, createdAt DESC`
-- `groups/{id}/itinerary` → `day ASC, order ASC`
 
 ---
 
 ## Cloud Functions
 
-All functions deployed to **asia-south1**. All authenticated. All typed.
+All deployed to **asia-south1**, all authenticated, all typed.
 
-| Function | Trigger | What it does |
-|----------|---------|--------------|
-| `onExpenseCreate` | Firestore onCreate | Recalculates all balances, creates activity item, sends FCM push |
-| `onExpenseDelete` | Firestore onDelete | Recalculates balances, creates activity item |
-| `onExpenseUpdate` | Firestore onUpdate | Recalculates if amount changed |
-| `onMemberJoin` | Firestore onUpdate | Welcome activity item, push to all existing members |
-| `onMemberLeave` | Firestore onUpdate | Activity item, balance adjustment |
-| `onSOSTriggered` | HTTPS callable | High-priority push to all members with maps deeplink |
-| `generateTripWrap` | HTTPS callable | Aggregates trip stats, selects top memories, generates recap |
-| `matchContactsByHash` | HTTPS callable | Receives hashes, returns matched user profiles (masked) |
-| `cleanupExpiredLocations` | Scheduled (5 min) | Removes RTDB location data older than 4 hours |
-| `sendItineraryReminders` | Scheduled (hourly) | Checks upcoming items, sends "1 hour away" reminders |
-| `sendOnThisDay` | Scheduled (8am IST) | Trip anniversary notifications |
+| Function | Trigger | Responsibility |
+| --- | --- | --- |
+| `onExpenseCreate` | Firestore onCreate | Recompute balances, activity item, push each member their share |
+| `onExpenseDelete` / `onExpenseUpdate` | Firestore | Recompute balances on change |
+| `onMemberJoin` / `onMemberLeave` | Firestore onUpdate | Activity item, balance adjustment, welcome push |
+| `onSOSTriggered` | HTTPS callable | High-priority push with maps deep link |
+| `generateTripWrap` | HTTPS callable | Aggregate trip stats and top memories into a recap |
+| `matchContactsByHash` | HTTPS callable | Match hashed contacts, return masked profiles |
+| `cleanupExpiredLocations` | Scheduled, 5 min | Delete RTDB location older than 4 hours |
+| `sendItineraryReminders` | Scheduled, hourly | "One hour away" reminders |
+| `sendOnThisDay` | Scheduled, 08:00 IST | Trip-anniversary notifications |
 
 ---
 
 ## Testing
 
 ```bash
-# Run all tests
-npx jest
-
-# Run with coverage
-npx jest --coverage
-
-# Run specific test file
-npx jest src/tests/settlement.test.ts
-
-# Type check
-npx tsc --noEmit
-
-# Lint
-npx eslint src/ functions/src/ --ext .ts,.tsx
+npm test                 # all unit + integration tests
+npm run test:coverage    # with coverage
+npm run test:rules       # Firestore security-rules suite
+npm run typecheck        # tsc --noEmit
+npm run lint:design      # Kora & Ink token linter
 ```
 
-### Test Coverage Targets
-
-| Module | Target |
-|--------|--------|
-| Settlement engine | 100% |
-| Budget calculators | 95% |
-| Phone normaliser | 100% |
-| Contact hasher | 100% |
-| Session timer | 100% |
-| Widget data builder | 90% |
-| Notification rules | 90% |
-| Deep link parser | 90% |
+Coverage targets: settlement engine and phone/contact hashing at 100%; budget calculators, session timer, and notification rules at 90%+.
 
 ---
 
-## Build & Deployment
-
-### Development Build
+## Build and release
 
 ```bash
-npx expo run:android
-```
+npm i -g eas-cli && eas login
 
-### Production Build (EAS)
-
-```bash
-# Install EAS CLI
-npm install -g eas-cli
-
-# Login to Expo account
-eas login
-
-# Configure (first time)
-eas build:configure
-
-# Build for Play Store (AAB)
+# Production Android App Bundle for the Play Store
 eas build --platform android --profile production
-
-# Submit to Play Store
 eas submit --platform android
+
+# Ship a JS-only fix without a full rebuild
+eas update --branch production --message "fix: settlement rounding"
 ```
 
-### EAS Build Profiles (`eas.json`)
-
-```json
-{
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal",
-      "android": { "buildType": "apk" }
-    },
-    "production": {
-      "android": { "buildType": "app-bundle" }
-    }
-  }
-}
-```
-
-### OTA Updates
-
-```bash
-# Push JavaScript update without full build
-eas update --branch production --message "Fix: settlement rounding"
-```
+Build profiles are defined in [`eas.json`](eas.json) — `development` (dev client), `preview` (internal APK), and `production` (AAB).
 
 ---
 
 ## Roadmap
 
-```
-Phase 0 — Foundation        ✅ Complete
-Phase 1 — Core MVP          ✅ Complete
-Phase 2 — Itinerary         ✅ Complete
-Phase 3 — Full Feature Set  ✅ Complete
-Phase 4 — Growth & Polish   ✅ Complete
-Phase 5 — Native Android    ✅ Complete
-
-Phase 6 — iOS & Scale       🔄 Next
-  6.1 — iOS build config + safe area + platform fixes
-  6.2 — App Store submission
-  6.3 — Backend scaling audit
-  6.4 — Recurring expenses (roommate mode)
-  6.5 — Freemium gate (₹99/month Pro tier)
-
-Phase 7 — AI Expansion      📋 Planned
-  7.1 — Smart expense categorisation
-  7.2 — Best split suggestions
-  7.3 — Restaurant suggestions by group dietary preferences
-  7.4 — Auto-generate itinerary from destination + duration
-  7.5 — Discover mode + travel buddy matching
+```mermaid
+timeline
+    title apna delivery timeline
+    Phase 0-2 : Foundation : Core MVP : Itinerary   (done)
+    Phase 3-5 : Full feature set : Growth and polish : Native Android widgets   (done)
+    Phase 6 : iOS build and App Store : Backend scaling : Recurring expenses : Pro tier   (next)
+    Phase 7 : Smart categorisation : Split suggestions : Auto-itinerary : Discover mode   (planned)
 ```
 
-### North Star Metric
-
-**Weekly Active Groups** — groups that had at least one expense, memory, or location share in the last 7 days. This is the only metric that tells us if apna is actually part of people's lives.
-
-### Phase 5 KPIs (Current Target)
-
-| Metric | Target |
-|--------|--------|
-| Total active groups | 500+ |
-| Total active users | 2,000+ |
-| Play Store rating | > 4.3 |
-| Organic installs (word of mouth) | > 60% |
-
----
-
-## Monetization
-
-### v1 — Free, no monetization
-
-Build the user base first. Every monetization decision made before product-market fit kills growth.
-
-### v2 — Freemium (Phase 6+)
-
-**Free tier (always free, forever):**
-- 1 active group
-- Unlimited expenses, memories, location
-- Basic trip wrap
-
-**apna Pro — ₹99/month or ₹799/year:**
-- Unlimited groups
-- Receipt photo attachments
-- Trip Wrap memory reel (MP4 export)
-- PDF/CSV export
-- Priority support
-- Custom group themes
-- Multi-currency
-
-> ₹99/month is the price of one chai per day. Not a budget decision for the target audience.
-
-### What we will never do
-
-- Sell user data
-- Serve banner ads
-- Inject sponsored content into the activity feed
-- Charge per expense or memory
+**North-star metric — Weekly Active Groups:** groups with at least one expense, memory, or location share in the last seven days. It is the only number that says whether apna is actually part of people's lives.
 
 ---
 
 ## Contributing
 
-apna is a private product under active development. If you have been given access to this repository:
-
-### Code Standards
+apna is a private product under active development. If you have repository access, every commit must pass:
 
 ```bash
-# Before every commit:
-npx tsc --noEmit          # must be zero errors
-npx eslint src/ --fix     # must be zero warnings
-npx jest                  # must be zero failures
+npm run typecheck        # zero errors
+npm run lint:design      # zero warnings
+npm test                 # zero failures
 ```
 
-### Non-negotiables
+Non-negotiables:
 
-- **MMKV only** — AsyncStorage is permanently banned
-- **Firebase JS SDK v10 modular** — compat SDK is permanently banned
-- **asia-south1** for all Firebase — never us-central1
-- **TypeScript strict** — zero `any` permitted anywhere
-- **`[lng, lat]` for Mapbox** — never `[lat, lng]` — this is the most common bug
+- **MMKV only** — AsyncStorage is banned.
+- **Firebase JS SDK modular** — the compat SDK is banned.
+- **asia-south1** for every Firebase service — never us-central1.
+- **TypeScript strict** — no `any`, anywhere.
+- **`[lng, lat]` order** for MapLibre — never `[lat, lng]`. This is the single most common bug.
 
-### Commit Format
-
-```
-feat: add buffer time warnings to itinerary
-fix: settlement rounding for ₹1 split among 3 people
-chore: update expo-camera to use CameraView API
-test: add phone normaliser edge cases
-```
+Commit style: `feat:`, `fix:`, `chore:`, `test:` — imperative and scoped, for example `fix: settlement rounding for ₹1 split among 3 people`.
 
 ---
 
 ## License
 
-**Proprietary — All Rights Reserved**
-
-Copyright © 2026 apna. Built in India, for India.
-
-This software and its source code are the exclusive property of the apna team. Unauthorised copying, distribution, or use of this software, in whole or in part, is strictly prohibited.
-
----
+**Proprietary — all rights reserved.** Copyright © 2026 apna. This software and its source code are the exclusive property of the apna team; unauthorised copying, distribution, or use, in whole or in part, is prohibited. See [`LICENSE`](LICENSE).
 
 <div align="center">
 
 <br />
 
-**apna** — *yeh sirf ek app nahi hai. yeh apna hai.*
+<img src="assets/brand/apna-mark-ink.svg" alt="apna mark" width="52" />
 
 <br />
 
-Built with ❤️ in Pune, India
+*yeh sirf ek app nahi hai. yeh apna hai.*
 
-<br />
-
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Expo](https://img.shields.io/badge/Expo-000020?style=flat-square&logo=expo&logoColor=white)](https://expo.dev)
-[![Mapbox](https://img.shields.io/badge/Mapbox-000000?style=flat-square&logo=mapbox&logoColor=white)](https://mapbox.com)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
-
-<br />
+Built in India, for India.
 
 </div>

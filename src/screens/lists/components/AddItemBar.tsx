@@ -51,7 +51,7 @@ export function AddItemBar({ onAdd, placeholder = 'Add an item…', disabled }: 
         {
           paddingBottom:    insets.bottom + 8,
           backgroundColor:  colors.bgSecondary,
-          borderTopColor:   colors.border,
+          borderTopColor:   colors.hairline,
           paddingHorizontal: spacing.md,
           paddingTop:       spacing.sm,
         },
@@ -59,7 +59,7 @@ export function AddItemBar({ onAdd, placeholder = 'Add an item…', disabled }: 
     >
       <View style={[
         styles.inputRow,
-        { backgroundColor: colors.bgTertiary, borderRadius: radius.md, borderColor: colors.border, borderWidth: 1 },
+        { backgroundColor: colors.bgTertiary, borderRadius: radius.md, borderColor: colors.hairline, borderWidth: 1 },
       ]}>
         <TextInput
           ref={inputRef}

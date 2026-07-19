@@ -36,7 +36,7 @@ export function ReferralShareRow({
         {
           backgroundColor: colors.bgSecondary,
           borderRadius: radius.lg,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           padding: compact ? spacing.md : spacing.lg,
           opacity: pressed ? 0.9 : 1,
         },

@@ -87,7 +87,7 @@ export function ItemDetailHeader({
             height:          48,
             borderRadius:    24,
             backgroundColor: colors.bgTertiary,
-            borderColor:     confirmed ? colors.accentPrimary : colors.border,
+            borderColor:     confirmed ? colors.accentPrimary : colors.hairline,
             borderWidth:     confirmed ? 2 : 1,
             // Dashed border simulation — RN doesn't support borderStyle on Views natively
             // We use a reduced opacity ring for tentative state instead
@@ -102,7 +102,7 @@ export function ItemDetailHeader({
           <View
             style={[
               styles.tentativeDot,
-              { backgroundColor: colors.accentGold },
+              { backgroundColor: colors.warning },
             ]}
           />
         )}
@@ -132,8 +132,8 @@ export function ItemDetailHeader({
             {
               backgroundColor: confirmed
                 ? `${colors.accentPrimary}18`
-                : `${colors.accentGold}18`,
-              borderColor:  confirmed ? colors.accentPrimary : colors.accentGold,
+                : `${colors.warning}18`,
+              borderColor:  confirmed ? colors.accentPrimary : colors.warning,
               borderRadius: radius.full,
               marginTop:    spacing.xs,
               alignSelf:    'flex-start',

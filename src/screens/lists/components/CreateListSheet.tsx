@@ -100,7 +100,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
           },
         ]}>
           {/* Handle bar */}
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={[styles.handle, { backgroundColor: colors.hairline }]} />
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={[text.heading.sm, { color: colors.textPrimary, marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.lg }]}>
@@ -120,7 +120,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
                       styles.typeChip,
                       {
                         backgroundColor: active ? colors.accentPrimary + '22' : colors.bgTertiary,
-                        borderColor:     active ? colors.accentPrimary         : colors.border,
+                        borderColor:     active ? colors.accentPrimary         : colors.hairline,
                         borderRadius:    radius.md,
                         flex:            1,
                       },
@@ -159,7 +159,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
                     backgroundColor:  colors.bgTertiary,
                     borderRadius:     radius.md,
                     borderWidth:      1,
-                    borderColor:      error ? colors.accentDanger : colors.border,
+                    borderColor:      error ? colors.negative : colors.hairline,
                     paddingHorizontal: spacing.md,
                     paddingVertical:  12,
                   },
@@ -188,7 +188,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
                     backgroundColor:  colors.bgTertiary,
                     borderRadius:     radius.md,
                     borderWidth:      1,
-                    borderColor:      colors.border,
+                    borderColor:      colors.hairline,
                     paddingHorizontal: spacing.md,
                     paddingTop:       12,
                     paddingBottom:    12,
@@ -201,7 +201,7 @@ export function CreateListSheet({ visible, onClose, onSubmit, groupId, createdBy
             </View>
 
             {error && (
-              <Text style={[text.label.md, { color: colors.accentDanger, marginHorizontal: spacing.lg, marginBottom: spacing.md }]}>
+              <Text style={[text.label.md, { color: colors.negative, marginHorizontal: spacing.lg, marginBottom: spacing.md }]}>
                 {error}
               </Text>
             )}

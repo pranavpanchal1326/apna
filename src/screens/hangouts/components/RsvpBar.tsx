@@ -56,7 +56,7 @@ export function RsvpBar({ current, onVote, isPending, disabled, size = 'lg' }: P
               {
                 flex:            1,
                 backgroundColor: isActive ? accent + '22' : colors.bgTertiary,
-                borderColor:     isActive ? accent         : colors.border,
+                borderColor:     isActive ? accent         : colors.hairline,
                 borderWidth:     isActive ? 1.5            : 1,
                 borderRadius:    radius.md,
                 paddingVertical: isSmall ? 8 : 12,

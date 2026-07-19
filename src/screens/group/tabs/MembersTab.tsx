@@ -58,7 +58,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
             {
               backgroundColor: colors.bgSecondary,
               borderRadius:    radius.lg,
-              borderColor:     colors.border,
+              borderColor:     colors.hairline,
               borderWidth:     1,
               padding:         spacing.md,
               marginBottom:    spacing.sm,
@@ -87,7 +87,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
                   style={[
                     styles.adminBadge,
                     {
-                      backgroundColor: `${colors.accentGold}20`,
+                      backgroundColor: `${colors.warning}20`,
                       borderRadius:    radius.full,
                       paddingHorizontal: 6,
                       paddingVertical:   2,
@@ -95,7 +95,7 @@ export function MembersTab({ group, myUid, balances, onSettle }: Props) {
                     },
                   ]}
                 >
-                  <Text style={[text.label.sm, { color: colors.accentGold }]}>
+                  <Text style={[text.label.sm, { color: colors.warning }]}>
                     admin
                   </Text>
                 </View>

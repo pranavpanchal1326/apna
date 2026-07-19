@@ -91,7 +91,7 @@ export const MemberManageRow = memo(function MemberManageRow({
       styles.row,
       {
         paddingVertical:  spacing.md,
-        borderBottomColor: colors.border,
+        borderBottomColor: colors.hairline,
         borderBottomWidth: 1,
       },
     ]}>
@@ -114,14 +114,14 @@ export const MemberManageRow = memo(function MemberManageRow({
             <View style={[
               styles.badge,
               {
-                backgroundColor: colors.accentGold + '25',
+                backgroundColor: colors.warning + '25',
                 borderRadius: radius.full,
                 paddingHorizontal: spacing.sm,
                 paddingVertical: 2,
                 marginLeft: spacing.xs,
               },
             ]}>
-              <Text style={[text.label.sm, { color: colors.accentGold }]}>
+              <Text style={[text.label.sm, { color: colors.warning }]}>
                 admin
               </Text>
             </View>
@@ -145,7 +145,7 @@ export const MemberManageRow = memo(function MemberManageRow({
                 {
                   backgroundColor: colors.bgTertiary,
                   borderRadius: radius.sm,
-                  borderColor: colors.border,
+                  borderColor: colors.hairline,
                   borderWidth: 1,
                   paddingHorizontal: spacing.sm,
                   paddingVertical: spacing.xs,
@@ -175,9 +175,9 @@ export const MemberManageRow = memo(function MemberManageRow({
               style={[
                 styles.actionBtn,
                 {
-                  backgroundColor: colors.accentDanger + '15',
+                  backgroundColor: colors.negative + '15',
                   borderRadius: radius.sm,
-                  borderColor: colors.accentDanger + '40',
+                  borderColor: colors.negative + '40',
                   borderWidth: 1,
                   paddingHorizontal: spacing.sm,
                   paddingVertical: spacing.xs,
@@ -189,9 +189,9 @@ export const MemberManageRow = memo(function MemberManageRow({
               accessibilityLabel={`Remove ${user.name} from group`}
             >
               {loading === 'remove' ? (
-                <ActivityIndicator size="small" color={colors.accentDanger} />
+                <ActivityIndicator size="small" color={colors.negative} />
               ) : (
-                <Text style={[text.label.sm, { color: colors.accentDanger }]}>
+                <Text style={[text.label.sm, { color: colors.negative }]}>
                   Remove
                 </Text>
               )}

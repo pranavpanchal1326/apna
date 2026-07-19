@@ -173,7 +173,7 @@ export function ProfileScreen() {
             {
               backgroundColor: colors.bgSecondary,
               borderRadius: radius.lg,
-              borderColor: colors.border,
+              borderColor: colors.hairline,
               padding: spacing.lg,
             },
           ]}
@@ -194,7 +194,7 @@ export function ProfileScreen() {
                 flex: 1,
                 color: colors.textPrimary,
                 backgroundColor: colors.bgTertiary,
-                borderColor: colors.border,
+                borderColor: colors.hairline,
                 borderWidth: 1,
                 borderRadius: radius.md,
                 padding: spacing.md,
@@ -222,7 +222,7 @@ export function ProfileScreen() {
           {
             backgroundColor: colors.bgSecondary,
             borderRadius: radius.lg,
-            borderColor: colors.border,
+            borderColor: colors.hairline,
             padding: spacing.lg,
             marginBottom: spacing.xl,
           },
@@ -293,7 +293,7 @@ function Row({
         alignItems: 'center',
         paddingVertical: spacing.sm,
         borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
-        borderBottomColor: colors.border,
+        borderBottomColor: colors.hairline,
       }}
     >
       <Text style={[text.body.sm, { color: colors.textSecondary }]}>{label}</Text>

@@ -21,7 +21,7 @@ export function ReferralDashboard() {
 
   if (isLoading && !link) {
     return (
-      <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.border, padding: spacing.lg }]}>
+      <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.hairline, padding: spacing.lg }]}>
         <ActivityIndicator color={colors.accentPrimary} />
       </View>
     )
@@ -38,7 +38,7 @@ export function ReferralDashboard() {
         {
           backgroundColor: colors.bgSecondary,
           borderRadius: radius.lg,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           padding: spacing.lg,
           marginBottom: spacing.xl,
         },

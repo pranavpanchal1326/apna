@@ -56,7 +56,7 @@ export function PhotoThumbnailStrip({
           style={({ pressed }) => [
             styles.addSlot,
             {
-              borderColor: colors.border,
+              borderColor: colors.hairline,
               backgroundColor: colors.bgSecondary,
               borderRadius: radius.md,
               opacity: pressed ? 0.7 : 1,
@@ -123,7 +123,7 @@ function AnimatedThumbnail({
       ]}
     >
       {/* Photo Image */}
-      <Image source={{ uri }} style={[styles.image, { borderRadius: radius.md, borderColor: colors.border }]} />
+      <Image source={{ uri }} style={[styles.image, { borderRadius: radius.md, borderColor: colors.hairline }]} />
 
       {/* Uploading Progress Overlay */}
       {isUploading && (
@@ -148,7 +148,7 @@ function AnimatedThumbnail({
             {
               backgroundColor: colors.bgTertiary,
               borderRadius: radius.full,
-              borderColor: colors.border,
+              borderColor: colors.hairline,
             },
           ]}
           accessibilityLabel="Remove photo"

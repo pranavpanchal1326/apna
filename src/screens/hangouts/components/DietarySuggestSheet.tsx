@@ -68,7 +68,7 @@ export function DietarySuggestSheet({ visible, onClose, groupId, destination }: 
                   paddingVertical: spacing.xs,
                   borderRadius: radius.full,
                   borderWidth: 1,
-                  borderColor: isActive ? colors.accentPrimary : colors.border,
+                  borderColor: isActive ? colors.accentPrimary : colors.hairline,
                   backgroundColor: isActive ? colors.accentPrimary + '20' : colors.bgSecondary,
                 }}
                 accessibilityRole="button"
@@ -104,7 +104,7 @@ export function DietarySuggestSheet({ visible, onClose, groupId, destination }: 
               key={idx}
               style={{
                 backgroundColor: colors.bgSecondary,
-                borderColor: colors.border,
+                borderColor: colors.hairline,
                 borderWidth: 1,
                 borderRadius: radius.lg,
                 padding: spacing.md,

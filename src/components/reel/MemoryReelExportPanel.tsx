@@ -33,7 +33,7 @@ export function MemoryReelExportPanel({
 
   if (!plan) {
     return (
-      <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.border, padding: spacing.lg }]}>
+      <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.hairline, padding: spacing.lg }]}>
         <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Memory reel</Text>
         <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.sm }]}>
           Add photo memories to your trip to create a shareable reel.
@@ -45,7 +45,7 @@ export function MemoryReelExportPanel({
   const showProgress = isExporting && progress.phase !== 'idle' && progress.phase !== 'completed'
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.border, padding: spacing.lg }]}>
+    <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderRadius: radius.lg, borderColor: colors.hairline, padding: spacing.lg }]}>
       <Text style={[text.heading.sm, { color: colors.textPrimary }]}>Memory reel</Text>
       <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.md }]}>
         {plan.memoryCount} moments · ~{Math.round(plan.totalDurationMs / 1000)}s · vertical MP4
@@ -69,7 +69,7 @@ export function MemoryReelExportPanel({
             {progress.message}
           </Text>
           <Pressable onPress={onCancelExport} style={{ marginTop: spacing.sm }}>
-            <Text style={[text.label.md, { color: colors.accentDanger }]}>Cancel export</Text>
+            <Text style={[text.label.md, { color: colors.negative }]}>Cancel export</Text>
           </Pressable>
         </View>
       ) : null}

@@ -497,7 +497,7 @@ export function MapScreen() {
         <View style={[styles.headerRow, { top: insets.top + spacing.sm }]}>
           {(() => {
             let bgColor: string = colors.bgSecondary
-            let borderColor: string = colors.border
+            let borderColor: string = colors.hairline
             let textColor: string = colors.textSecondary
             let labelText = 'Location off'
             let hasDot = false
@@ -655,7 +655,7 @@ export function MapScreen() {
                   backgroundColor: colors.bgSecondary,
                   borderRadius: radius.md,
                   padding: spacing.md,
-                  borderColor: colors.border,
+                  borderColor: colors.hairline,
                   borderWidth: 1,
                   ...shadows.card,
                 },
@@ -741,7 +741,7 @@ export function MapScreen() {
             style={({ pressed }) => [
               styles.fabBtn,
               {
-                backgroundColor: colors.accentDanger,
+                backgroundColor: colors.negative,
                 borderRadius: radius.full,
                 opacity: pressed || isSendingSOS ? 0.8 : 1,
               },
@@ -792,7 +792,7 @@ export function MapScreen() {
                   styles.searchInput,
                   {
                     backgroundColor: colors.bgTertiary,
-                    borderColor: colors.border,
+                    borderColor: colors.hairline,
                     borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.md,
@@ -827,7 +827,7 @@ export function MapScreen() {
                               }}
                               style={[
                                 styles.searchResultRow,
-                                { borderBottomColor: colors.border, paddingVertical: spacing.md },
+                                { borderBottomColor: colors.hairline, paddingVertical: spacing.md },
                               ]}
                             >
                               <Text style={[text.body.md, { color: colors.textPrimary }]}>
@@ -865,7 +865,7 @@ export function MapScreen() {
                       }}
                       style={[
                         styles.searchResultRow,
-                        { borderBottomColor: colors.border, paddingVertical: spacing.md },
+                        { borderBottomColor: colors.hairline, paddingVertical: spacing.md },
                       ]}
                     >
                       <Text style={[text.body.md, { color: colors.textPrimary }]} numberOfLines={1}>

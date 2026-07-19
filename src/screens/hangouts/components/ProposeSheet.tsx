@@ -144,7 +144,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
             borderTopRightRadius: radius.xl,
           },
         ]}>
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={[styles.handle, { backgroundColor: colors.hairline }]} />
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={[text.heading.sm, { color: colors.textPrimary, marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.lg }]}>
@@ -165,7 +165,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                   backgroundColor:  colors.bgTertiary,
                   borderRadius:     radius.md,
                   borderWidth:      1,
-                  borderColor:      error && !title.trim() ? colors.accentDanger : colors.border,
+                  borderColor:      error && !title.trim() ? colors.negative : colors.hairline,
                   paddingHorizontal: spacing.md,
                   paddingVertical:  12,
                 }]}
@@ -189,7 +189,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                         styles.chip,
                         {
                           backgroundColor: active ? colors.accentPrimary + '22' : colors.bgTertiary,
-                          borderColor:     active ? colors.accentPrimary         : colors.border,
+                          borderColor:     active ? colors.accentPrimary         : colors.hairline,
                           borderRadius:    radius.full,
                           borderWidth:     1,
                           paddingHorizontal: 12,
@@ -224,7 +224,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                   backgroundColor:  colors.bgTertiary,
                   borderRadius:     radius.md,
                   borderWidth:      1,
-                  borderColor:      colors.border,
+                  borderColor:      colors.hairline,
                   paddingHorizontal: spacing.md,
                   paddingVertical:  12,
                   width:            100,
@@ -247,7 +247,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                   backgroundColor:  colors.bgTertiary,
                   borderRadius:     radius.md,
                   borderWidth:      1,
-                  borderColor:      colors.border,
+                  borderColor:      colors.hairline,
                   paddingHorizontal: spacing.md,
                   paddingVertical:  12,
                 }]}
@@ -270,7 +270,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                     backgroundColor:  colors.bgTertiary,
                     borderRadius:     radius.md,
                     borderWidth:      1,
-                    borderColor:      colors.border,
+                    borderColor:      colors.hairline,
                     paddingHorizontal: spacing.md,
                     paddingVertical:  12,
                   }]}
@@ -282,12 +282,12 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                 <View style={[styles.quorumRow, {
                   backgroundColor: colors.bgTertiary,
                   borderRadius:    radius.md,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   borderWidth:     1,
                 }]}>
                   <Pressable
                     onPress={() => setQuorum((q) => Math.max(1, q - 1))}
-                    style={[styles.quorumBtn, { borderRightColor: colors.border, borderRightWidth: 1 }]}
+                    style={[styles.quorumBtn, { borderRightColor: colors.hairline, borderRightWidth: 1 }]}
                     accessibilityLabel="Decrease quorum"
                   >
                     <Text style={[text.body.lg, { color: colors.textSecondary }]}>−</Text>
@@ -297,7 +297,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                   </Text>
                   <Pressable
                     onPress={() => setQuorum((q) => Math.min(groupSize, q + 1))}
-                    style={[styles.quorumBtn, { borderLeftColor: colors.border, borderLeftWidth: 1 }]}
+                    style={[styles.quorumBtn, { borderLeftColor: colors.hairline, borderLeftWidth: 1 }]}
                     accessibilityLabel="Increase quorum"
                   >
                     <Text style={[text.body.lg, { color: colors.textSecondary }]}>+</Text>
@@ -322,7 +322,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
                   backgroundColor:   colors.bgTertiary,
                   borderRadius:      radius.md,
                   borderWidth:       1,
-                  borderColor:       colors.border,
+                  borderColor:       colors.hairline,
                   paddingHorizontal: spacing.md,
                   paddingTop:        12,
                   paddingBottom:     12,
@@ -333,7 +333,7 @@ export function ProposeSheet({ visible, onClose, onSubmit, groupId, proposedBy, 
             </View>
 
             {error && (
-              <Text style={[text.label.md, { color: colors.accentDanger, marginHorizontal: spacing.lg, marginBottom: spacing.sm }]}>
+              <Text style={[text.label.md, { color: colors.negative, marginHorizontal: spacing.lg, marginBottom: spacing.sm }]}>
                 {error}
               </Text>
             )}

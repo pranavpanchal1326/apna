@@ -75,7 +75,7 @@ export function ListsScreen() {
           {
             backgroundColor: colors.bgSecondary,
             borderRadius:    radius.lg,
-            borderColor:     colors.border,
+            borderColor:     colors.hairline,
             borderWidth:     1,
             padding:         spacing.lg,
             marginHorizontal: spacing.md,
@@ -113,7 +113,7 @@ export function ListsScreen() {
               borderRadius: radius.full,
               borderColor:  checked === total && total > 0
                 ? colors.accentPrimary + '55'
-                : colors.border,
+                : colors.hairline,
               borderWidth: 1,
             },
           ]}>
@@ -182,7 +182,7 @@ export function ListsScreen() {
                 styles.chip,
                 {
                   backgroundColor: active ? colors.accentPrimary + '22' : colors.bgSecondary,
-                  borderColor:     active ? colors.accentPrimary         : colors.border,
+                  borderColor:     active ? colors.accentPrimary         : colors.hairline,
                   borderRadius:    radius.full,
                   borderWidth:     1,
                   paddingHorizontal: 12,

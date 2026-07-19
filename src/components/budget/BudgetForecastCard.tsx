@@ -28,7 +28,7 @@ export function BudgetForecastCard({
     return (
       <Card
         style={styles.card}
-        contentStyle={{ borderWidth: 1, borderColor: colors.border, padding: spacing.lg }}
+        contentStyle={{ borderWidth: 1, borderColor: colors.hairline, padding: spacing.lg }}
       >
         <Text style={[text.body.sm, { color: colors.textMuted, textAlign: 'center' }]}>
           Not enough expense history to calculate a forecast. Keep tracking expenses to see projections.
@@ -48,7 +48,7 @@ export function BudgetForecastCard({
   const hasOverrun = projectedOverrun !== null && projectedOverrun > 0
   const confidenceColorMap = {
     low: colors.textMuted,
-    medium: colors.accentGold,
+    medium: colors.warning,
     high: colors.accentPrimary,
   }
 
@@ -57,7 +57,7 @@ export function BudgetForecastCard({
       style={styles.card}
       contentStyle={{
         borderWidth: 1,
-        borderColor: hasOverrun ? `${colors.accentDanger}33` : colors.border,
+        borderColor: hasOverrun ? `${colors.negative}33` : colors.hairline,
         padding: spacing.lg,
       }}
     >
@@ -96,15 +96,15 @@ export function BudgetForecastCard({
           style={[
             styles.overrunBanner,
             {
-              backgroundColor: `${colors.accentDanger}0A`,
-              borderColor: `${colors.accentDanger}33`,
+              backgroundColor: `${colors.negative}0A`,
+              borderColor: `${colors.negative}33`,
               borderRadius: radius.sm,
               padding: spacing.md,
               marginTop: spacing.md,
             },
           ]}
         >
-          <Text style={[text.body.sm, { color: colors.accentDanger, fontWeight: 'bold' }]}>
+          <Text style={[text.body.sm, { color: colors.negative, fontWeight: 'bold' }]}>
             Projected overrun: {formatBudgetAmount(projectedOverrun!, currency)}
           </Text>
           <Text style={[text.body.sm, { color: colors.textSecondary, marginTop: 2 }]}>
@@ -119,7 +119,7 @@ export function BudgetForecastCard({
           styles.footer,
           {
             marginTop: spacing.md,
-            borderTopColor: colors.border,
+            borderTopColor: colors.hairline,
             borderTopWidth: 1,
             paddingTop: spacing.md,
           },
@@ -131,7 +131,7 @@ export function BudgetForecastCard({
             <Text
               style={[
                 text.body.sm,
-                { color: daysOfRunway === 0 ? colors.accentDanger : colors.textPrimary, fontWeight: 'bold' },
+                { color: daysOfRunway === 0 ? colors.negative : colors.textPrimary, fontWeight: 'bold' },
               ]}
             >
               {daysOfRunway === 0 ? 'Exceeded' : `${daysOfRunway} day${daysOfRunway !== 1 ? 's' : ''} left`}

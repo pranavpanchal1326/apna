@@ -90,7 +90,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
                 color:             colors.textPrimary,
                 borderRadius:      radius.md,
                 borderWidth:       1,
-                borderColor:       titleError ? colors.accentDanger : colors.border,
+                borderColor:       titleError ? colors.negative : colors.hairline,
                 padding:           spacing.md,
                 minHeight:         48,
               },
@@ -100,7 +100,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
             accessibilityLabel="Stop title"
           />
           {titleError ? (
-            <Text style={[text.label.sm, { color: colors.accentDanger, marginTop: spacing.xs }]}>
+            <Text style={[text.label.sm, { color: colors.negative, marginTop: spacing.xs }]}>
               {titleError}
             </Text>
           ) : null}
@@ -123,7 +123,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
                     styles.categoryChip,
                     {
                       backgroundColor: isActive ? `${colors.accentPrimary}18` : colors.bgTertiary,
-                      borderColor:     isActive ? colors.accentPrimary : colors.border,
+                      borderColor:     isActive ? colors.accentPrimary : colors.hairline,
                       borderRadius:    radius.sm,
                       padding:         spacing.sm,
                     },
@@ -160,7 +160,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
                 color:           colors.textPrimary,
                 borderRadius:    radius.md,
                 borderWidth:     1,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 padding:         spacing.md,
                 height:          48,
               },
@@ -187,7 +187,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
                 color:           colors.textPrimary,
                 borderRadius:    radius.md,
                 borderWidth:     1,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 padding:         spacing.md,
                 height:          48,
                 width:           120,
@@ -216,7 +216,7 @@ export function ManualItemTab({ onSubmit, isProposal, prefill }: ManualItemTabPr
                 color:           colors.textPrimary,
                 borderRadius:    radius.md,
                 borderWidth:     1,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 padding:         spacing.md,
                 minHeight:       80,
                 textAlignVertical: 'top',

@@ -17,7 +17,7 @@ export function BudgetPermissionHint({ visible }: BudgetPermissionHintProps) {
         styles.container,
         {
           backgroundColor: colors.bgTertiary,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           borderRadius: radius.md,
           padding: spacing.md,
         },

@@ -1,0 +1,20 @@
+<svg width="720" height="150" viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kora theme palette">
+  <defs><style>
+    .lab{font-family:'General Sans','Segoe UI',sans-serif;font-size:11px;}
+    .hex{font-family:'Spline Sans Mono','JetBrains Mono',monospace;font-size:11px;}
+    .cap{font-family:'Cabinet Grotesk','Segoe UI',sans-serif;font-weight:800;font-size:14px;}
+  </style></defs>
+  <rect width="720" height="150" rx="14" fill="#F3EEE4"/>
+  <text x="20" y="30" class="cap" fill="#1C1A15">Kora</text>
+  <text x="66" y="30" class="lab" fill="#6E675A">light · daylight, unbleached cotton</text>
+  <g transform="translate(20,46)">
+    <g><rect width="72" height="52" rx="10" fill="#F3EEE4" stroke="#1C1A15" stroke-opacity="0.18"/><text x="0" y="70" class="lab" fill="#1C1A15">bgPrimary</text><text x="0" y="86" class="hex" fill="#6E675A">#F3EEE4</text></g>
+    <g transform="translate(84,0)"><rect width="72" height="52" rx="10" fill="#ECE5D6" stroke="#1C1A15" stroke-opacity="0.18"/><text x="0" y="70" class="lab" fill="#1C1A15">bgSecondary</text><text x="0" y="86" class="hex" fill="#6E675A">#ECE5D6</text></g>
+    <g transform="translate(168,0)"><rect width="72" height="52" rx="10" fill="#E4DCC9" stroke="#1C1A15" stroke-opacity="0.18"/><text x="0" y="70" class="lab" fill="#1C1A15">bgTertiary</text><text x="0" y="86" class="hex" fill="#6E675A">#E4DCC9</text></g>
+    <g transform="translate(252,0)"><rect width="72" height="52" rx="10" fill="#B0402F"/><text x="0" y="70" class="lab" fill="#1C1A15">accentPrimary</text><text x="0" y="86" class="hex" fill="#6E675A">#B0402F</text></g>
+    <g transform="translate(336,0)"><rect width="72" height="52" rx="10" fill="#3E5C50"/><text x="0" y="70" class="lab" fill="#1C1A15">positive</text><text x="0" y="86" class="hex" fill="#6E675A">#3E5C50</text></g>
+    <g transform="translate(420,0)"><rect width="72" height="52" rx="10" fill="#8A6A1F"/><text x="0" y="70" class="lab" fill="#1C1A15">warning</text><text x="0" y="86" class="hex" fill="#6E675A">#8A6A1F</text></g>
+    <g transform="translate(504,0)"><rect width="72" height="52" rx="10" fill="#1C1A15"/><text x="0" y="70" class="lab" fill="#1C1A15">textPrimary</text><text x="0" y="86" class="hex" fill="#6E675A">#1C1A15</text></g>
+    <g transform="translate(588,0)"><rect width="72" height="52" rx="10" fill="#6E675A"/><text x="0" y="70" class="lab" fill="#1C1A15">textSecondary</text><text x="0" y="86" class="hex" fill="#6E675A">#6E675A</text></g>
+  </g>
+</svg>

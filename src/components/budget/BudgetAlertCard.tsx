@@ -12,7 +12,7 @@ export function BudgetAlertCard({ tone, title, message }: BudgetAlertCardProps) 
   const { colors, spacing, radius, text } = useTheme()
 
   let bg: string = colors.bgSecondary
-  let border: string = colors.border
+  let border: string = colors.hairline
   let textColor: string = colors.textPrimary
   let emoji = 'ℹ️'
 
@@ -22,9 +22,9 @@ export function BudgetAlertCard({ tone, title, message }: BudgetAlertCardProps) 
     textColor = colors.warning
     emoji = '⚠️'
   } else if (tone === 'danger') {
-    bg = `${colors.accentDanger}0C`
-    border = `${colors.accentDanger}4D`
-    textColor = colors.accentDanger
+    bg = `${colors.negative}0C`
+    border = `${colors.negative}4D`
+    textColor = colors.negative
     emoji = '🚨'
   }
 

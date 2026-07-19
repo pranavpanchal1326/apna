@@ -19,7 +19,7 @@ export function UploadProgressChip({
   if (state === 'idle') return null
 
   let bgColor: string = colors.bgSecondary
-  let borderColor: string = colors.border
+  let borderColor: string = colors.hairline
   let textColor: string = colors.textPrimary
   let labelText = ''
   let IconComponent: React.ReactNode = null

@@ -126,7 +126,7 @@ export function ChoosePathScreen() {
                 styles.choiceCard,
                 {
                   backgroundColor: colors.bgSecondary,
-                  borderColor: colors.border,
+                  borderColor: colors.hairline,
                   borderRadius: radius.xl,
                   padding: spacing.xl,
                   opacity: pressed ? 0.92 : 1,
@@ -154,7 +154,7 @@ export function ChoosePathScreen() {
                 styles.choiceCard,
                 {
                   backgroundColor: colors.bgSecondary,
-                  borderColor: inviteCode ? colors.accentPrimary : colors.border,
+                  borderColor: inviteCode ? colors.accentPrimary : colors.hairline,
                   borderWidth: inviteCode ? 1.5 : 1,
                   borderRadius: radius.xl,
                   padding: spacing.xl,

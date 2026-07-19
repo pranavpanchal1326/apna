@@ -85,7 +85,7 @@ export function ItemDetailBody({
                 styles.infoPill,
                 {
                   backgroundColor: colors.bgTertiary,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   spacing.xs,
@@ -108,7 +108,7 @@ export function ItemDetailBody({
                 styles.infoPill,
                 {
                   backgroundColor: colors.bgTertiary,
-                  borderColor:     colors.border,
+                  borderColor:     colors.hairline,
                   borderRadius:    radius.sm,
                   paddingHorizontal: spacing.sm,
                   paddingVertical:   spacing.xs,
@@ -208,7 +208,7 @@ export function ItemDetailBody({
               backgroundColor: colors.bgTertiary,
               borderRadius:    radius.md,
               padding:         spacing.md,
-              borderColor:     colors.border,
+              borderColor:     colors.hairline,
               borderWidth:     1,
             },
           ]}

@@ -127,8 +127,8 @@ export function RootNavigator() {
           background: colors.bgPrimary,
           card:       colors.bgSecondary,
           text:       colors.textPrimary,
-          border:     colors.border,
-          notification: colors.accentDanger,
+          border:     colors.hairline,
+          notification: colors.negative,
         },
         fonts: {
           regular: { fontFamily: 'GeneralSans-Regular',      fontWeight: '400' },

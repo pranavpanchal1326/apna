@@ -381,7 +381,7 @@ export function NativeCameraSheet({
                 style={[
                   styles.doneBtn,
                   {
-                    backgroundColor: isLimitReached ? colors.accentDanger : colors.accentPrimary,
+                    backgroundColor: isLimitReached ? colors.negative : colors.accentPrimary,
                     borderRadius: radius.md,
                   },
                 ]}

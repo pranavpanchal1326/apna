@@ -136,7 +136,7 @@ export function HangoutsScreen() {
             onPress={() => { Haptics.selectionAsync(); setShowFoodIdeas(true) }}
             style={[styles.chip, {
               backgroundColor: colors.bgSecondary,
-              borderColor:     colors.border,
+              borderColor:     colors.hairline,
               borderRadius:    radius.full,
               borderWidth:     1,
               paddingHorizontal: 12,

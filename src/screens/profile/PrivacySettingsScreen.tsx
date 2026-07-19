@@ -128,7 +128,7 @@ export function PrivacySettingsScreen() {
             LOCATION SESSION
           </Text>
 
-          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg, marginHorizontal: spacing.lg }]}>
+          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.lg, marginHorizontal: spacing.lg }]}>
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <Text style={[text.label.md, { color: colors.textPrimary }]}>Share Location</Text>
@@ -139,7 +139,7 @@ export function PrivacySettingsScreen() {
               <Switch
                 value={isSharing}
                 onValueChange={handleToggleSharing}
-                trackColor={{ true: colors.positive + '40', false: colors.border }}
+                trackColor={{ true: colors.positive + '40', false: colors.hairline }}
                 thumbColor={isSharing ? colors.positive : colors.textSecondary}
               />
             </View>
@@ -159,7 +159,7 @@ export function PrivacySettingsScreen() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                   toggleGhostMode()
                 }}
-                trackColor={{ true: colors.accentPrimary + '40', false: colors.border }}
+                trackColor={{ true: colors.accentPrimary + '40', false: colors.hairline }}
                 thumbColor={isGhostMode ? colors.accentPrimary : colors.textSecondary}
               />
             </View>
@@ -172,7 +172,7 @@ export function PrivacySettingsScreen() {
             SESSION DETAILS
           </Text>
 
-          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg, marginHorizontal: spacing.lg, padding: spacing.md }]}>
+          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.lg, marginHorizontal: spacing.lg, padding: spacing.md }]}>
             <View style={styles.infoRow}>
               <Text style={[text.label.md, { color: colors.textPrimary }]}>Auto-Expiry Duration</Text>
               <Text style={[text.body.md, { color: colors.textSecondary }]}>4 Hours (Fixed)</Text>
@@ -201,7 +201,7 @@ export function PrivacySettingsScreen() {
                     styles.groupContainer,
                     {
                       backgroundColor: colors.bgSecondary,
-                      borderColor: colors.border,
+                      borderColor: colors.hairline,
                       borderRadius: radius.lg,
                       marginHorizontal: spacing.lg,
                     },
@@ -229,7 +229,7 @@ export function PrivacySettingsScreen() {
                   </Pressable>
 
                   {isExpanded && (
-                    <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+                    <View style={{ borderTopWidth: 1, borderTopColor: colors.hairline }}>
                       <GroupMembersVisibilityList
                         memberIds={group.memberIds}
                         myUid={myUid}
@@ -250,7 +250,7 @@ export function PrivacySettingsScreen() {
             DATA & AUDIT TRAIL
           </Text>
 
-          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.border, borderRadius: radius.lg, marginHorizontal: spacing.lg, padding: spacing.md, gap: spacing.sm }]}>
+          <View style={[styles.card, { backgroundColor: colors.bgSecondary, borderColor: colors.hairline, borderRadius: radius.lg, marginHorizontal: spacing.lg, padding: spacing.md, gap: spacing.sm }]}>
             <Text style={[text.body.md, { color: colors.textSecondary, lineHeight: 20 }]}>
               • **No permanent storage:** Your location coordinates are written exclusively to Firebase Realtime Database and are never logged or stored in main archives.
             </Text>
@@ -395,7 +395,7 @@ function GroupMembersVisibilityList({
             <Switch
               value={isVisible}
               onValueChange={() => handleToggleMember(uid, isVisible)}
-              trackColor={{ true: colors.positive + '40', false: colors.border }}
+              trackColor={{ true: colors.positive + '40', false: colors.hairline }}
               thumbColor={isVisible ? colors.positive : colors.textSecondary}
             />
           </View>

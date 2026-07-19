@@ -280,7 +280,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
               borderRadius: radius.lg,
               marginBottom: spacing.xl,
               borderWidth: 1,
-              borderColor: colors.border,
+              borderColor: colors.hairline,
               overflow: 'hidden',
               opacity: pressed ? 0.95 : 1,
               ...shadows.card,
@@ -488,7 +488,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
                   onChangeText={setEditValue}
                   placeholder="Start date (YYYY-MM-DD)"
                   placeholderTextColor={colors.textMuted}
-                  style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, borderRadius: radius.md }]}
+                  style={[styles.input, { color: colors.textPrimary, borderColor: colors.hairline, borderRadius: radius.md }]}
                   keyboardType="numeric"
                   maxLength={10}
                 />
@@ -497,7 +497,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
                   onChangeText={setEditValueEnd}
                   placeholder="End date (YYYY-MM-DD)"
                   placeholderTextColor={colors.textMuted}
-                  style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, borderRadius: radius.md }]}
+                  style={[styles.input, { color: colors.textPrimary, borderColor: colors.hairline, borderRadius: radius.md }]}
                   keyboardType="numeric"
                   maxLength={10}
                 />
@@ -515,7 +515,7 @@ export function GroupSettingsScreen({ route }: { route: { params: { groupId: str
                   styles.input,
                   {
                     color:        colors.textPrimary,
-                    borderColor:  colors.border,
+                    borderColor:  colors.hairline,
                     borderRadius: radius.md,
                     marginBottom: spacing.lg,
                     height:       activeField === 'description' ? 80 : 44,

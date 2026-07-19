@@ -78,7 +78,7 @@ export function ContactSuggestionRow({
           opacity: opacityAnim,
           transform: [{ translateX: slideAnim }],
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.hairline,
         },
       ]}
     >
@@ -129,7 +129,7 @@ export function ContactSuggestionRow({
       {/* Right Action */}
       <View style={styles.right}>
         {isAlreadyMember ? (
-          <View style={[styles.badge, { backgroundColor: colors.border, borderRadius: radius.full }]}>
+          <View style={[styles.badge, { backgroundColor: colors.hairline, borderRadius: radius.full }]}>
             <Text style={[text.label.sm, { color: colors.textMuted, fontSize: 11 }]}>
               Already in group
             </Text>

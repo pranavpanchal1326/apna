@@ -98,7 +98,7 @@ export function OnThisDayScreen() {
           styles.card,
           {
             backgroundColor: colors.bgSecondary,
-            borderColor: colors.border,
+            borderColor: colors.hairline,
             borderRadius: radius.xl,
             padding: spacing.md,
             marginBottom: spacing.md,
@@ -116,7 +116,7 @@ export function OnThisDayScreen() {
               size="sm"
             />
           ) : (
-            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.border }]} />
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.hairline }]} />
           )}
           <View style={{ marginLeft: spacing.sm }}>
             <Text style={[text.label.md, { color: colors.textPrimary }]}>

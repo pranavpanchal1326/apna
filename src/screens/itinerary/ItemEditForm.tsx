@@ -103,7 +103,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                 color:           colors.textPrimary,
                 borderRadius:    radius.md,
                 borderWidth:     1,
-                borderColor:     errors.title ? colors.accentDanger : colors.border,
+                borderColor:     errors.title ? colors.negative : colors.hairline,
                 padding:         spacing.md,
                 minHeight:       48,
               },
@@ -112,7 +112,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
             accessibilityLabel="Stop name"
           />
           {errors.title ? (
-            <Text style={[text.label.sm, { color: colors.accentDanger, marginTop: spacing.xs }]}>
+            <Text style={[text.label.sm, { color: colors.negative, marginTop: spacing.xs }]}>
               {errors.title}
             </Text>
           ) : null}
@@ -135,7 +135,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                     styles.catChip,
                     {
                       backgroundColor: isActive ? `${colors.accentPrimary}18` : colors.bgTertiary,
-                      borderColor:     isActive ? colors.accentPrimary : colors.border,
+                      borderColor:     isActive ? colors.accentPrimary : colors.hairline,
                       borderRadius:    radius.sm,
                       padding:         spacing.sm,
                     },
@@ -172,7 +172,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                   color:           colors.textPrimary,
                   borderRadius:    radius.md,
                   borderWidth:     1,
-                  borderColor:     errors.startTime ? colors.accentDanger : colors.border,
+                  borderColor:     errors.startTime ? colors.negative : colors.hairline,
                   padding:         spacing.md,
                   height:          48,
                 },
@@ -194,7 +194,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                   color:           colors.textPrimary,
                   borderRadius:    radius.md,
                   borderWidth:     1,
-                  borderColor:     errors.endTime ? colors.accentDanger : colors.border,
+                  borderColor:     errors.endTime ? colors.negative : colors.hairline,
                   padding:         spacing.md,
                   height:          48,
                 },
@@ -204,7 +204,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
             />
           </View>
           {(errors.startTime || errors.endTime) && (
-            <Text style={[text.label.sm, { color: colors.accentDanger, marginTop: spacing.xs }]}>
+            <Text style={[text.label.sm, { color: colors.negative, marginTop: spacing.xs }]}>
               {errors.startTime || errors.endTime}
             </Text>
           )}
@@ -228,7 +228,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                 color:           colors.textPrimary,
                 borderRadius:    radius.md,
                 borderWidth:     1,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 padding:         spacing.md,
                 height:          48,
                 width:           160,
@@ -257,7 +257,7 @@ export function ItemEditForm({ item, onSave, onCancel }: ItemEditFormProps) {
                 color:             colors.textPrimary,
                 borderRadius:      radius.md,
                 borderWidth:       1,
-                borderColor:       colors.border,
+                borderColor:       colors.hairline,
                 padding:           spacing.md,
                 minHeight:         80,
                 textAlignVertical: 'top',

@@ -36,7 +36,7 @@ export const SplitSummaryRow = memo(function SplitSummaryRow({
         styles.row,
         {
           paddingVertical: spacing.sm,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.hairline,
           borderBottomWidth: 1,
         },
       ]}
@@ -57,7 +57,7 @@ export const SplitSummaryRow = memo(function SplitSummaryRow({
       >
         {user.name.split(' ')[0]}
         {isPayer ? (
-          <Text style={{ color: colors.accentGold }}> · paid</Text>
+          <Text style={{ color: colors.warning }}> · paid</Text>
         ) : null}
       </Text>
 
@@ -97,7 +97,7 @@ export const SplitSummaryRow = memo(function SplitSummaryRow({
                 fontSize:        14,
                 color:           colors.textPrimary,
                 backgroundColor: colors.bgSecondary,
-                borderColor:     colors.border,
+                borderColor:     colors.hairline,
                 borderWidth:     1,
                 borderRadius:    radius.sm,
                 paddingHorizontal: spacing.sm,

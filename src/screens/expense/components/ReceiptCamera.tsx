@@ -91,7 +91,7 @@ export function ReceiptCamera({ onCapture, onClose }: ReceiptCameraProps) {
           {/* Middle section with guide bounds */}
           <View style={styles.middleRow}>
             <View style={styles.outerSideBlock} />
-            <View style={[styles.guideBox, { borderColor: colors.border, borderRadius: radius.md }]}>
+            <View style={[styles.guideBox, { borderColor: colors.hairline, borderRadius: radius.md }]}>
               {/* Highlighted accent corners */}
               <View style={[styles.cornerTL, { borderColor: colors.accentPrimary }]} />
               <View style={[styles.cornerTR, { borderColor: colors.accentPrimary }]} />

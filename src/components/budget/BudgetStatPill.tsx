@@ -12,7 +12,7 @@ export function BudgetStatPill({ label, value, tone = 'neutral' }: BudgetStatPil
   const { colors, spacing, text, radius } = useTheme()
 
   let bg: string = colors.bgSecondary
-  let border: string = colors.border
+  let border: string = colors.hairline
   let textValColor: string = colors.textPrimary
 
   if (tone === 'positive') {
@@ -20,9 +20,9 @@ export function BudgetStatPill({ label, value, tone = 'neutral' }: BudgetStatPil
     border = `${colors.accentPrimary}33`
     textValColor = colors.accentPrimary
   } else if (tone === 'warning') {
-    bg = `${colors.accentGold}0C`
-    border = `${colors.accentGold}33`
-    textValColor = colors.accentGold
+    bg = `${colors.warning}0C`
+    border = `${colors.warning}33`
+    textValColor = colors.warning
   }
 
   return (

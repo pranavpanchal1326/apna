@@ -88,7 +88,7 @@ export function LocationSharingBanner() {
           style={[
             styles.stopButton,
             {
-              backgroundColor: colors.accentDanger + '20',
+              backgroundColor: colors.negative + '20',
               borderRadius: radius.sm,
               paddingHorizontal: spacing.sm,
               paddingVertical: spacing.xs,
@@ -97,7 +97,7 @@ export function LocationSharingBanner() {
           accessibilityLabel="Stop location sharing"
           accessibilityRole="button"
         >
-          <Text style={[text.label.sm, { color: colors.accentDanger, fontWeight: '700' }]}>
+          <Text style={[text.label.sm, { color: colors.negative, fontWeight: '700' }]}>
             STOP
           </Text>
         </Pressable>

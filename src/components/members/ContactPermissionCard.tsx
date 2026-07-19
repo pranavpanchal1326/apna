@@ -19,7 +19,7 @@ export function ContactPermissionCard({
         styles.card,
         {
           backgroundColor: colors.bgSecondary,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           borderRadius: radius.lg,
           padding: spacing.md,
         },

@@ -81,7 +81,7 @@ export const ParticipantSelector = memo(function ParticipantSelector({
                   borderWidth:     isSelected ? 1.5 : 1,
                   borderColor:     isSelected
                     ? colors.accentPrimary
-                    : colors.border,
+                    : colors.hairline,
                   padding:         spacing.md,
                   margin:          spacing.xs,
                   flex:            1,
@@ -130,7 +130,7 @@ export const ParticipantSelector = memo(function ParticipantSelector({
                 {user.name.split(' ')[0]}
               </Text>
               {isPayer && (
-                <Text style={[text.label.sm, { color: colors.accentGold, marginTop: 2 }]}>
+                <Text style={[text.label.sm, { color: colors.warning, marginTop: 2 }]}>
                   paid
                 </Text>
               )}

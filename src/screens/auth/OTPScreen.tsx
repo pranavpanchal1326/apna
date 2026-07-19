@@ -233,7 +233,7 @@ export function OTPScreen({ onVerified, onBack }: OTPScreenProps) {
                       ? colors.stitch
                       : error
                       ? colors.negative
-                      : colors.border,
+                      : colors.hairline,
                     borderRadius: radius.md,
                     borderWidth: digit ? 1.5 : 1,
                     color: colors.textPrimary,

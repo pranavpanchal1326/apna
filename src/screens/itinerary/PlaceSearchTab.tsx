@@ -74,7 +74,7 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
           {
             backgroundColor: colors.bgTertiary,
             color: colors.textPrimary,
-            borderColor: colors.border,
+            borderColor: colors.hairline,
             borderRadius: radius.md,
             paddingHorizontal: spacing.md,
           },
@@ -85,7 +85,7 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
         <ActivityIndicator color={colors.accentPrimary} style={{ marginTop: spacing.md }} />
       )}
       {state.status === 'error' && (
-        <Text style={[text.body.sm, { color: colors.accentDanger, marginTop: spacing.md }]}>
+        <Text style={[text.body.sm, { color: colors.negative, marginTop: spacing.md }]}>
           Could not load places. Try again.
         </Text>
       )}
@@ -100,7 +100,7 @@ export function PlaceSearchTab({ onPlaceSelected }: PlaceSearchTabProps) {
             style={[
               styles.resultRow,
               {
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.hairline,
                 paddingVertical: spacing.md,
               },
             ]}

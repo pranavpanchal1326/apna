@@ -48,11 +48,11 @@ export function VoteChips({ votes, myUid, onVote, disabled }: VoteChipsProps) {
               styles.chip,
               {
                 backgroundColor: isActive
-                  ? vote === 'up' ? `${colors.accentPrimary}20` : `${colors.accentDanger}20`
+                  ? vote === 'up' ? `${colors.accentPrimary}20` : `${colors.negative}20`
                   : colors.bgTertiary,
                 borderColor: isActive
-                  ? vote === 'up' ? colors.accentPrimary : colors.accentDanger
-                  : colors.border,
+                  ? vote === 'up' ? colors.accentPrimary : colors.negative
+                  : colors.hairline,
                 borderRadius: radius.full,
                 paddingHorizontal: spacing.sm,
                 paddingVertical:   spacing.xs - 1,

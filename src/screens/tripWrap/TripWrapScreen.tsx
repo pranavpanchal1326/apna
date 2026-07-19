@@ -381,7 +381,7 @@ export function TripWrapScreen() {
           </View>
           <View style={{ gap: spacing.sm }}>
             {wrapData.perPersonSummary.map((m) => (
-              <View key={m.uid} style={[styles.memberRow, { borderBottomColor: colors.border, borderBottomWidth: 1, paddingVertical: spacing.sm }]}>
+              <View key={m.uid} style={[styles.memberRow, { borderBottomColor: colors.hairline, borderBottomWidth: 1, paddingVertical: spacing.sm }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                   {m.photoUrl ? (
                     <Image source={{ uri: m.photoUrl }} style={[styles.avatar, { borderRadius: radius.full }]} />
@@ -495,7 +495,7 @@ export function TripWrapScreen() {
                   styles.optionChip,
                   {
                     backgroundColor: visibility === mode ? colors.bgSecondary : colors.bgTertiary,
-                    borderColor: visibility === mode ? colors.accentPrimary : colors.border,
+                    borderColor: visibility === mode ? colors.accentPrimary : colors.hairline,
                     borderRadius: radius.full,
                     borderWidth: 1,
                   },

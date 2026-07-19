@@ -207,7 +207,7 @@ export function AddMembersScreen({ route }: AddMembersScreenProps) {
               )}
             </View>
 
-            <View style={[styles.suggestionsList, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+            <View style={[styles.suggestionsList, { borderTopWidth: 1, borderTopColor: colors.hairline }]}>
               {inlineSuggestions.map((item) => (
                 <ContactSuggestionRow
                   key={item.uid}
@@ -245,7 +245,7 @@ export function AddMembersScreen({ route }: AddMembersScreenProps) {
               styles.input,
               {
                 color: colors.textPrimary,
-                borderColor: colors.border,
+                borderColor: colors.hairline,
                 borderRadius: radius.md,
                 backgroundColor: colors.bgSecondary,
                 fontFamily: 'JetBrainsMono-Medium',
@@ -263,7 +263,7 @@ export function AddMembersScreen({ route }: AddMembersScreenProps) {
         </View>
 
         {isLimitReached && (
-          <Text style={[text.body.sm, { color: colors.accentDanger, marginBottom: spacing.md }]}>
+          <Text style={[text.body.sm, { color: colors.negative, marginBottom: spacing.md }]}>
             This group has reached the limit of 30 members.
           </Text>
         )}
@@ -285,7 +285,7 @@ export function AddMembersScreen({ route }: AddMembersScreenProps) {
                     styles.memberRow,
                     {
                       backgroundColor: colors.bgSecondary,
-                      borderColor: colors.border,
+                      borderColor: colors.hairline,
                       borderRadius: radius.md,
                       padding: spacing.md,
                     },

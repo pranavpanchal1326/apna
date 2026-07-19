@@ -70,7 +70,7 @@ export function RecurringExpensesScreen() {
         styles.card,
         {
           backgroundColor: colors.bgSecondary,
-          borderColor: colors.border,
+          borderColor: colors.hairline,
           borderRadius: radius.lg,
           padding: spacing.md,
           marginBottom: spacing.sm,
@@ -94,7 +94,7 @@ export function RecurringExpensesScreen() {
         <Switch
           value={item.active}
           onValueChange={() => handleToggle(item)}
-          trackColor={{ true: colors.accentPrimary, false: colors.border }}
+          trackColor={{ true: colors.accentPrimary, false: colors.hairline }}
           accessibilityLabel={item.active ? 'Pause schedule' : 'Resume schedule'}
         />
         <Pressable

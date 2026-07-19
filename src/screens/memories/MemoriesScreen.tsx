@@ -376,7 +376,7 @@ export function MemoriesScreen() {
                   styles.toggleChip,
                   {
                     backgroundColor: isActive ? colors.accentPrimary + '20' : colors.bgSecondary,
-                    borderColor: isActive ? colors.accentPrimary : colors.border,
+                    borderColor: isActive ? colors.accentPrimary : colors.hairline,
                     borderRadius: radius.full,
                     paddingHorizontal: spacing.md,
                     paddingVertical: 6,
@@ -457,7 +457,7 @@ export function MemoriesScreen() {
               setPickerVisible(false)
               setCameraVisible(true)
             }}
-            style={[styles.sheetOption, { borderBottomColor: colors.border }]}
+            style={[styles.sheetOption, { borderBottomColor: colors.hairline }]}
           >
             <Camera size={20} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
             <Text style={[text.body.lg, { color: colors.textPrimary }]}>Take photo</Text>
@@ -537,7 +537,7 @@ export function MemoriesScreen() {
               style={[
                 styles.captionInput,
                 {
-                  borderColor: colors.border,
+                  borderColor: colors.hairline,
                   color: colors.textPrimary,
                   borderRadius: radius.md,
                   padding: spacing.sm,

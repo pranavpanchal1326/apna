@@ -1,0 +1,69 @@
+<svg width="300" height="620" viewBox="0 0 300 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna memories timeline screen">
+  <defs>
+    <clipPath id="scr5"><rect x="14" y="14" width="272" height="592" rx="30"/></clipPath>
+    <style>
+      .mono{font-family:'Spline Sans Mono','JetBrains Mono',monospace;}
+      .sans{font-family:'General Sans','Segoe UI',sans-serif;}
+      .disp{font-family:'Cabinet Grotesk','Segoe UI',sans-serif;font-weight:800;}
+    </style>
+  </defs>
+  <rect x="6" y="6" width="288" height="608" rx="38" fill="#0C0B09"/>
+  <rect x="10" y="10" width="280" height="600" rx="34" fill="#161512" stroke="#26231D" stroke-width="1.5"/>
+  <g clip-path="url(#scr5)">
+    <rect x="14" y="14" width="272" height="592" fill="#161512"/>
+    <text x="30" y="40" class="mono" font-size="11" fill="#A39B89">9:41</text>
+    <text x="30" y="78" class="disp" font-size="22" fill="#EFEAE0">Memories</text>
+    <text x="30" y="96" class="sans" font-size="11" fill="#A39B89">Goa Trip · 63 photos · 3 days</text>
+    <!-- view toggle -->
+    <g class="sans" font-size="10" text-anchor="middle">
+      <rect x="188" y="64" width="86" height="26" rx="13" fill="#26231D"/>
+      <rect x="190" y="66" width="42" height="22" rx="11" fill="#D96A50"/>
+      <text x="211" y="80" fill="#2A0E06">Timeline</text>
+      <text x="253" y="80" fill="#A39B89">Grid</text>
+    </g>
+
+    <!-- day label with stitch -->
+    <text x="30" y="130" class="sans" font-size="11" fill="#736D5E" letter-spacing="1">DAY 1 · ANJUNA</text>
+    <line x1="118" y1="126" x2="270" y2="126" stroke="#D96A50" stroke-width="1.5" stroke-dasharray="7 5" opacity="0.5"/>
+
+    <!-- photo card 1 -->
+    <rect x="26" y="142" width="248" height="150" rx="16" fill="#26231D"/>
+    <rect x="26" y="142" width="248" height="150" rx="16" fill="#1F2A22"/>
+    <path d="M26 250 L96 200 L150 236 L206 190 L274 240 L274 276 Q274 292 258 292 L42 292 Q26 292 26 276 Z" fill="#2C3A2E"/>
+    <circle cx="210" cy="176" r="14" fill="#C9A24B" opacity="0.85"/>
+    <!-- caption bar -->
+    <text x="42" y="278" class="sans" font-size="12" fill="#EFEAE0">Sunset at the shack</text>
+    <g transform="translate(232,272)"><circle r="9" fill="#161512"/><text y="4" text-anchor="middle" font-size="11" fill="#D96A50">♥</text></g>
+    <text x="220" y="277" class="mono" font-size="10" fill="#A39B89" text-anchor="end">4</text>
+
+    <!-- linked expense chip -->
+    <rect x="26" y="300" width="180" height="26" rx="13" fill="#1D1B17"/>
+    <circle cx="42" cy="313" r="4" fill="#C9A24B"/>
+    <text x="54" y="317" class="sans" font-size="10" fill="#A39B89">Linked · Beach shack dinner ₹4,200</text>
+
+    <!-- photo card 2 -->
+    <text x="30" y="360" class="sans" font-size="11" fill="#736D5E" letter-spacing="1">DAY 2 · FORT AGUADA</text>
+    <line x1="150" y1="356" x2="270" y2="356" stroke="#D96A50" stroke-width="1.5" stroke-dasharray="7 5" opacity="0.5"/>
+    <g>
+      <rect x="26" y="372" width="118" height="118" rx="14" fill="#28322C"/>
+      <path d="M26 452 L70 420 L104 444 L144 414 L144 476 Q144 490 130 490 L40 490 Q26 490 26 476 Z" fill="#33413A"/>
+      <rect x="152" y="372" width="122" height="118" rx="14" fill="#3A2E2A"/>
+      <path d="M152 456 L196 426 L228 448 L274 418 L274 476 Q274 490 260 490 L166 490 Q152 490 152 476 Z" fill="#4A3A34"/>
+      <circle cx="252" cy="392" r="10" fill="#D96A50" opacity="0.8"/>
+    </g>
+
+    <!-- FAB -->
+    <circle cx="240" cy="520" r="26" fill="#D96A50"/>
+    <text x="240" y="529" font-size="24" fill="#2A0E06" text-anchor="middle" class="disp">+</text>
+
+    <!-- tab bar -->
+    <rect x="14" y="558" width="272" height="48" fill="#1D1B17"/>
+    <g class="sans" font-size="9" text-anchor="middle">
+      <text x="56" y="586" fill="#736D5E">Money</text>
+      <text x="118" y="586" fill="#736D5E">Map</text>
+      <text x="182" y="586" fill="#EFEAE0">Trip</text>
+      <rect x="170" y="592" width="24" height="2" rx="1" fill="#D96A50"/>
+      <text x="244" y="586" fill="#736D5E">You</text>
+    </g>
+  </g>
+</svg>

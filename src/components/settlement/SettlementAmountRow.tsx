@@ -60,7 +60,7 @@ export const SettlementAmountRow = memo(function SettlementAmountRow({
         {
           backgroundColor: colors.bgSecondary,
           borderRadius:    radius.lg,
-          borderColor:     iOweThem ? colors.accentDanger + '40' : colors.border,
+          borderColor:     iOweThem ? colors.negative + '40' : colors.hairline,
           borderWidth:     iOweThem ? 1.5 : 1,
           padding:         spacing.md,
           marginBottom:    spacing.sm,

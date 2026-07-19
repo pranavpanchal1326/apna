@@ -1,0 +1,61 @@
+<svg width="300" height="620" viewBox="0 0 300 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="apna add expense screen">
+  <defs>
+    <clipPath id="scr2"><rect x="14" y="14" width="272" height="592" rx="30"/></clipPath>
+    <style>
+      .mono{font-family:'Spline Sans Mono','JetBrains Mono',monospace;}
+      .sans{font-family:'General Sans','Segoe UI',sans-serif;}
+      .disp{font-family:'Cabinet Grotesk','Segoe UI',sans-serif;font-weight:800;}
+    </style>
+  </defs>
+  <rect x="6" y="6" width="288" height="608" rx="38" fill="#0C0B09"/>
+  <rect x="10" y="10" width="280" height="600" rx="34" fill="#161512" stroke="#26231D" stroke-width="1.5"/>
+  <g clip-path="url(#scr2)">
+    <rect x="14" y="14" width="272" height="592" fill="#161512"/>
+    <!-- sheet dimmed backdrop hint -->
+    <rect x="14" y="14" width="272" height="120" fill="#0C0B09" opacity="0.4"/>
+    <text x="30" y="40" class="mono" font-size="11" fill="#A39B89">9:41</text>
+    <!-- sheet -->
+    <rect x="14" y="120" width="272" height="486" rx="26" fill="#1D1B17"/>
+    <rect x="130" y="134" width="40" height="4" rx="2" fill="#736D5E"/>
+    <text x="30" y="170" class="disp" font-size="19" fill="#EFEAE0">Add expense</text>
+    <!-- amount -->
+    <text x="30" y="216" class="sans" font-size="11" fill="#A39B89">Amount</text>
+    <text x="30" y="256" class="mono" font-size="38" fill="#EFEAE0">₹4,200</text>
+    <rect x="30" y="270" width="140" height="2" fill="#D96A50"/>
+    <text x="240" y="252" class="mono" font-size="12" fill="#A39B89" text-anchor="end">INR</text>
+    <!-- description -->
+    <rect x="30" y="288" width="240" height="42" rx="12" fill="#26231D"/>
+    <text x="46" y="314" class="sans" font-size="13" fill="#EFEAE0">Beach shack dinner</text>
+    <!-- category chips -->
+    <text x="30" y="356" class="sans" font-size="11" fill="#736D5E" letter-spacing="1">CATEGORY</text>
+    <g class="sans" font-size="11">
+      <rect x="30" y="366" width="60" height="30" rx="15" fill="rgba(201,162,75,0.14)" stroke="#C9A24B" stroke-width="1"/>
+      <text x="60" y="385" fill="#C9A24B" text-anchor="middle">Food</text>
+      <rect x="98" y="366" width="60" height="30" rx="15" fill="#26231D"/>
+      <text x="128" y="385" fill="#A39B89" text-anchor="middle">Stay</text>
+      <rect x="166" y="366" width="80" height="30" rx="15" fill="#26231D"/>
+      <text x="206" y="385" fill="#A39B89" text-anchor="middle">Transport</text>
+    </g>
+    <!-- split type -->
+    <text x="30" y="428" class="sans" font-size="11" fill="#736D5E" letter-spacing="1">SPLIT · EQUAL · 5 PEOPLE</text>
+    <g class="sans">
+      <rect x="30" y="438" width="240" height="34" rx="10" fill="#26231D"/>
+      <circle cx="48" cy="455" r="10" fill="#D96A50"/><text x="48" y="459" font-size="9" fill="#2A0E06" text-anchor="middle" class="mono">A</text>
+      <text x="66" y="459" font-size="12" fill="#EFEAE0">Aisha (paid)</text>
+      <text x="256" y="459" class="mono" font-size="12" fill="#A39B89" text-anchor="end">₹840</text>
+
+      <rect x="30" y="478" width="240" height="34" rx="10" fill="#26231D"/>
+      <circle cx="48" cy="495" r="10" fill="#8FAE9A"/><text x="48" y="499" font-size="9" fill="#2A0E06" text-anchor="middle" class="mono">Y</text>
+      <text x="66" y="499" font-size="12" fill="#EFEAE0">You</text>
+      <text x="256" y="499" class="mono" font-size="12" fill="#A39B89" text-anchor="end">₹840</text>
+
+      <rect x="30" y="518" width="240" height="34" rx="10" fill="#26231D"/>
+      <circle cx="48" cy="535" r="10" fill="#7FA0B8"/><text x="48" y="539" font-size="9" fill="#2A0E06" text-anchor="middle" class="mono">R</text>
+      <text x="66" y="539" font-size="12" fill="#EFEAE0">Rohan</text>
+      <text x="256" y="539" class="mono" font-size="12" fill="#A39B89" text-anchor="end">₹840</text>
+    </g>
+    <!-- CTA -->
+    <rect x="30" y="562" width="240" height="30" rx="15" fill="#D96A50"/>
+    <text x="150" y="582" class="sans" font-size="13" font-weight="700" fill="#2A0E06" text-anchor="middle">Save expense</text>
+  </g>
+</svg>

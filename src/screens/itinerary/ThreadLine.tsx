@@ -5,7 +5,7 @@
 //
 // DESIGN RULES:
 //   - Width: 2dp — precise, not chunky
-//   - Color: colors.threadLine (rgba teal, 25% opacity dark / 30% light)
+//   - Color: colors.stitch (rgba teal, 25% opacity dark / 30% light)
 //   - Left offset: 28dp from screen edge (aligns with center of 32dp icon circles)
 //   - Top: starts at first item's icon center
 //   - Bottom: ends at last item's icon center
@@ -40,7 +40,7 @@ export function ThreadLine({ height, visible }: ThreadLineProps) {
         styles.thread,
         {
           height,
-          backgroundColor: colors.threadLine,
+          backgroundColor: colors.stitch,
           left: spacing.xl + 15,   // 24 + 15 = 39dp — center of 32dp icon at left:23dp
           opacity,
         },
